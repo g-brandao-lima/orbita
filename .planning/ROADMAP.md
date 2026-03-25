@@ -63,11 +63,12 @@ Plans:
   3. Sistema detecta PRECO ABAIXO DO HISTORICO (Amadeus retorna LOW e preço atual abaixo da média dos últimos 14 snapshots) e marca urgência MEDIA
   4. Sistema detecta JANELA OTIMA (dias antes do voo entra na faixa ideal por tipo de rota) e marca urgência MEDIA
   5. Mesmo sinal para a mesma rota não é re-emitido dentro de 12 horas (deduplicação funciona)
-**Plans**: 2 plans
+**Plans**: 3 plans
 
 Plans:
-- [ ] 03-01-PLAN.md - DetectedSignal model + RED tests para todos os 4 sinais e deduplicacao (SIGN-01/02/03/04/05)
+- [ ] 03-01-PLAN.md - Spec approval + DetectedSignal model + RED tests para todos os 4 sinais e deduplicacao (SIGN-01/02/03/04/05)
 - [ ] 03-02-PLAN.md - GREEN implementacao signal_service + integracao polling_service (SIGN-01/02/03/04/05)
+- [ ] 03-03-PLAN.md - Refatoracao (REFACTOR) + checkpoint humano de verificacao
 
 ### Phase 4: Gmail Alerts
 **Goal**: Usuário recebe alertas por email no Gmail com contexto completo e link de silenciar embutido
@@ -102,6 +103,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/3 (checkpoint) | Complete    | 2026-03-25 |
 | 2. Data Collection | 3/3 | Complete    | 2026-03-25 |
-| 3. Signal Detection | 0/2 | Not started | - |
+| 3. Signal Detection | 0/3 | Not started | - |
 | 4. Gmail Alerts | 0/TBD | Not started | - |
 | 5. Web Dashboard | 0/TBD | Not started | - |

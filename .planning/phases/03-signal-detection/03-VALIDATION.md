@@ -7,7 +7,7 @@ wave_0_complete: false
 created: 2026-03-25
 ---
 
-# Phase 3 — Validation Strategy
+# Phase 3 - Validation Strategy
 
 > Per-phase validation contract for feedback sampling during execution.
 
@@ -17,8 +17,8 @@ created: 2026-03-25
 
 | Property | Value |
 |----------|-------|
-| **Framework** | pytest 9.0.2 — existing from Phase 1/2 |
-| **Config file** | `tests/conftest.py` — already exists with StaticPool SQLite fixture |
+| **Framework** | pytest 9.0.2 - existing from Phase 1/2 |
+| **Config file** | `tests/conftest.py` - already exists with StaticPool SQLite fixture |
 | **Quick run command** | `python -m pytest tests/ -x -q` |
 | **Full suite command** | `python -m pytest tests/ -v --tb=short` |
 | **Estimated runtime** | ~10 seconds |
@@ -38,21 +38,21 @@ created: 2026-03-25
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 3-01-01 | 01 | 1 | SIGN-01/02 | RED stub | `python -m pytest tests/test_signal_detector.py -x -q` | ❌ W0 | ⬜ pending |
-| 3-01-02 | 01 | 1 | SIGN-01/02 | unit GREEN | `python -m pytest tests/test_signal_detector.py -x -q` | ❌ W0 | ⬜ pending |
-| 3-02-01 | 02 | 1 | SIGN-03/04 | RED stub | `python -m pytest tests/test_signal_detector.py -x -q` | ❌ W0 | ⬜ pending |
-| 3-02-02 | 02 | 1 | SIGN-03/04 | unit GREEN | `python -m pytest tests/test_signal_detector.py -x -q` | ❌ W0 | ⬜ pending |
-| 3-03-01 | 03 | 2 | SIGN-05 | RED stub | `python -m pytest tests/test_signal_dedup.py -x -q` | ❌ W0 | ⬜ pending |
-| 3-03-02 | 03 | 2 | SIGN-05 | unit GREEN | `python -m pytest tests/test_signal_dedup.py -x -q && python -m pytest tests/ -x -q` | ❌ W0 | ⬜ pending |
+| 3-01-01 | 01 | 1 | SIGN-01/02/03/04/05 | checkpoint:human-verify | Spec approval (human) | N/A | pending |
+| 3-01-02 | 01 | 1 | SIGN-01/02/03/04/05 | model + stubs | `python -c "from app.models import DetectedSignal; print(DetectedSignal.__tablename__)"` | N/A | pending |
+| 3-01-03 | 01 | 1 | SIGN-01/02/03/04/05 | RED tests | `python -m pytest tests/test_signal_service.py -x -q` | W0 | pending |
+| 3-02-01 | 02 | 2 | SIGN-01/02/03/04/05 | GREEN impl | `python -m pytest tests/test_signal_service.py -v --tb=short` | W0 | pending |
+| 3-02-02 | 02 | 2 | SIGN-01/02/03/04/05 | integration | `python -m pytest tests/ -v --tb=short` | W0 | pending |
+| 3-03-01 | 03 | 3 | SIGN-01/02/03/04/05 | REFACTOR | `python -m pytest tests/ -v --tb=short` | W0 | pending |
+| 3-03-02 | 03 | 3 | SIGN-01/02/03/04/05 | checkpoint:human-verify | Human verification of full system | N/A | pending |
 
-*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+*Status: pending / green / red / flaky*
 
 ---
 
 ## Wave 0 Requirements
 
-- [ ] `tests/test_signal_detector.py` — stubs: test_detect_balde_fechando, test_detect_balde_reaberto, test_detect_preco_abaixo_historico, test_detect_janela_otima, test_no_signal_first_snapshot
-- [ ] `tests/test_signal_dedup.py` — stubs: test_dedup_blocks_within_12h, test_dedup_allows_after_12h, test_dedup_different_routes_not_blocked
+- [ ] `tests/test_signal_service.py` - created in Plan 01 Task 3 (RED phase): test_balde_fechando_k_drops, test_balde_reaberto, test_preco_abaixo_historico, test_janela_otima_domestico, test_deduplicacao_bloqueia, test_primeiro_snapshot_sem_sinal_balde, test_multiple_signals_same_snapshot (18+ tests total)
 
 ---
 
@@ -60,7 +60,8 @@ created: 2026-03-25
 
 | Behavior | Requirement | Why Manual | Test Instructions |
 |----------|-------------|------------|-------------------|
-| Sinais detectados aparecem corretamente após polling real | SIGN-01 a SIGN-04 | Requer snapshots reais acumulados de ciclos anteriores | Após 2+ ciclos de polling com credenciais Amadeus reais, verificar tabela detected_signals no banco |
+| Sinais detectados aparecem corretamente apos polling real | SIGN-01 a SIGN-04 | Requer snapshots reais acumulados de ciclos anteriores | Apos 2+ ciclos de polling com credenciais Amadeus reais, verificar tabela detected_signals no banco |
+| App funciona de ponta a ponta | All SIGN-* | Integracao real com servidor | Plan 03 Task 2 checkpoint: iniciar servidor, verificar tabelas, revisar RESUMO DA ENTREGA |
 
 ---
 
