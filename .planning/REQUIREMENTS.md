@@ -53,6 +53,33 @@
 
 ---
 
+## v1.1 Requirements
+
+### Email Consolidado
+
+- [ ] **EMAIL-01**: Sistema envia 1 email por grupo (nao por sinal) contendo: rota mais barata, preco, companhia, datas ida/volta, e resumo das demais rotas monitoradas
+- [ ] **EMAIL-02**: Email mostra as melhores datas para viajar dentro do periodo configurado
+- [ ] **EMAIL-03**: Datas no email usam formato brasileiro dd/mm/aaaa
+
+### Dashboard UI
+
+- [ ] **UI-01**: Tela inicial mostra area de resumo no topo com: total de grupos ativos, menor preco encontrado e horario do proximo polling
+- [ ] **UI-02**: Grupos sao exibidos como cards com borda colorida por classificacao (verde=LOW, amarelo=MEDIUM, vermelho=HIGH, cinza=sem dados)
+- [ ] **UI-03**: Cada card mostra: nome, rotas, preco mais barato em destaque, companhia, datas e badge de sinal
+- [ ] **UI-04**: Estado vazio (sem grupos) mostra mensagem amigavel com botao de criar grupo
+- [ ] **UI-05**: Datas no dashboard usam formato brasileiro dd/mm/aaaa
+
+### Feedback e Erros
+
+- [ ] **UX-01**: Mensagem de confirmacao aparece apos criar, editar ou desativar grupo
+- [ ] **UX-02**: Pagina de erro amigavel ao inves de "Internal Server Error" generico
+
+### Correcoes
+
+- [ ] **FIX-01**: Polling nao salva snapshots duplicados (mesmo voo salvo 2x no mesmo ciclo)
+
+---
+
 ## v2 Requirements
 
 ### Extended Sources
