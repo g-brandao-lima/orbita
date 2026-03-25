@@ -1,5 +1,5 @@
 import datetime
-from sqlalchemy import JSON, String, Integer, Float, Boolean, Date, DateTime, ForeignKey
+from sqlalchemy import JSON, String, Integer, Float, Boolean, Date, DateTime, ForeignKey, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 from app.database import Base
@@ -61,3 +61,36 @@ class BookingClassSnapshot(Base):
     class_code: Mapped[str] = mapped_column(String(1))
     seats_available: Mapped[int] = mapped_column(Integer)
     segment_direction: Mapped[str] = mapped_column(String(10))
+
+
+class DetectedSignal(Base):
+    __tablename__ = "detected_signals"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    route_group_id: Mapped[int] = mapped_column(ForeignKey("route_groups.id"))
+    flight_snapshot_id: Mapped[int] = mapped_column(ForeignKey("flight_snapshots.id"))
+    origin: Mapped[str] = mapped_column(String(3))
+    destination: Mapped[str] = mapped_column(String(3))
+    departure_date: Mapped[datetime.date] = mapped_column(Date)
+    return_date: Mapped[datetime.date] = mapped_column(Date)
+    signal_type: Mapped[str] = mapped_column(String(30))
+    urgency: Mapped[str] = mapped_column(String(10))
+    details: Mapped[str] = mapped_column(String(500))
+    price_at_detection: Mapped[float] = mapped_column(Float)
+    detected_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime, server_default=func.now()
+    )
+
+    route_group: Mapped["RouteGroup"] = relationship("RouteGroup")
+    flight_snapshot: Mapped["FlightSnapshot"] = relationship("FlightSnapshot")
+
+
+Index(
+    "ix_signal_dedup",
+    DetectedSignal.route_group_id,
+    DetectedSignal.origin,
+    DetectedSignal.destination,
+    DetectedSignal.departure_date,
+    DetectedSignal.return_date,
+    DetectedSignal.signal_type,
+)
