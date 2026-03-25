@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Grupos de Rota - Flight Monitor{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom: 1.5rem;">Grupos de Rota</h1>
+
+<div class="card-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem;">
+    {% for item in groups %}
+    <div style="background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <a href="/groups/{{ item.group.id }}" style="font-size: 1.25rem; font-weight: 600; color: #1e293b; text-decoration: none;">
+                {{ item.group.name }}
+            </a>
+            {% if item.signal %}
+                {% if item.signal.urgency == "MAXIMA" %}
+                    <span style="background-color: #ef4444; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">MAXIMA</span>
+                {% elif item.signal.urgency == "ALTA" %}
+                    <span style="background-color: #f97316; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">ALTA</span>
+                {% elif item.signal.urgency == "MEDIA" %}
+                    <span style="background-color: #eab308; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">MEDIA</span>
+                {% endif %}
+            {% else %}
+                <span style="background-color: #94a3b8; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Sem sinal</span>
+            {% endif %}
+        </div>
+
+        {% if item.cheapest_snapshot %}
+            <p style="font-size: 1.5rem; font-weight: 700; color: #059669; margin-bottom: 0.5rem;">
+                {{ format_price_brl(item.cheapest_snapshot.price) }}
+            </p>
+            <p style="color: #64748b; font-size: 0.875rem;">
+                {{ item.cheapest_snapshot.origin }} -> {{ item.cheapest_snapshot.destination }}
+            </p>
+        {% else %}
+            <p style="color: #94a3b8; font-style: italic;">Aguardando coleta</p>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

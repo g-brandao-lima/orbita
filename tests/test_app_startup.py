@@ -1,5 +1,5 @@
 def test_app_starts_and_responds(client):
-    """INFRA-01: GET / retorna 200 com status ok."""
+    """INFRA-01: GET / retorna 200 com dashboard HTML."""
     # Arrange: client fixture provides a running test app
 
     # Act
@@ -7,9 +7,8 @@ def test_app_starts_and_responds(client):
 
     # Assert
     assert response.status_code == 200
-    data = response.json()
-    assert data["status"] == "ok"
-    assert data["app"] == "Flight Monitor"
+    assert "text/html" in response.headers["content-type"]
+    assert "Flight Monitor" in response.text
 
 
 def test_app_has_openapi_docs(client):

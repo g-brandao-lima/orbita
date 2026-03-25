@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}{{ group.name }} - Flight Monitor{% endblock %}
+
+{% block head %}
+{% if chart_data.prices %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<a href="/" style="color: #3b82f6; text-decoration: none; margin-bottom: 1rem; display: inline-block;">Voltar</a>
+
+<h1 style="margin-bottom: 0.5rem;">{{ group.name }}</h1>
+
+<div style="background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 1.5rem;">
+    <p><strong>Origens:</strong> {{ group.origins | join(", ") }}</p>
+    <p><strong>Destinos:</strong> {{ group.destinations | join(", ") }}</p>
+    <p><strong>Duracao:</strong> {{ group.duration_days }} dias</p>
+    <p><strong>Periodo:</strong> {{ group.travel_start }} a {{ group.travel_end }}</p>
+</div>
+
+{% if chart_data.prices %}
+<div style="background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+    <h2 style="margin-bottom: 0.5rem;">Historico de Precos</h2>
+    <p style="color: #64748b; margin-bottom: 1rem;">Rota: {{ chart_data.route }}</p>
+    <canvas id="priceChart"></canvas>
+</div>
+
+<script>
+    const chartData = {{ chart_data | tojson }};
+    const ctx = document.getElementById('priceChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: chartData.labels,
+            datasets: [{
+                label: 'Preco (BRL)',
+                data: chartData.prices,
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: false }
+            }
+        }
+    });
+</script>
+{% else %}
+<div style="background: white; border-radius: 8px; padding: 2rem; text-align: center; color: #94a3b8;">
+    <p>Nenhum dado coletado ainda</p>
+</div>
+{% endif %}
+{% endblock %}
