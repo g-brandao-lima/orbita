@@ -50,7 +50,7 @@ Plans:
 
 Plans:
 - [x] 02-01-PLAN.md - Modelos FlightSnapshot/BookingClassSnapshot + snapshot_service + config Gmail (COLL-05)
-- [ ] 02-02-PLAN.md - AmadeusClient wrapper com Flight Offers, Availability e Price Metrics (COLL-02/03/04)
+- [x] 02-02-PLAN.md - AmadeusClient wrapper com Flight Offers, Availability e Price Metrics (COLL-02/03/04)
 - [ ] 02-03-PLAN.md - Polling service + scheduler 6h + integracao lifespan + error handling (COLL-01/06)
 
 ### Phase 3: Signal Detection
