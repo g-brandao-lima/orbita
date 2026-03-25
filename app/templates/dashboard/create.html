@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Novo Grupo de Rota - Flight Monitor{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom: 1.5rem;">Novo Grupo de Rota</h1>
+
+{% if error %}
+<div style="background: #fef2f2; border: 1px solid #fca5a5; color: #dc2626; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+    {{ error }}
+</div>
+{% endif %}
+
+<div style="background: white; border-radius: 8px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); max-width: 600px;">
+    <form method="POST" action="/groups/create">
+        <div style="margin-bottom: 1rem;">
+            <label for="name" style="display: block; font-weight: 600; margin-bottom: 0.25rem;">Nome do Grupo</label>
+            <input type="text" id="name" name="name" required value="{{ form_data.name if form_data else '' }}"
+                   style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px;">
+        </div>
+
+        <div style="margin-bottom: 1rem;">
+            <label for="origins" style="display: block; font-weight: 600; margin-bottom: 0.25rem;">Origens (codigos IATA separados por virgula)</label>
+            <input type="text" id="origins" name="origins" required placeholder="GRU,CGH"
+                   value="{{ form_data.origins if form_data else '' }}"
+                   style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px; text-transform: uppercase;">
+        </div>
+
+        <div style="margin-bottom: 1rem;">
+            <label for="destinations" style="display: block; font-weight: 600; margin-bottom: 0.25rem;">Destinos (codigos IATA separados por virgula)</label>
+            <input type="text" id="destinations" name="destinations" required placeholder="LIS,OPO"
+                   value="{{ form_data.destinations if form_data else '' }}"
+                   style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px; text-transform: uppercase;">
+        </div>
+
+        <div style="margin-bottom: 1rem;">
+            <label for="duration_days" style="display: block; font-weight: 600; margin-bottom: 0.25rem;">Duracao da viagem (dias)</label>
+            <input type="number" id="duration_days" name="duration_days" required min="1"
+                   value="{{ form_data.duration_days if form_data else '' }}"
+                   style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px;">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+                <label for="travel_start" style="display: block; font-weight: 600; margin-bottom: 0.25rem;">Inicio do periodo</label>
+                <input type="date" id="travel_start" name="travel_start" required
+                       value="{{ form_data.travel_start if form_data else '' }}"
+                       style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px;">
+            </div>
+            <div>
+                <label for="travel_end" style="display: block; font-weight: 600; margin-bottom: 0.25rem;">Fim do periodo</label>
+                <input type="date" id="travel_end" name="travel_end" required
+                       value="{{ form_data.travel_end if form_data else '' }}"
+                       style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px;">
+            </div>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <label for="target_price" style="display: block; font-weight: 600; margin-bottom: 0.25rem;">Preco-alvo (R$, opcional)</label>
+            <input type="number" id="target_price" name="target_price" step="0.01"
+                   value="{{ form_data.target_price if form_data else '' }}"
+                   style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px;">
+        </div>
+
+        <div style="display: flex; gap: 1rem; align-items: center;">
+            <button type="submit" style="background: #059669; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 4px; font-weight: 600; cursor: pointer;">
+                Criar Grupo
+            </button>
+            <a href="/" style="color: #64748b; text-decoration: none;">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

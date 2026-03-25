@@ -7,11 +7,16 @@
 
 <div class="card-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem;">
     {% for item in groups %}
-    <div style="background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+    <div style="background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);{% if not item.group.is_active %} opacity: 0.6;{% endif %}">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-            <a href="/groups/{{ item.group.id }}" style="font-size: 1.25rem; font-weight: 600; color: #1e293b; text-decoration: none;">
-                {{ item.group.name }}
-            </a>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <a href="/groups/{{ item.group.id }}" style="font-size: 1.25rem; font-weight: 600; color: #1e293b; text-decoration: none;">
+                    {{ item.group.name }}
+                </a>
+                {% if not item.group.is_active %}
+                    <span style="background-color: #cbd5e1; color: #475569; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Inativo</span>
+                {% endif %}
+            </div>
             {% if item.signal %}
                 {% if item.signal.urgency == "MAXIMA" %}
                     <span style="background-color: #ef4444; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">MAXIMA</span>
@@ -35,6 +40,15 @@
         {% else %}
             <p style="color: #94a3b8; font-style: italic;">Aguardando coleta</p>
         {% endif %}
+
+        <div style="display: flex; gap: 0.75rem; margin-top: 1rem; align-items: center;">
+            <a href="/groups/{{ item.group.id }}/edit" style="color: #3b82f6; font-size: 0.875rem; text-decoration: none;">Editar</a>
+            <form method="POST" action="/groups/{{ item.group.id }}/toggle" style="margin: 0;">
+                <button type="submit" style="background: none; border: 1px solid #cbd5e1; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.875rem; cursor: pointer; color: #475569;">
+                    {% if item.group.is_active %}Desativar{% else %}Ativar{% endif %}
+                </button>
+            </form>
+        </div>
     </div>
     {% endfor %}
 </div>
