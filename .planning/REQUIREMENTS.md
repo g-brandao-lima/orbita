@@ -33,7 +33,7 @@
 
 ### Alerts (Alertas via Gmail)
 
-- [ ] **ALRT-01**: Sistema envia email via Gmail quando sinal detectado contendo: nome do grupo, rota específica (origem→destino + datas), preço atual, contexto histórico e urgência
+- [x] **ALRT-01**: Sistema envia email via Gmail quando sinal detectado contendo: nome do grupo, rota específica (origem→destino + datas), preço atual, contexto histórico e urgência
 - [x] **ALRT-02**: Email contém link de silenciar que pausa alertas daquele grupo por 24 horas ao ser clicado
 - [ ] **ALRT-03**: Dashboard web exibe status de todos os grupos ativos e melhor preço atual de cada um (substitui o /status do bot)
 
@@ -113,7 +113,7 @@
 | SIGN-03 | Phase 3 | Complete |
 | SIGN-04 | Phase 3 | Complete |
 | SIGN-05 | Phase 3 | Complete |
-| ALRT-01 | Phase 4 | Pending |
+| ALRT-01 | Phase 4 | Complete |
 | ALRT-02 | Phase 4 | Complete |
 | ALRT-03 | Phase 4 | Pending |
 | DASH-01 | Phase 5 | Pending |

@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation** - Aplicação inicia, banco criado, grupos de rota gerenciados via API (completed 2026-03-25)
 - [x] **Phase 2: Data Collection** - Polling automático da Amadeus captura snapshots de preço e booking class (completed 2026-03-25)
 - [x] **Phase 3: Signal Detection** - Sistema detecta os 4 sinais de compra e deduplica alertas (completed 2026-03-25)
-- [ ] **Phase 4: Gmail Alerts** - Alertas são enviados por email com link de silenciar embutido
+- [x] **Phase 4: Gmail Alerts** - Alertas são enviados por email com link de silenciar embutido (completed 2026-03-25)
 - [ ] **Phase 5: Web Dashboard** - Interface web permite visualizar grupos, histórico e gerenciar configurações
 
 ## Phase Details
@@ -82,7 +82,7 @@ Plans:
 Plans:
 - [x] 04-01-PLAN.md - TDD alert_service: composicao email, envio SMTP, token HMAC, silenciamento (ALRT-01/02)
 - [x] 04-02-PLAN.md - TDD silence endpoint GET /api/v1/alerts/silence/{token} + registro router (ALRT-02)
-- [ ] 04-03-PLAN.md - Integracao polling_service + refatoracao + checkpoint humano de verificacao (ALRT-01/02)
+- [x] 04-03-PLAN.md - Integracao polling_service + refatoracao + checkpoint humano de verificacao (ALRT-01/02)
 
 ### Phase 5: Web Dashboard
 **Goal**: Usuário pode visualizar o estado atual de todos os grupos, histórico de preços e gerenciar grupos pelo navegador
@@ -107,5 +107,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Foundation | 2/3 (checkpoint) | Complete    | 2026-03-25 |
 | 2. Data Collection | 3/3 | Complete    | 2026-03-25 |
 | 3. Signal Detection | 3/3 | Complete    | 2026-03-25 |
-| 4. Gmail Alerts | 2/3 | In Progress|  |
+| 4. Gmail Alerts | 3/3 | Complete   | 2026-03-25 |
 | 5. Web Dashboard | 0/TBD | Not started | - |
