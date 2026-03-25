@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     gmail_sender: str = ""
     gmail_app_password: str = ""
     gmail_recipient: str = ""
+    app_base_url: str = "http://localhost:8000"
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
