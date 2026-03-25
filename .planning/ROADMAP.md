@@ -148,8 +148,11 @@ Plans:
   3. Card exibe nome, rotas, preco mais barato em destaque, companhia, datas e badge de sinal
   4. Quando nao ha grupos cadastrados, tela mostra mensagem amigavel com botao de criar grupo
   5. Todas as datas no dashboard aparecem no formato dd/mm/aaaa
-**Plans**: TBD
-**UI hint**: yes
+**Plans**: 2 plans
+
+Plans:
+- [ ] 08-01-PLAN.md - Backend summary data + rewrite index.html com cards coloridos, summary bar e estado vazio (UI-01/02/03/04/05)
+- [ ] 08-02-PLAN.md - Datas dd/mm/aaaa no detail.html + checkpoint visual (UI-05)
 
 ## Progress
 
@@ -164,4 +167,4 @@ Plans:
 | 5. Web Dashboard | v1.0 | 3/3 | Complete | 2026-03-25 |
 | 6. Quality & Feedback | v1.1 | 0/2 | Planning | - |
 | 7. Consolidated Email | v1.1 | 0/2 | Planning | - |
-| 8. Dashboard Redesign | v1.1 | 0/? | Not started | - |
+| 8. Dashboard Redesign | v1.1 | 0/2 | Planning | - |
