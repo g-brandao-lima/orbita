@@ -2,7 +2,7 @@
 
 ## Overview
 
-O Flight Monitor é construído em cinco fases que seguem a cadeia de valor natural do produto: primeiro a infraestrutura e gerenciamento de grupos (o que monitorar), depois a coleta de dados reais da Amadeus (os dados brutos), depois a detecção de sinais (a inteligência), depois os alertas Telegram (a entrega do valor), e por fim o dashboard web (a visibilidade). Cada fase entrega uma capacidade verificável e desbloqueia a próxima.
+O Flight Monitor é construído em cinco fases que seguem a cadeia de valor natural do produto: primeiro a infraestrutura e gerenciamento de grupos (o que monitorar), depois a coleta de dados reais da Amadeus (os dados brutos), depois a detecção de sinais (a inteligência), depois os alertas por Gmail (a entrega do valor), e por fim o dashboard web (a visibilidade). Cada fase entrega uma capacidade verificável e desbloqueia a próxima.
 
 ## Phases
 
@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 1: Foundation** - Aplicação inicia, banco criado, grupos de rota gerenciados via API
 - [ ] **Phase 2: Data Collection** - Polling automático da Amadeus captura snapshots de preço e booking class
 - [ ] **Phase 3: Signal Detection** - Sistema detecta os 4 sinais de compra e deduplica alertas
-- [ ] **Phase 4: Telegram Alerts** - Alertas são entregues no celular e bot responde a comandos
+- [ ] **Phase 4: Gmail Alerts** - Alertas são enviados por email com link de silenciar embutido
 - [ ] **Phase 5: Web Dashboard** - Interface web permite visualizar grupos, histórico e gerenciar configurações
 
 ## Phase Details
@@ -60,14 +60,14 @@ Plans:
   5. Mesmo sinal para a mesma rota não é re-emitido dentro de 12 horas (deduplicação funciona)
 **Plans**: TBD
 
-### Phase 4: Telegram Alerts
-**Goal**: Usuário recebe alertas no celular via Telegram e pode interagir com o bot para controlar o monitoramento
+### Phase 4: Gmail Alerts
+**Goal**: Usuário recebe alertas por email no Gmail com contexto completo e link de silenciar embutido
 **Depends on**: Phase 3
 **Requirements**: ALRT-01, ALRT-02, ALRT-03
 **Success Criteria** (what must be TRUE):
-  1. Quando sinal é detectado, mensagem Telegram chega no celular contendo grupo, rota, preço atual, contexto histórico e nível de urgência
-  2. Usuário envia `/silenciar [grupo]` e alertas daquele grupo param por 24 horas
-  3. Usuário envia `/status` e bot responde com lista de grupos ativos e melhor preço atual de cada um
+  1. Quando sinal é detectado, email chega no Gmail contendo grupo, rota, preço atual, contexto histórico e nível de urgência
+  2. Email contém link que ao ser clicado pausa alertas daquele grupo por 24 horas
+  3. Dashboard web mostra status de todos os grupos ativos e melhor preço atual (substitui o /status do bot)
 **Plans**: TBD
 **UI hint**: yes
 
@@ -94,5 +94,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Foundation | 2/3 (checkpoint) | Task 2 human-verify pending | - |
 | 2. Data Collection | 0/TBD | Not started | - |
 | 3. Signal Detection | 0/TBD | Not started | - |
-| 4. Telegram Alerts | 0/TBD | Not started | - |
+| 4. Gmail Alerts | 0/TBD | Not started | - |
 | 5. Web Dashboard | 0/TBD | Not started | - |

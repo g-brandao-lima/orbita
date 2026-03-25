@@ -35,9 +35,9 @@ Detectar o momento certo de comprar uma passagem antes que o preço suba, usando
 - [ ] PREÇO ABAIXO DO HISTÓRICO: Amadeus retorna LOW + preço atual abaixo da média dos snapshots — urgência MÉDIA
 - [ ] JANELA ÓTIMA: dias antes do voo entrou na faixa ideal para o tipo de rota — urgência MÉDIA
 
-**Alertas via Telegram**
-- [ ] Alerta enviado quando sinal detectado com: grupo, rota específica, preço atual, contexto histórico, urgência
-- [ ] Usuário pode responder /silenciar [grupo] para pausar alertas daquele grupo por 24h
+**Alertas via Gmail**
+- [ ] Alerta enviado por email quando sinal detectado com: grupo, rota específica, preço atual, contexto histórico, urgência
+- [ ] Email contém link de silenciar que pausa alertas daquele grupo por 24h ao ser clicado
 
 **Dashboard Web (mínimo)**
 - [ ] Lista todos os grupos com: melhor preço atual, rota mais barata e indicador de sinal ativo
@@ -52,7 +52,7 @@ Detectar o momento certo de comprar uma passagem antes que o preço suba, usando
 - Hotéis, carros, multimodal — produto focado em voos
 - Múltiplos usuários / autenticação — uso pessoal apenas
 - Aplicativo mobile — web responsivo é suficiente
-- Notificação por email ou WhatsApp — Telegram é suficiente
+- Telegram / WhatsApp — Gmail resolve para uso pessoal; Telegram silenciado pelo usuário
 - Voos somente ida (one-way) — apenas roundtrip nesta versão
 - Multi-tenant / SaaS — produto pessoal
 - Integração Duffel/NDC — fase 2 se necessário
@@ -71,7 +71,7 @@ Sistemas consumer (Google Flights, Kayak) são reativos: alertam quando o preço
 **Infraestrutura:**
 - Rodar local inicialmente; deploy em Fly.io free tier quando estável
 - SQLite via SQLAlchemy (arquivo único, zero infra, fácil migração)
-- Telegram Bot API para alertas (gratuito, push real no celular)
+- Gmail SMTP para alertas (senha de app do Google, zero custo)
 
 **Limitações conhecidas:**
 - Amadeus free tier: ~2.000-3.000 calls/mês grátis; ~38 calls/dia por grupo ativo; comporta ~3-4 grupos no free tier com 2 pollings/dia
@@ -81,7 +81,7 @@ Sistemas consumer (Google Flights, Kayak) são reativos: alertam quando o preço
 ## Constraints
 
 - **API**: Amadeus Self-Service free tier — 2.000 calls/mês; máximo ~4 grupos ativos com 2 pollings/dia
-- **Stack**: Python, FastAPI, SQLite, APScheduler, Telegram Bot API — sem JavaScript framework no frontend
+- **Stack**: Python, FastAPI, SQLite, APScheduler, Gmail SMTP — sem JavaScript framework no frontend
 - **Infra**: Local first → Fly.io free tier; sem VPS pago nesta versão
 - **Usuários**: Single-user, sem autenticação complexa
 - **Scope**: Roundtrip only; voos GDS (não LCC direto)
@@ -94,7 +94,7 @@ Sistemas consumer (Google Flights, Kayak) são reativos: alertam quando o preço
 | APScheduler embedded (não Celery) | Single-user, sem necessidade de workers distribuídos | — Pending |
 | FastAPI + Jinja2 (sem JS framework) | Interface mínima, sem complexidade de build | — Pending |
 | Amadeus como fonte primária | Único que expõe availabilityClasses com contagem por booking class | — Pending |
-| Telegram para alertas | API gratuita, push nativo no celular, sem app próprio | — Pending |
+| Gmail para alertas | Usuário já usa, volume baixo de alertas, sem app extra necessário | — Pending |
 | Fly.io free tier para cloud | Zero custo, suporte a persistent volume para SQLite, sempre ativo | — Pending |
 | Roundtrip only na v1 | Simplifica modelo de dados e lógica de busca; one-way pode ser fase 2 | — Pending |
 
@@ -116,4 +116,4 @@ Este documento evolui a cada transição de fase e milestone.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-24 after initialization*
+*Last updated: 2026-03-24 after alert channel change (Telegram → Gmail)*

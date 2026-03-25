@@ -31,11 +31,11 @@
 - [ ] **SIGN-04**: Sistema detecta sinal JANELA ÓTIMA quando dias restantes antes do voo entra na faixa 21-90 dias (doméstico) ou 30-120 dias (internacional) — urgência MÉDIA
 - [ ] **SIGN-05**: Sistema não re-alerta o mesmo sinal para a mesma rota dentro de uma janela de 12 horas (deduplicação)
 
-### Alerts (Alertas via Telegram)
+### Alerts (Alertas via Gmail)
 
-- [ ] **ALRT-01**: Sistema envia mensagem via Telegram Bot quando sinal detectado contendo: nome do grupo, rota específica (origem→destino + datas), preço atual, contexto histórico e urgência
-- [ ] **ALRT-02**: Usuário pode enviar comando `/silenciar [grupo]` para pausar alertas daquele grupo por 24 horas
-- [ ] **ALRT-03**: Bot Telegram responde a `/status` com lista de grupos ativos e melhor preço atual de cada um
+- [ ] **ALRT-01**: Sistema envia email via Gmail quando sinal detectado contendo: nome do grupo, rota específica (origem→destino + datas), preço atual, contexto histórico e urgência
+- [ ] **ALRT-02**: Email contém link de silenciar que pausa alertas daquele grupo por 24 horas ao ser clicado
+- [ ] **ALRT-03**: Dashboard web exibe status de todos os grupos ativos e melhor preço atual de cada um (substitui o /status do bot)
 
 ### Web Dashboard
 
@@ -83,7 +83,7 @@
 | Web scraping | Somente APIs oficiais; scraping viola ToS e é frágil |
 | Hotéis, carros, multimodal | Foco em voos — expansão dilui o core value |
 | App mobile nativo | Interface web responsiva é suficiente para o uso |
-| Notificações por email ou WhatsApp | Telegram gratuito e com push nativo resolve |
+| Telegram / WhatsApp | Gmail resolve para uso pessoal de baixo volume; Telegram silenciado pelo usuário |
 | Multi-tenant / SaaS | Escopo pessoal — virar SaaS é decisão de negócio futura |
 | Real-time streaming de preços | Polling a cada 6h é suficiente; streaming aumentaria custo de API |
 
@@ -129,4 +129,4 @@
 
 ---
 *Requirements defined: 2026-03-24*
-*Last updated: 2026-03-24 after roadmap creation*
+*Last updated: 2026-03-24 after alert channel change (Telegram → Gmail)*
