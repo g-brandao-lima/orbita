@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Polish & UX
-status: Ready to execute
-stopped_at: Completed 07-01-PLAN.md
-last_updated: "2026-03-25T22:08:26.725Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 07-02-PLAN.md
+last_updated: "2026-03-25T22:14:06.877Z"
 progress:
   total_phases: 3
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 4
-  completed_plans: 3
+  completed_plans: 4
 ---
 
 # Project State
@@ -52,6 +52,7 @@ Plan: 2 of 2
 | Phase 06 P01 | 2min | 1 tasks | 3 files |
 | Phase 06 P02 | 4min | 2 tasks | 6 files |
 | Phase 07 P01 | 3min | 1 tasks | 2 files |
+| Phase 07 P02 | 3min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -68,6 +69,7 @@ Recent decisions affecting current work:
 - [Phase 06]: Flash messages via query param ?msg= (stateless, sem sessao)
 - [Phase 06]: Exception handler global com mapeamento de mensagens por status code
 - [Phase 07]: Reusar format_price_brl de dashboard_service para consistencia BRL no email consolidado
+- [Phase 07]: _process_flight retorna tupla (snapshot, signals) para desacoplar deteccao de envio
 
 ### Pending Todos
 
@@ -80,6 +82,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-25T22:08:26.719Z
-Stopped at: Completed 07-01-PLAN.md
+Last session: 2026-03-25T22:14:06.871Z
+Stopped at: Completed 07-02-PLAN.md
 Resume file: None

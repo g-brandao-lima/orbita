@@ -136,7 +136,7 @@ Plans:
 
 Plans:
 - [x] 07-01-PLAN.md - TDD compose_consolidated_email: rota mais barata, top 3 datas, resumo, formato brasileiro (EMAIL-01/02/03)
-- [ ] 07-02-PLAN.md - Refatorar polling_service para acumular sinais e enviar email consolidado (EMAIL-01)
+- [x] 07-02-PLAN.md - Refatorar polling_service para acumular sinais e enviar email consolidado (EMAIL-01)
 
 ### Phase 8: Dashboard Redesign
 **Goal**: Dashboard apresenta informacoes de forma visual e intuitiva com cards, cores e estados claros
