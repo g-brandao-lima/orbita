@@ -117,7 +117,11 @@ Plans:
   1. Polling nunca salva o mesmo voo duas vezes no mesmo ciclo de coleta
   2. Apos criar, editar ou desativar um grupo, usuario ve mensagem de confirmacao na tela
   3. Quando ocorre erro inesperado, usuario ve pagina amigavel com orientacao ao inves de "Internal Server Error"
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 06-01-PLAN.md - TDD deduplicacao de snapshots no polling (FIX-01)
+- [ ] 06-02-PLAN.md - Flash messages de feedback + pagina de erro amigavel (UX-01, UX-02)
 
 ### Phase 7: Consolidated Email
 **Goal**: Usuario recebe 1 email util por grupo com todas as informacoes necessarias para decidir se compra
@@ -154,6 +158,6 @@ Plans:
 | 3. Signal Detection | v1.0 | 3/3 | Complete | 2026-03-25 |
 | 4. Gmail Alerts | v1.0 | 3/3 | Complete | 2026-03-25 |
 | 5. Web Dashboard | v1.0 | 3/3 | Complete | 2026-03-25 |
-| 6. Quality & Feedback | v1.1 | 0/? | Not started | - |
+| 6. Quality & Feedback | v1.1 | 0/2 | Planning | - |
 | 7. Consolidated Email | v1.1 | 0/? | Not started | - |
 | 8. Dashboard Redesign | v1.1 | 0/? | Not started | - |
