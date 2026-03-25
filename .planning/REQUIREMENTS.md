@@ -7,12 +7,12 @@
 
 ### Route Groups (Grupos de Rota)
 
-- [ ] **ROUTE-01**: Usuário pode criar um Grupo de Rota com: nome, lista de aeroportos de origem (múltiplos códigos IATA), lista de aeroportos de destino (múltiplos códigos IATA), duração da viagem em dias, e período de viagem (mês específico ou intervalo de datas)
-- [ ] **ROUTE-02**: Usuário pode definir preço-alvo opcional por Grupo de Rota
-- [ ] **ROUTE-03**: Usuário pode ativar e desativar um Grupo de Rota sem deletar
-- [ ] **ROUTE-04**: Usuário pode editar um Grupo de Rota existente
-- [ ] **ROUTE-05**: Usuário pode deletar um Grupo de Rota
-- [ ] **ROUTE-06**: Sistema limita a 10 grupos ativos simultaneamente (constraint do free tier Amadeus)
+- [x] **ROUTE-01**: Usuário pode criar um Grupo de Rota com: nome, lista de aeroportos de origem (múltiplos códigos IATA), lista de aeroportos de destino (múltiplos códigos IATA), duração da viagem em dias, e período de viagem (mês específico ou intervalo de datas)
+- [x] **ROUTE-02**: Usuário pode definir preço-alvo opcional por Grupo de Rota
+- [x] **ROUTE-03**: Usuário pode ativar e desativar um Grupo de Rota sem deletar
+- [x] **ROUTE-04**: Usuário pode editar um Grupo de Rota existente
+- [x] **ROUTE-05**: Usuário pode deletar um Grupo de Rota
+- [x] **ROUTE-06**: Sistema limita a 10 grupos ativos simultaneamente (constraint do free tier Amadeus)
 
 ### Data Collection (Coleta de Dados)
 
@@ -47,9 +47,9 @@
 
 ### Infrastructure (Infraestrutura)
 
-- [ ] **INFRA-01**: Aplicação inicia com um único comando (`python main.py` ou `uvicorn app.main:app`)
-- [ ] **INFRA-02**: Configuração via arquivo `.env` (Amadeus API keys, Telegram bot token, Telegram chat ID)
-- [ ] **INFRA-03**: Banco SQLite é criado automaticamente na primeira execução com todas as tabelas necessárias
+- [x] **INFRA-01**: Aplicação inicia com um único comando (`python main.py` ou `uvicorn app.main:app`)
+- [x] **INFRA-02**: Configuração via arquivo `.env` (Amadeus API keys, Telegram bot token, Telegram chat ID)
+- [x] **INFRA-03**: Banco SQLite é criado automaticamente na primeira execução com todas as tabelas necessárias
 
 ---
 
@@ -93,15 +93,15 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ROUTE-01 | Phase 1 | Pending |
-| ROUTE-02 | Phase 1 | Pending |
-| ROUTE-03 | Phase 1 | Pending |
-| ROUTE-04 | Phase 1 | Pending |
-| ROUTE-05 | Phase 1 | Pending |
-| ROUTE-06 | Phase 1 | Pending |
-| INFRA-01 | Phase 1 | Pending |
-| INFRA-02 | Phase 1 | Pending |
-| INFRA-03 | Phase 1 | Pending |
+| ROUTE-01 | Phase 1 | Complete |
+| ROUTE-02 | Phase 1 | Complete |
+| ROUTE-03 | Phase 1 | Complete |
+| ROUTE-04 | Phase 1 | Complete |
+| ROUTE-05 | Phase 1 | Complete |
+| ROUTE-06 | Phase 1 | Complete |
+| INFRA-01 | Phase 1 | Complete |
+| INFRA-02 | Phase 1 | Complete |
+| INFRA-03 | Phase 1 | Complete |
 | COLL-01 | Phase 2 | Pending |
 | COLL-02 | Phase 2 | Pending |
 | COLL-03 | Phase 2 | Pending |

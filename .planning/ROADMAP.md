@@ -32,8 +32,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 3 plans
 
 Plans:
-- [ ] 01-01-PLAN.md - Setup projeto + testes RED + implementacao GREEN para infraestrutura (INFRA-01/02/03)
-- [ ] 01-02-PLAN.md - Testes RED + implementacao GREEN para CRUD de Route Groups (ROUTE-01 a ROUTE-06)
+- [x] 01-01-PLAN.md - Setup projeto + testes RED + implementacao GREEN para infraestrutura (INFRA-01/02/03)
+- [x] 01-02-PLAN.md - Testes RED + implementacao GREEN para CRUD de Route Groups (ROUTE-01 a ROUTE-06)
 - [ ] 01-03-PLAN.md - Refatoracao (REFACTOR) + checkpoint humano de verificacao
 
 ### Phase 2: Data Collection
