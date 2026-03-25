@@ -203,3 +203,54 @@ def test_get_price_history_respects_14_day_cutoff(db):
 def test_format_price_brl(db):
     assert format_price_brl(3500.0) == "R$ 3.500,00"
     assert format_price_brl(123.5) == "R$ 123,50"
+
+
+# --- get_dashboard_summary tests ---
+
+from app.services.dashboard_service import get_dashboard_summary, format_date_br
+
+
+def test_get_dashboard_summary_active_count(db):
+    _make_group(db, name="Active 1", is_active=True)
+    _make_group(db, name="Active 2", is_active=True)
+    _make_group(db, name="Inactive", is_active=False)
+
+    result = get_dashboard_summary(db)
+
+    assert result["active_count"] == 2
+
+
+def test_get_dashboard_summary_cheapest_price_none_when_no_snapshots(db):
+    _make_group(db, name="Empty group")
+
+    result = get_dashboard_summary(db)
+
+    assert result["cheapest_price"] is None
+
+
+def test_get_dashboard_summary_cheapest_price_across_groups(db):
+    group_a = _make_group(db, name="Group A")
+    group_b = _make_group(db, name="Group B")
+    now = datetime.datetime(2026, 3, 20, 12, 0)
+    _make_snapshot(db, group_a, price=5000.0, collected_at=now)
+    _make_snapshot(db, group_b, price=2500.0, collected_at=now)
+
+    result = get_dashboard_summary(db)
+
+    assert result["cheapest_price"] == 2500.0
+
+
+def test_get_dashboard_summary_has_next_polling(db):
+    result = get_dashboard_summary(db)
+
+    assert "next_polling" in result
+    assert isinstance(result["next_polling"], str)
+
+
+def test_format_date_br_formats_correctly():
+    d = datetime.date(2026, 3, 25)
+    assert format_date_br(d) == "25/03/2026"
+
+
+def test_format_date_br_handles_none():
+    assert format_date_br(None) == ""

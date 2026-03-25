@@ -14,8 +14,10 @@ from app.database import get_db
 from app.models import RouteGroup
 from app.services.dashboard_service import (
     get_groups_with_summary,
+    get_dashboard_summary,
     get_price_history,
     format_price_brl,
+    format_date_br,
 )
 from app.services.airport_service import is_valid_code, get_all_airports, search_airports
 
@@ -93,13 +95,16 @@ FLASH_MESSAGES = {
 @router.get("/", response_class=HTMLResponse)
 def dashboard_index(request: Request, msg: str | None = None, db: Session = Depends(get_db)):
     groups = get_groups_with_summary(db)
+    summary = get_dashboard_summary(db)
     flash_message = FLASH_MESSAGES.get(msg) if msg else None
     return templates.TemplateResponse(
         request=request,
         name="dashboard/index.html",
         context={
             "groups": groups,
+            "summary": summary,
             "format_price_brl": format_price_brl,
+            "format_date_br": format_date_br,
             "flash_message": flash_message,
         },
     )
