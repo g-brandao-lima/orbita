@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Polish & UX
-status: Ready to plan
-stopped_at: Phase 8 context gathered
-last_updated: "2026-03-25T22:30:53.869Z"
+status: Ready to execute
+stopped_at: Completed 08-01-PLAN.md
+last_updated: "2026-03-25T22:40:43.362Z"
 progress:
   total_phases: 3
   completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
+  total_plans: 6
+  completed_plans: 5
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-25)
 
 **Core value:** Detectar o momento certo de comprar uma passagem antes que o preco suba, usando dados de booking class inventory (Amadeus API) que nenhum sistema consumer expoe.
-**Current focus:** Phase 07 — consolidated-email
+**Current focus:** Phase 08 — dashboard-redesign
 
 ## Current Position
 
-Phase: 8
-Plan: Not started
+Phase: 08 (dashboard-redesign) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -53,6 +53,7 @@ Plan: Not started
 | Phase 06 P02 | 4min | 2 tasks | 6 files |
 | Phase 07 P01 | 3min | 1 tasks | 2 files |
 | Phase 07 P02 | 3min | 2 tasks | 2 files |
+| Phase 08 P01 | 3min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -70,6 +71,8 @@ Recent decisions affecting current work:
 - [Phase 06]: Exception handler global com mapeamento de mensagens por status code
 - [Phase 07]: Reusar format_price_brl de dashboard_service para consistencia BRL no email consolidado
 - [Phase 07]: _process_flight retorna tupla (snapshot, signals) para desacoplar deteccao de envio
+- [Phase 08]: Scheduler import wrapped in try/except inside get_dashboard_summary for test isolation
+- [Phase 08]: CSS classes for card border colors instead of inline styles
 
 ### Pending Todos
 
@@ -82,6 +85,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-25T22:30:53.863Z
-Stopped at: Phase 8 context gathered
-Resume file: .planning/phases/08-dashboard-redesign/08-CONTEXT.md
+Last session: 2026-03-25T22:40:43.356Z
+Stopped at: Completed 08-01-PLAN.md
+Resume file: None

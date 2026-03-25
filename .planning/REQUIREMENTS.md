@@ -63,11 +63,11 @@
 
 ### Dashboard UI
 
-- [ ] **UI-01**: Tela inicial mostra area de resumo no topo com: total de grupos ativos, menor preco encontrado e horario do proximo polling
-- [ ] **UI-02**: Grupos sao exibidos como cards com borda colorida por classificacao (verde=LOW, amarelo=MEDIUM, vermelho=HIGH, cinza=sem dados)
-- [ ] **UI-03**: Cada card mostra: nome, rotas, preco mais barato em destaque, companhia, datas e badge de sinal
-- [ ] **UI-04**: Estado vazio (sem grupos) mostra mensagem amigavel com botao de criar grupo
-- [ ] **UI-05**: Datas no dashboard usam formato brasileiro dd/mm/aaaa
+- [x] **UI-01**: Tela inicial mostra area de resumo no topo com: total de grupos ativos, menor preco encontrado e horario do proximo polling
+- [x] **UI-02**: Grupos sao exibidos como cards com borda colorida por classificacao (verde=LOW, amarelo=MEDIUM, vermelho=HIGH, cinza=sem dados)
+- [x] **UI-03**: Cada card mostra: nome, rotas, preco mais barato em destaque, companhia, datas e badge de sinal
+- [x] **UI-04**: Estado vazio (sem grupos) mostra mensagem amigavel com botao de criar grupo
+- [x] **UI-05**: Datas no dashboard usam formato brasileiro dd/mm/aaaa
 
 ### Feedback e Erros
 
@@ -154,11 +154,11 @@
 | EMAIL-01 | Phase 7 | Complete |
 | EMAIL-02 | Phase 7 | Complete |
 | EMAIL-03 | Phase 7 | Complete |
-| UI-01 | Phase 8 | Pending |
-| UI-02 | Phase 8 | Pending |
-| UI-03 | Phase 8 | Pending |
-| UI-04 | Phase 8 | Pending |
-| UI-05 | Phase 8 | Pending |
+| UI-01 | Phase 8 | Complete |
+| UI-02 | Phase 8 | Complete |
+| UI-03 | Phase 8 | Complete |
+| UI-04 | Phase 8 | Complete |
+| UI-05 | Phase 8 | Complete |
 
 **Coverage:**
 - v1 requirements: 28 total, 28 mapped, 0 unmapped
