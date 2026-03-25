@@ -97,7 +97,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/3 (checkpoint) | Complete    | 2026-03-25 |
-| 2. Data Collection | 3/3 | Complete   | 2026-03-25 |
+| 2. Data Collection | 3/3 | Complete    | 2026-03-25 |
 | 3. Signal Detection | 0/TBD | Not started | - |
 | 4. Gmail Alerts | 0/TBD | Not started | - |
 | 5. Web Dashboard | 0/TBD | Not started | - |
