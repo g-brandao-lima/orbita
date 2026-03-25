@@ -391,3 +391,155 @@ class TestPollGroupSnapshotData:
         assert snapshot_data.get("price_median") is None
         assert snapshot_data.get("price_third_quartile") is None
         assert snapshot_data.get("price_max") is None
+
+
+class TestPollingAlertIntegration:
+    """Tests for alert_service integration within the polling cycle."""
+
+    @patch("app.services.polling_service.send_email")
+    @patch("app.services.polling_service.compose_alert_email")
+    @patch("app.services.polling_service.should_alert")
+    @patch("app.services.polling_service.detect_signals")
+    @patch("app.services.polling_service.save_flight_snapshot")
+    @patch("app.services.polling_service.AmadeusClient")
+    def test_polling_sends_alert_on_signal(
+        self,
+        mock_client_cls,
+        mock_save,
+        mock_detect,
+        mock_should_alert,
+        mock_compose,
+        mock_send_email,
+        db,
+    ):
+        """Quando detect_signals retorna sinal e grupo nao silenciado, send_email e chamado."""
+        # Arrange
+        from app.services.polling_service import run_polling_cycle
+
+        group = _create_route_group(
+            db,
+            name="Alert Group",
+            origins=["GRU"],
+            destinations=["GIG"],
+            travel_start=datetime.date(2026, 5, 1),
+            travel_end=datetime.date(2026, 5, 8),
+            duration_days=7,
+        )
+
+        mock_instance = MagicMock()
+        mock_instance.is_configured = True
+        mock_instance.search_cheapest_offers.return_value = MOCK_OFFERS
+        mock_instance.get_availability.return_value = MOCK_AVAILABILITY
+        mock_instance.get_price_metrics.return_value = MOCK_METRICS
+        mock_client_cls.return_value = mock_instance
+
+        fake_signal = MagicMock()
+        mock_detect.return_value = [fake_signal]
+        mock_should_alert.return_value = True
+        fake_msg = MagicMock()
+        mock_compose.return_value = fake_msg
+
+        # Act
+        with patch("app.services.polling_service.SessionLocal", return_value=db):
+            run_polling_cycle()
+
+        # Assert — send_email deve ter sido chamado com a mensagem composta
+        mock_send_email.assert_called_once_with(fake_msg)
+
+    @patch("app.services.polling_service.send_email")
+    @patch("app.services.polling_service.compose_alert_email")
+    @patch("app.services.polling_service.should_alert")
+    @patch("app.services.polling_service.detect_signals")
+    @patch("app.services.polling_service.save_flight_snapshot")
+    @patch("app.services.polling_service.AmadeusClient")
+    def test_polling_skips_alert_silenced_group(
+        self,
+        mock_client_cls,
+        mock_save,
+        mock_detect,
+        mock_should_alert,
+        mock_compose,
+        mock_send_email,
+        db,
+    ):
+        """Quando should_alert retorna False, send_email NAO e chamado."""
+        # Arrange
+        from app.services.polling_service import run_polling_cycle
+
+        _create_route_group(
+            db,
+            name="Silenced Group",
+            origins=["GRU"],
+            destinations=["GIG"],
+            travel_start=datetime.date(2026, 5, 1),
+            travel_end=datetime.date(2026, 5, 8),
+            duration_days=7,
+        )
+
+        mock_instance = MagicMock()
+        mock_instance.is_configured = True
+        mock_instance.search_cheapest_offers.return_value = MOCK_OFFERS
+        mock_instance.get_availability.return_value = MOCK_AVAILABILITY
+        mock_instance.get_price_metrics.return_value = MOCK_METRICS
+        mock_client_cls.return_value = mock_instance
+
+        fake_signal = MagicMock()
+        mock_detect.return_value = [fake_signal]
+        mock_should_alert.return_value = False  # grupo silenciado
+
+        # Act
+        with patch("app.services.polling_service.SessionLocal", return_value=db):
+            run_polling_cycle()
+
+        # Assert — send_email nao deve ser chamado
+        mock_send_email.assert_not_called()
+
+    @patch("app.services.polling_service.send_email")
+    @patch("app.services.polling_service.compose_alert_email")
+    @patch("app.services.polling_service.should_alert")
+    @patch("app.services.polling_service.detect_signals")
+    @patch("app.services.polling_service.save_flight_snapshot")
+    @patch("app.services.polling_service.AmadeusClient")
+    def test_polling_continues_on_smtp_failure(
+        self,
+        mock_client_cls,
+        mock_save,
+        mock_detect,
+        mock_should_alert,
+        mock_compose,
+        mock_send_email,
+        db,
+    ):
+        """Quando send_email levanta Exception, o polling continua sem crashar."""
+        # Arrange
+        from app.services.polling_service import run_polling_cycle
+
+        _create_route_group(
+            db,
+            name="SMTP Failure Group",
+            origins=["GRU"],
+            destinations=["GIG"],
+            travel_start=datetime.date(2026, 5, 1),
+            travel_end=datetime.date(2026, 5, 8),
+            duration_days=7,
+        )
+
+        mock_instance = MagicMock()
+        mock_instance.is_configured = True
+        mock_instance.search_cheapest_offers.return_value = MOCK_OFFERS
+        mock_instance.get_availability.return_value = MOCK_AVAILABILITY
+        mock_instance.get_price_metrics.return_value = MOCK_METRICS
+        mock_client_cls.return_value = mock_instance
+
+        fake_signal = MagicMock()
+        mock_detect.return_value = [fake_signal]
+        mock_should_alert.return_value = True
+        mock_compose.return_value = MagicMock()
+        mock_send_email.side_effect = Exception("SMTP connection refused")
+
+        # Act — nao deve levantar excecao
+        with patch("app.services.polling_service.SessionLocal", return_value=db):
+            run_polling_cycle()  # must not raise
+
+        # Assert — send_email foi chamado mas falhou; polling sobreviveu
+        mock_send_email.assert_called_once()

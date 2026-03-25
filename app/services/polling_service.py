@@ -3,6 +3,7 @@ from datetime import date, timedelta
 
 from app.database import SessionLocal
 from app.models import RouteGroup
+from app.services.alert_service import compose_alert_email, send_email, should_alert
 from app.services.amadeus_client import AmadeusClient, classify_price
 from app.services.signal_service import detect_signals
 from app.services.snapshot_service import save_flight_snapshot
@@ -131,6 +132,13 @@ def _process_offer(db, client, group, origin, destination, dep_date, ret_date, o
                 f"Signal detected: {signal.signal_type} ({signal.urgency}) "
                 f"for {signal.origin}->{signal.destination} {signal.departure_date}"
             )
+            try:
+                if should_alert(group):
+                    msg = compose_alert_email(signal, group)
+                    send_email(msg)
+                    logger.info(f"Alert email sent for {signal.signal_type}")
+            except Exception as e:
+                logger.error(f"Alert email failed: {e}")
     except Exception as e:
         logger.error(f"Signal detection failed for snapshot {getattr(snapshot, 'id', '?')}: {e}")
 
