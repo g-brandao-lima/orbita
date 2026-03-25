@@ -1,3 +1,4 @@
+import logging
 from datetime import date, datetime, timedelta
 
 from sqlalchemy import select
@@ -9,6 +10,8 @@ from app.models import (
     BookingClassSnapshot,
     DetectedSignal,
 )
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -51,6 +54,32 @@ MIN_SNAPSHOTS_FOR_PRICE = 3
 
 
 # ---------------------------------------------------------------------------
+# Signal factory (DRY: centraliza criacao de DetectedSignal)
+# ---------------------------------------------------------------------------
+
+
+def _create_signal(
+    snapshot: FlightSnapshot,
+    signal_type: str,
+    urgency: str,
+    details: str,
+) -> DetectedSignal:
+    """Cria DetectedSignal com campos comuns extraidos do snapshot."""
+    return DetectedSignal(
+        route_group_id=snapshot.route_group_id,
+        flight_snapshot_id=snapshot.id,
+        origin=snapshot.origin,
+        destination=snapshot.destination,
+        departure_date=snapshot.departure_date,
+        return_date=snapshot.return_date,
+        signal_type=signal_type,
+        urgency=urgency,
+        details=details,
+        price_at_detection=snapshot.price,
+    )
+
+
+# ---------------------------------------------------------------------------
 # Orchestrator
 # ---------------------------------------------------------------------------
 
@@ -60,27 +89,41 @@ def detect_signals(
 ) -> list[DetectedSignal]:
     """Orquestra deteccao de todos os tipos de sinal para um snapshot."""
     previous = _get_previous_snapshot(db, snapshot)
+    candidates = _run_detectors(db, snapshot, previous)
+    return _deduplicate_and_persist(db, snapshot, candidates)
+
+
+def _run_detectors(
+    db: Session, snapshot: FlightSnapshot, previous: FlightSnapshot | None
+) -> list[DetectedSignal]:
+    """Executa todos os detectores com isolamento de erros por detector."""
+    detectors = [
+        lambda: _check_balde_fechando(snapshot, previous),
+        lambda: _check_balde_reaberto(snapshot, previous),
+        lambda: _check_preco_abaixo_historico(db, snapshot),
+        lambda: _check_janela_otima(snapshot),
+    ]
 
     candidates: list[DetectedSignal] = []
+    for detector in detectors:
+        try:
+            result = detector()
+            if result is not None:
+                candidates.append(result)
+        except Exception as e:
+            logger.error(f"Detector failed: {e}")
+    return candidates
 
-    balde_fechando = _check_balde_fechando(snapshot, previous)
-    if balde_fechando:
-        candidates.append(balde_fechando)
 
-    balde_reaberto = _check_balde_reaberto(snapshot, previous)
-    if balde_reaberto:
-        candidates.append(balde_reaberto)
-
-    preco = _check_preco_abaixo_historico(db, snapshot)
-    if preco:
-        candidates.append(preco)
-
-    janela = _check_janela_otima(snapshot)
-    if janela:
-        candidates.append(janela)
-
-    new_signals: list[DetectedSignal] = []
+def _deduplicate_and_persist(
+    db: Session,
+    snapshot: FlightSnapshot,
+    candidates: list[DetectedSignal],
+) -> list[DetectedSignal]:
+    """Filtra duplicatas e persiste sinais novos."""
     reference_time = snapshot.collected_at or datetime.utcnow()
+    new_signals: list[DetectedSignal] = []
+
     for signal in candidates:
         if not _is_duplicate(db, signal, reference_time):
             db.add(signal)
@@ -149,6 +192,7 @@ def _is_domestic(origin: str, destination: str) -> bool:
 def _check_balde_fechando(
     current: FlightSnapshot, previous: FlightSnapshot | None
 ) -> DetectedSignal | None:
+    """Detecta classe K ou Q caindo de >=3 para <=1 entre snapshots."""
     if previous is None:
         return None
 
@@ -160,17 +204,11 @@ def _check_balde_fechando(
         curr_seats = curr_classes.get(class_code, 0)
 
         if prev_seats >= CLOSING_THRESHOLD_FROM and curr_seats <= CLOSING_THRESHOLD_TO:
-            return DetectedSignal(
-                route_group_id=current.route_group_id,
-                flight_snapshot_id=current.id,
-                origin=current.origin,
-                destination=current.destination,
-                departure_date=current.departure_date,
-                return_date=current.return_date,
+            return _create_signal(
+                current,
                 signal_type="BALDE_FECHANDO",
                 urgency="ALTA",
                 details=f"Classe {class_code}: {prev_seats} -> {curr_seats} assentos",
-                price_at_detection=current.price,
             )
     return None
 
@@ -178,30 +216,25 @@ def _check_balde_fechando(
 def _check_balde_reaberto(
     current: FlightSnapshot, previous: FlightSnapshot | None
 ) -> DetectedSignal | None:
+    """Detecta classes que estavam em 0 e voltaram a ter assentos."""
     if previous is None:
         return None
 
     prev_classes = _booking_classes_to_dict(previous.booking_classes)
     curr_classes = _booking_classes_to_dict(current.booking_classes)
 
-    reopened = []
-    for class_code, curr_seats in curr_classes.items():
-        prev_seats = prev_classes.get(class_code, 0)
-        if prev_seats == 0 and curr_seats > 0:
-            reopened.append(f"{class_code}: 0 -> {curr_seats}")
+    reopened = [
+        f"{code}: 0 -> {seats}"
+        for code, seats in curr_classes.items()
+        if prev_classes.get(code, 0) == 0 and seats > 0
+    ]
 
     if reopened:
-        return DetectedSignal(
-            route_group_id=current.route_group_id,
-            flight_snapshot_id=current.id,
-            origin=current.origin,
-            destination=current.destination,
-            departure_date=current.departure_date,
-            return_date=current.return_date,
+        return _create_signal(
+            current,
             signal_type="BALDE_REABERTO",
             urgency="MAXIMA",
             details=f"Classes reabriram: {', '.join(reopened)}",
-            price_at_detection=current.price,
         )
     return None
 
@@ -209,6 +242,7 @@ def _check_balde_reaberto(
 def _check_preco_abaixo_historico(
     db: Session, snapshot: FlightSnapshot
 ) -> DetectedSignal | None:
+    """Detecta preco classificado como LOW e abaixo da media historica."""
     if snapshot.price_classification != "LOW":
         return None
 
@@ -218,20 +252,14 @@ def _check_preco_abaixo_historico(
         return None
 
     if avg_price is not None and snapshot.price < avg_price:
-        return DetectedSignal(
-            route_group_id=snapshot.route_group_id,
-            flight_snapshot_id=snapshot.id,
-            origin=snapshot.origin,
-            destination=snapshot.destination,
-            departure_date=snapshot.departure_date,
-            return_date=snapshot.return_date,
+        return _create_signal(
+            snapshot,
             signal_type="PRECO_ABAIXO_HISTORICO",
             urgency="MEDIA",
             details=(
                 f"Preco {snapshot.price:.2f} abaixo da media "
                 f"{avg_price:.2f} dos ultimos {count} snapshots"
             ),
-            price_at_detection=snapshot.price,
         )
     return None
 
@@ -239,6 +267,7 @@ def _check_preco_abaixo_historico(
 def _check_janela_otima(
     snapshot: FlightSnapshot,
 ) -> DetectedSignal | None:
+    """Detecta se dias ate o voo estao na faixa ideal para o tipo de rota."""
     today = date.today()
     days_until = (snapshot.departure_date - today).days
 
@@ -250,20 +279,14 @@ def _check_janela_otima(
 
     if window[0] <= days_until <= window[1]:
         route_type = "domestico" if domestic else "internacional"
-        return DetectedSignal(
-            route_group_id=snapshot.route_group_id,
-            flight_snapshot_id=snapshot.id,
-            origin=snapshot.origin,
-            destination=snapshot.destination,
-            departure_date=snapshot.departure_date,
-            return_date=snapshot.return_date,
+        return _create_signal(
+            snapshot,
             signal_type="JANELA_OTIMA",
             urgency="MEDIA",
             details=(
                 f"Voo {route_type} em {days_until} dias "
                 f"(janela ideal: {window[0]}-{window[1]} dias)"
             ),
-            price_at_detection=snapshot.price,
         )
     return None
 
