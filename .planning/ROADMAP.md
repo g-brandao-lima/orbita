@@ -78,8 +78,12 @@ Plans:
   1. Quando sinal é detectado, email chega no Gmail contendo grupo, rota, preço atual, contexto histórico e nível de urgência
   2. Email contém link que ao ser clicado pausa alertas daquele grupo por 24 horas
   3. Dashboard web mostra status de todos os grupos ativos e melhor preço atual (substitui o /status do bot)
-**Plans**: TBD
-**UI hint**: yes
+**Plans**: 3 plans
+
+Plans:
+- [ ] 04-01-PLAN.md - TDD alert_service: composicao email, envio SMTP, token HMAC, silenciamento (ALRT-01/02)
+- [ ] 04-02-PLAN.md - TDD silence endpoint GET /api/v1/alerts/silence/{token} + registro router (ALRT-02)
+- [ ] 04-03-PLAN.md - Integracao polling_service + checkpoint humano de verificacao (ALRT-01/02/03)
 
 ### Phase 5: Web Dashboard
 **Goal**: Usuário pode visualizar o estado atual de todos os grupos, histórico de preços e gerenciar grupos pelo navegador
@@ -104,5 +108,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Foundation | 2/3 (checkpoint) | Complete    | 2026-03-25 |
 | 2. Data Collection | 3/3 | Complete    | 2026-03-25 |
 | 3. Signal Detection | 3/3 | Complete    | 2026-03-25 |
-| 4. Gmail Alerts | 0/TBD | Not started | - |
+| 4. Gmail Alerts | 0/3 | Planned | - |
 | 5. Web Dashboard | 0/TBD | Not started | - |
