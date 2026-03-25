@@ -17,6 +17,9 @@ class RouteGroup(Base):
     travel_end: Mapped[datetime.date] = mapped_column(Date)
     target_price: Mapped[float | None] = mapped_column(Float, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    silenced_until: Mapped[datetime.datetime | None] = mapped_column(
+        DateTime, nullable=True, default=None
+    )
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime, server_default=func.now()
     )

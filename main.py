@@ -20,8 +20,10 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Flight Monitor", lifespan=lifespan)
 
 from app.routes.route_groups import router as route_groups_router
+from app.routes.alerts import router as alerts_router
 
 app.include_router(route_groups_router, prefix="/api/v1")
+app.include_router(alerts_router, prefix="/api/v1")
 
 
 @app.get("/")
