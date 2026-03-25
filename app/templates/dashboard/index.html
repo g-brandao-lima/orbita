@@ -2,49 +2,237 @@
 
 {% block title %}Grupos de Rota - Flight Monitor{% endblock %}
 
+{% block head %}
+<style>
+    #summary-bar {
+        background: #1e293b;
+        color: white;
+        padding: 1.5rem 2rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        display: flex;
+        justify-content: space-around;
+        gap: 2rem;
+    }
+    .summary-metric .label {
+        font-size: 0.8rem;
+        color: #94a3b8;
+        margin-bottom: 0.25rem;
+    }
+    .summary-metric .value {
+        font-size: 1.25rem;
+        font-weight: 700;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+    .empty-state svg {
+        margin-bottom: 1.5rem;
+    }
+    .empty-state p {
+        color: #64748b;
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+    .empty-state a.btn-create {
+        background: #059669;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 600;
+        display: inline-block;
+    }
+    .empty-state a.btn-create:hover {
+        background: #047857;
+    }
+    .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 1.5rem;
+    }
+    .group-card {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+        border-left: 4px solid #94a3b8;
+    }
+    .group-card.border-low { border-left-color: #059669; }
+    .group-card.border-medium { border-left-color: #d97706; }
+    .group-card.border-high { border-left-color: #dc2626; }
+    .group-card.border-none { border-left-color: #94a3b8; }
+    .group-card.inactive { opacity: 0.6; }
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+    .card-header .name-area {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .card-header .name-area a {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #1e293b;
+        text-decoration: none;
+    }
+    .card-header .name-area a:hover {
+        text-decoration: underline;
+    }
+    .badge {
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: white;
+    }
+    .badge-inactive { background-color: #cbd5e1; color: #475569; }
+    .badge-maxima { background-color: #ef4444; }
+    .badge-alta { background-color: #f97316; }
+    .badge-media { background-color: #eab308; }
+    .badge-sem { background-color: #94a3b8; }
+    .card-price {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    .price-low { color: #059669; }
+    .price-medium { color: #d97706; }
+    .price-high { color: #dc2626; }
+    .price-none { color: #94a3b8; }
+    .card-route {
+        color: #64748b;
+        font-size: 0.875rem;
+        margin-bottom: 0.25rem;
+    }
+    .card-dates {
+        color: #94a3b8;
+        font-size: 0.8rem;
+        margin-bottom: 0.75rem;
+    }
+    .card-footer {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+        margin-top: 0.5rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid #f1f5f9;
+    }
+    .card-footer a {
+        color: #3b82f6;
+        font-size: 0.875rem;
+        text-decoration: none;
+    }
+    .card-footer a:hover {
+        text-decoration: underline;
+    }
+    .card-footer button {
+        background: none;
+        border: 1px solid #cbd5e1;
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
+        font-size: 0.875rem;
+        cursor: pointer;
+        color: #475569;
+    }
+    .card-footer button:hover {
+        background: #f8fafc;
+    }
+    .awaiting-text {
+        color: #94a3b8;
+        font-style: italic;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    @media (max-width: 768px) {
+        #summary-bar {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+        }
+        .cards-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <h1 style="margin-bottom: 1.5rem;">Grupos de Rota</h1>
 
-<div class="card-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem;">
+{% if not groups %}
+<div class="empty-state">
+    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.3c.4-.2.6-.6.5-1.1z"/>
+    </svg>
+    <p>Nenhum grupo cadastrado. Comece monitorando sua primeira rota!</p>
+    <a href="/groups/create" class="btn-create">Criar primeiro grupo</a>
+</div>
+{% else %}
+
+<div id="summary-bar">
+    <div class="summary-metric">
+        <div class="label">Grupos ativos</div>
+        <div class="value">{{ summary.active_count }}</div>
+    </div>
+    <div class="summary-metric">
+        <div class="label">Menor preco</div>
+        <div class="value">{{ format_price_brl(summary.cheapest_price) if summary.cheapest_price else "Sem dados" }}</div>
+    </div>
+    <div class="summary-metric">
+        <div class="label">Proximo polling</div>
+        <div class="value">{{ summary.next_polling }}</div>
+    </div>
+</div>
+
+<div class="cards-grid">
     {% for item in groups %}
-    <div style="background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);{% if not item.group.is_active %} opacity: 0.6;{% endif %}">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <a href="/groups/{{ item.group.id }}" style="font-size: 1.25rem; font-weight: 600; color: #1e293b; text-decoration: none;">
-                    {{ item.group.name }}
-                </a>
+    {% set classification = item.cheapest_snapshot.price_classification if item.cheapest_snapshot and item.cheapest_snapshot.price_classification else None %}
+    <div class="group-card {% if classification == 'LOW' %}border-low{% elif classification == 'MEDIUM' %}border-medium{% elif classification == 'HIGH' %}border-high{% else %}border-none{% endif %}{% if not item.group.is_active %} inactive{% endif %}">
+        <div class="card-header">
+            <div class="name-area">
+                <a href="/groups/{{ item.group.id }}">{{ item.group.name }}</a>
                 {% if not item.group.is_active %}
-                    <span style="background-color: #cbd5e1; color: #475569; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">Inativo</span>
+                <span class="badge badge-inactive">Inativo</span>
                 {% endif %}
             </div>
             {% if item.signal %}
                 {% if item.signal.urgency == "MAXIMA" %}
-                    <span style="background-color: #ef4444; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">MAXIMA</span>
+                <span class="badge badge-maxima">MAXIMA</span>
                 {% elif item.signal.urgency == "ALTA" %}
-                    <span style="background-color: #f97316; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">ALTA</span>
+                <span class="badge badge-alta">ALTA</span>
                 {% elif item.signal.urgency == "MEDIA" %}
-                    <span style="background-color: #eab308; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">MEDIA</span>
+                <span class="badge badge-media">MEDIA</span>
                 {% endif %}
             {% else %}
-                <span style="background-color: #94a3b8; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Sem sinal</span>
+            <span class="badge badge-sem">Sem sinal</span>
             {% endif %}
         </div>
 
         {% if item.cheapest_snapshot %}
-            <p style="font-size: 1.5rem; font-weight: 700; color: #059669; margin-bottom: 0.5rem;">
-                {{ format_price_brl(item.cheapest_snapshot.price) }}
-            </p>
-            <p style="color: #64748b; font-size: 0.875rem;">
-                {{ item.cheapest_snapshot.origin }} -> {{ item.cheapest_snapshot.destination }}
-            </p>
+        <div class="card-price {% if classification == 'LOW' %}price-low{% elif classification == 'MEDIUM' %}price-medium{% elif classification == 'HIGH' %}price-high{% else %}price-none{% endif %}">
+            {{ format_price_brl(item.cheapest_snapshot.price) }}
+        </div>
+        <div class="card-route">
+            {{ item.cheapest_snapshot.origin }} &rarr; {{ item.cheapest_snapshot.destination }}
+            {% if item.cheapest_snapshot.airline %}&middot; {{ item.cheapest_snapshot.airline }}{% endif %}
+        </div>
+        <div class="card-dates">
+            Ida: {{ format_date_br(item.cheapest_snapshot.departure_date) }} | Volta: {{ format_date_br(item.cheapest_snapshot.return_date) }}
+        </div>
         {% else %}
-            <p style="color: #94a3b8; font-style: italic;">Aguardando coleta</p>
+        <div class="awaiting-text">Aguardando coleta</div>
         {% endif %}
 
-        <div style="display: flex; gap: 0.75rem; margin-top: 1rem; align-items: center;">
-            <a href="/groups/{{ item.group.id }}/edit" style="color: #3b82f6; font-size: 0.875rem; text-decoration: none;">Editar</a>
+        <div class="card-footer">
+            <a href="/groups/{{ item.group.id }}/edit">Editar</a>
             <form method="POST" action="/groups/{{ item.group.id }}/toggle" style="margin: 0;">
-                <button type="submit" style="background: none; border: 1px solid #cbd5e1; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.875rem; cursor: pointer; color: #475569;">
+                <button type="submit">
                     {% if item.group.is_active %}Desativar{% else %}Ativar{% endif %}
                 </button>
             </form>
@@ -52,4 +240,5 @@
     </div>
     {% endfor %}
 </div>
+{% endif %}
 {% endblock %}
