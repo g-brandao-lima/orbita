@@ -57,9 +57,9 @@
 
 ### Email Consolidado
 
-- [ ] **EMAIL-01**: Sistema envia 1 email por grupo (nao por sinal) contendo: rota mais barata, preco, companhia, datas ida/volta, e resumo das demais rotas monitoradas
-- [ ] **EMAIL-02**: Email mostra as melhores datas para viajar dentro do periodo configurado
-- [ ] **EMAIL-03**: Datas no email usam formato brasileiro dd/mm/aaaa
+- [x] **EMAIL-01**: Sistema envia 1 email por grupo (nao por sinal) contendo: rota mais barata, preco, companhia, datas ida/volta, e resumo das demais rotas monitoradas
+- [x] **EMAIL-02**: Email mostra as melhores datas para viajar dentro do periodo configurado
+- [x] **EMAIL-03**: Datas no email usam formato brasileiro dd/mm/aaaa
 
 ### Dashboard UI
 
@@ -151,9 +151,9 @@
 | FIX-01 | Phase 6 | Complete |
 | UX-01 | Phase 6 | Complete |
 | UX-02 | Phase 6 | Complete |
-| EMAIL-01 | Phase 7 | Pending |
-| EMAIL-02 | Phase 7 | Pending |
-| EMAIL-03 | Phase 7 | Pending |
+| EMAIL-01 | Phase 7 | Complete |
+| EMAIL-02 | Phase 7 | Complete |
+| EMAIL-03 | Phase 7 | Complete |
 | UI-01 | Phase 8 | Pending |
 | UI-02 | Phase 8 | Pending |
 | UI-03 | Phase 8 | Pending |
