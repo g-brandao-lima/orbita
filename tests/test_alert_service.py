@@ -82,9 +82,19 @@ def test_compose_email_body_contains_group_name():
     # Act
     msg = compose_alert_email(signal, group)
 
-    # Assert
-    body = msg.as_string()
+    # Assert — decodifica partes base64 antes de inspecionar
+    body = _decode_msg_body(msg)
     assert "GRU-JFK Janeiro" in body
+
+
+def _decode_msg_body(msg) -> str:
+    """Decodifica todas as partes do MIMEMultipart em texto plano."""
+    parts = []
+    for part in msg.walk():
+        payload = part.get_payload(decode=True)
+        if payload:
+            parts.append(payload.decode("utf-8", errors="replace"))
+    return "\n".join(parts)
 
 
 def test_compose_email_body_contains_route_info():
@@ -101,13 +111,13 @@ def test_compose_email_body_contains_route_info():
     # Act
     msg = compose_alert_email(signal, group)
 
-    # Assert
-    body = msg.as_string()
+    # Assert — decodifica partes base64 antes de inspecionar
+    body = _decode_msg_body(msg)
     assert "GRU" in body
     assert "JFK" in body
     assert "2026-01-15" in body
     assert "2026-01-22" in body
-    assert "3500" in body
+    assert "3" in body and "500" in body  # R$ 3,500.00 formato BRL
 
 
 def test_compose_email_body_contains_silence_link():
@@ -118,8 +128,8 @@ def test_compose_email_body_contains_silence_link():
     # Act
     msg = compose_alert_email(signal, group)
 
-    # Assert
-    body = msg.as_string()
+    # Assert — decodifica partes base64 antes de inspecionar
+    body = _decode_msg_body(msg)
     assert "/api/v1/alerts/silence/" in body
 
 
