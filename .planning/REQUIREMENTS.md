@@ -84,12 +84,12 @@
 
 ### Visual Polish
 
-- [ ] **VIS-01**: Dashboard aplica paleta de cores do UI-SPEC: sky blue #0ea5e9 accent, verde #22c55e (LOW), amarelo #f59e0b (MEDIUM), vermelho #ef4444 (HIGH), fundo #f8fafc
-- [ ] **VIS-02**: Cards de grupo usam preco em fonte monospace 28px bold como elemento focal, com borda esquerda colorida por classificacao
-- [ ] **VIS-03**: Cards tem hover com sombra sutil (transicao 0.2s), separador no footer, e grupos inativos com opacidade 0.6
-- [ ] **VIS-04**: Summary bar usa fundo #1e293b com metricas em 20px bold e labels em 13px
-- [ ] **VIS-05**: Estado vazio tem SVG de aviao inline, texto em 14px, e botao CTA verde com min-height 40px
-- [ ] **VIS-06**: Tipografia usa escala de 4 tamanhos (13/14/20/28px) e 2 pesos (400/700) conforme UI-SPEC
+- [x] **VIS-01**: Dashboard aplica paleta de cores do UI-SPEC: sky blue #0ea5e9 accent, verde #22c55e (LOW), amarelo #f59e0b (MEDIUM), vermelho #ef4444 (HIGH), fundo #f8fafc
+- [x] **VIS-02**: Cards de grupo usam preco em fonte monospace 28px bold como elemento focal, com borda esquerda colorida por classificacao
+- [x] **VIS-03**: Cards tem hover com sombra sutil (transicao 0.2s), separador no footer, e grupos inativos com opacidade 0.6
+- [x] **VIS-04**: Summary bar usa fundo #1e293b com metricas em 20px bold e labels em 13px
+- [x] **VIS-05**: Estado vazio tem SVG de aviao inline, texto em 14px, e botao CTA verde com min-height 40px
+- [x] **VIS-06**: Tipografia usa escala de 4 tamanhos (13/14/20/28px) e 2 pesos (400/700) conforme UI-SPEC
 
 ---
 
@@ -172,12 +172,12 @@
 | UI-03 | Phase 8 | Complete |
 | UI-04 | Phase 8 | Complete |
 | UI-05 | Phase 8 | Complete |
-| VIS-01 | Phase 9 | Pending |
-| VIS-02 | Phase 9 | Pending |
-| VIS-03 | Phase 9 | Pending |
-| VIS-04 | Phase 9 | Pending |
-| VIS-05 | Phase 9 | Pending |
-| VIS-06 | Phase 9 | Pending |
+| VIS-01 | Phase 9 | Complete |
+| VIS-02 | Phase 9 | Complete |
+| VIS-03 | Phase 9 | Complete |
+| VIS-04 | Phase 9 | Complete |
+| VIS-05 | Phase 9 | Complete |
+| VIS-06 | Phase 9 | Complete |
 
 **Coverage:**
 - v1 requirements: 28 total, 28 mapped, 0 unmapped
