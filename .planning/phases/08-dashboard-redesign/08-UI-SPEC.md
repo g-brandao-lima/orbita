@@ -1,7 +1,8 @@
 ---
 phase: 8
 slug: dashboard-redesign
-status: draft
+status: approved
+reviewed_at: 2026-03-26
 shadcn_initialized: false
 preset: none
 created: 2026-03-26
@@ -39,7 +40,9 @@ Declared values (must be multiples of 4):
 | 2xl | 48px | Empty state vertical padding |
 | 3xl | 64px | Page-level top/bottom spacing (empty state only) |
 
-Exceptions: Touch targets for buttons minimum 44px height on mobile.
+Exceptions:
+- Touch targets for buttons minimum 44px height on mobile.
+- Buttons use padding 8px 24px with min-height: 40px for click area target on desktop.
 
 ---
 
@@ -56,8 +59,8 @@ Notes:
 - Price is the most important element on each card. It uses monospace font at 28px bold to create visual hierarchy and ensure digit alignment across cards.
 - Summary bar metric values: 20px (1.25rem) weight 700.
 - Summary bar metric labels: 13px (0.8rem) weight 400, color #94a3b8.
-- Page title (h1): 24px (1.5rem) weight 700, color #1e293b.
-- Badge text: 11px (0.7rem) weight 600, uppercase.
+- Page title (h1): 20px (1.25rem) weight 700, color #1e293b (uses Heading role).
+- Badge text: 13px (0.8rem) weight 700, uppercase, letter-spacing 0.05em (uses Label size).
 
 ---
 
@@ -134,7 +137,7 @@ Accent reserved for: Price text (color-coded by classification), card border-lef
 ### Awaiting Data State (no snapshot)
 
 When a card has no collected data:
-- Price area shows "Aguardando coleta" in italic, 16px, color #94a3b8
+- Price area shows "Aguardando coleta" in italic, 14px (Body), color #94a3b8
 - Border-left: 4px solid #94a3b8
 - No route or date lines displayed
 
@@ -196,12 +199,12 @@ When a card has no collected data:
 | Icon stroke | #94a3b8, stroke-width 1.5 |
 | Icon margin bottom | 24px (1.5rem) |
 | Text color | #64748b |
-| Text size | 18px (1.1rem) |
+| Text size | 14px (0.875rem) |
 | Text margin bottom | 32px (2rem) |
 | Button background | #22c55e |
 | Button hover background | #16a34a |
-| Button text | white, 16px, weight 600 |
-| Button padding | 12px 24px (0.75rem 1.5rem) |
+| Button text | white, 14px (Body), weight 700 |
+| Button padding | 8px 24px (0.5rem 1.5rem); min-height: 40px |
 | Button border radius | 6px |
 
 ---
