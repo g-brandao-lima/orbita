@@ -3,7 +3,22 @@
 {% block title %}Editar Grupo: {{ group.name }} - Flight Monitor{% endblock %}
 
 {% block content %}
-<h1 style="margin-bottom: 1.5rem;">Editar Grupo: {{ group.name }}</h1>
+<style>
+    .form-label { display: block; font-weight: 600; margin-bottom: 0.15rem; }
+    .form-label .required { color: #dc2626; margin-left: 2px; }
+    .form-hint { display: block; font-size: 0.82rem; color: #64748b; margin-bottom: 0.4rem; }
+    .form-input { width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px; }
+    .form-group { margin-bottom: 1.25rem; }
+    .airport-search { position: relative; }
+    .airport-results { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1; border-top: none; border-radius: 0 0 4px 4px; max-height: 200px; overflow-y: auto; z-index: 10; display: none; }
+    .airport-results div { padding: 0.5rem; cursor: pointer; font-size: 0.9rem; }
+    .airport-results div:hover { background: #f0f4ff; }
+    .airport-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.4rem; }
+    .airport-tag { background: #e0e7ff; color: #3730a3; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.85rem; display: flex; align-items: center; gap: 0.3rem; }
+    .airport-tag button { background: none; border: none; color: #6366f1; cursor: pointer; font-size: 1rem; line-height: 1; padding: 0; }
+</style>
+
+<h1 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem;">Editar Grupo: {{ group.name }}</h1>
 
 {% if error %}
 <div style="background: #fef2f2; border: 1px solid #fca5a5; color: #dc2626; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
@@ -12,63 +27,156 @@
 {% endif %}
 
 <div style="background: white; border-radius: 8px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); max-width: 600px;">
-    <form method="POST" action="/groups/{{ group.id }}/edit">
-        <div style="margin-bottom: 1rem;">
-            <label for="name" style="display: block; font-weight: 600; margin-bottom: 0.25rem;">Nome do Grupo</label>
+    <form method="POST" action="/groups/{{ group.id }}/edit" novalidate>
+        <div class="form-group">
+            <label for="name" class="form-label">Nome do Grupo <span class="required">*</span></label>
+            <span class="form-hint">Um apelido para identificar esta busca</span>
             <input type="text" id="name" name="name" required
                    value="{{ form_data.name if form_data else group.name }}"
-                   style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px;">
+                   class="form-input">
         </div>
 
-        <div style="margin-bottom: 1rem;">
-            <label for="origins" style="display: block; font-weight: 600; margin-bottom: 0.25rem;">Origens (codigos IATA separados por virgula)</label>
-            <input type="text" id="origins" name="origins" required placeholder="GRU,CGH"
-                   value="{{ form_data.origins if form_data else group.origins | join(',') }}"
-                   style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px; text-transform: uppercase;">
+        <div class="form-group">
+            <label class="form-label">Aeroportos de origem <span class="required">*</span></label>
+            <span class="form-hint">Digite o nome da cidade ou codigo IATA e selecione</span>
+            <input type="hidden" id="origins" name="origins"
+                   value="{{ form_data.origins if form_data else group.origins | join(',') }}">
+            <div class="airport-search">
+                <input type="text" id="origins-search" placeholder="Buscar aeroporto..."
+                       class="form-input" autocomplete="off">
+                <div class="airport-results" id="origins-results"></div>
+            </div>
+            <div class="airport-tags" id="origins-tags"></div>
         </div>
 
-        <div style="margin-bottom: 1rem;">
-            <label for="destinations" style="display: block; font-weight: 600; margin-bottom: 0.25rem;">Destinos (codigos IATA separados por virgula)</label>
-            <input type="text" id="destinations" name="destinations" required placeholder="LIS,OPO"
-                   value="{{ form_data.destinations if form_data else group.destinations | join(',') }}"
-                   style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px; text-transform: uppercase;">
+        <div class="form-group">
+            <label class="form-label">Aeroportos de destino <span class="required">*</span></label>
+            <span class="form-hint">Digite o nome da cidade ou codigo IATA e selecione</span>
+            <input type="hidden" id="destinations" name="destinations"
+                   value="{{ form_data.destinations if form_data else group.destinations | join(',') }}">
+            <div class="airport-search">
+                <input type="text" id="destinations-search" placeholder="Buscar aeroporto..."
+                       class="form-input" autocomplete="off">
+                <div class="airport-results" id="destinations-results"></div>
+            </div>
+            <div class="airport-tags" id="destinations-tags"></div>
         </div>
 
-        <div style="margin-bottom: 1rem;">
-            <label for="duration_days" style="display: block; font-weight: 600; margin-bottom: 0.25rem;">Duracao da viagem (dias)</label>
+        <div class="form-group">
+            <label for="duration_days" class="form-label">Duracao da viagem (dias) <span class="required">*</span></label>
+            <span class="form-hint">Quantos dias voce fica no destino</span>
             <input type="number" id="duration_days" name="duration_days" required min="1"
                    value="{{ form_data.duration_days if form_data else group.duration_days }}"
-                   style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px;">
+                   class="form-input">
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
             <div>
-                <label for="travel_start" style="display: block; font-weight: 600; margin-bottom: 0.25rem;">Inicio do periodo</label>
+                <label for="travel_start" class="form-label">Inicio do periodo <span class="required">*</span></label>
+                <span class="form-hint">A partir de quando voce toparia viajar</span>
                 <input type="date" id="travel_start" name="travel_start" required
                        value="{{ form_data.travel_start if form_data else group.travel_start }}"
-                       style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px;">
+                       class="form-input">
             </div>
             <div>
-                <label for="travel_end" style="display: block; font-weight: 600; margin-bottom: 0.25rem;">Fim do periodo</label>
+                <label for="travel_end" class="form-label">Fim do periodo <span class="required">*</span></label>
+                <span class="form-hint">Ate quando voce toparia viajar</span>
                 <input type="date" id="travel_end" name="travel_end" required
                        value="{{ form_data.travel_end if form_data else group.travel_end }}"
-                       style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px;">
+                       class="form-input">
             </div>
         </div>
 
-        <div style="margin-bottom: 1.5rem;">
-            <label for="target_price" style="display: block; font-weight: 600; margin-bottom: 0.25rem;">Preco-alvo (R$, opcional)</label>
+        <div class="form-group">
+            <label for="target_price" class="form-label">Preco-alvo (R$)</label>
+            <span class="form-hint">Opcional. Quanto voce toparia pagar por esta passagem</span>
             <input type="number" id="target_price" name="target_price" step="0.01"
                    value="{{ form_data.target_price if form_data else (group.target_price if group.target_price else '') }}"
-                   style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px;">
+                   class="form-input">
         </div>
 
         <div style="display: flex; gap: 1rem; align-items: center;">
-            <button type="submit" style="background: #059669; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 4px; font-weight: 600; cursor: pointer;">
+            <button type="submit" style="background: #22c55e; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 4px; font-weight: 700; cursor: pointer; min-height: 40px;">
                 Salvar Alteracoes
             </button>
             <a href="/" style="color: #64748b; text-decoration: none;">Cancelar</a>
         </div>
     </form>
 </div>
+
+<script>
+function setupAirportSearch(searchId, resultsId, tagsId, hiddenId) {
+    const searchInput = document.getElementById(searchId);
+    const resultsDiv = document.getElementById(resultsId);
+    const tagsDiv = document.getElementById(tagsId);
+    const hiddenInput = document.getElementById(hiddenId);
+    let selected = [];
+    let debounceTimer;
+
+    const initial = hiddenInput.value.trim();
+    if (initial) {
+        initial.split(',').forEach(code => {
+            code = code.trim().toUpperCase();
+            if (code) selected.push(code);
+        });
+        renderTags();
+    }
+
+    function renderTags() {
+        tagsDiv.innerHTML = '';
+        selected.forEach(code => {
+            const tag = document.createElement('span');
+            tag.className = 'airport-tag';
+            tag.innerHTML = code + ' <button type="button">&times;</button>';
+            tag.querySelector('button').addEventListener('click', () => {
+                selected = selected.filter(c => c !== code);
+                hiddenInput.value = selected.join(',');
+                renderTags();
+            });
+            tagsDiv.appendChild(tag);
+        });
+        hiddenInput.value = selected.join(',');
+    }
+
+    searchInput.addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        const q = this.value.trim();
+        if (q.length < 2) { resultsDiv.style.display = 'none'; return; }
+
+        debounceTimer = setTimeout(() => {
+            fetch('/api/airports/search?q=' + encodeURIComponent(q))
+                .then(r => r.json())
+                .then(airports => {
+                    resultsDiv.innerHTML = '';
+                    if (airports.length === 0) {
+                        resultsDiv.innerHTML = '<div style="color:#94a3b8">Nenhum aeroporto encontrado</div>';
+                    }
+                    airports.forEach(a => {
+                        if (selected.includes(a.code)) return;
+                        const div = document.createElement('div');
+                        div.textContent = a.code + ' — ' + a.city + ', ' + a.country + ' (' + a.name + ')';
+                        div.addEventListener('click', () => {
+                            selected.push(a.code);
+                            renderTags();
+                            searchInput.value = '';
+                            resultsDiv.style.display = 'none';
+                        });
+                        resultsDiv.appendChild(div);
+                    });
+                    resultsDiv.style.display = 'block';
+                });
+        }, 200);
+    });
+
+    searchInput.addEventListener('blur', () => {
+        setTimeout(() => { resultsDiv.style.display = 'none'; }, 200);
+    });
+    searchInput.addEventListener('focus', () => {
+        if (resultsDiv.children.length > 0) resultsDiv.style.display = 'block';
+    });
+}
+
+setupAirportSearch('origins-search', 'origins-results', 'origins-tags', 'origins');
+setupAirportSearch('destinations-search', 'destinations-results', 'destinations-tags', 'destinations');
+</script>
 {% endblock %}
