@@ -6,7 +6,7 @@
     <title>{% block title %}Flight Monitor{% endblock %}</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: system-ui, -apple-system, sans-serif; background: #f1f5f9; color: #1e293b; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: #f8fafc; color: #1e293b; }
         nav { background: #1e293b; padding: 1rem 2rem; display: flex; gap: 1.5rem; align-items: center; }
         nav a { color: white; text-decoration: none; font-weight: 500; }
         nav a:hover { text-decoration: underline; }
@@ -30,7 +30,7 @@
     </nav>
     <div class="container">
         {% if flash_message %}
-        <div class="flash-message" style="background: #059669; color: white; padding: 0.75rem 1.5rem; border-radius: 6px; margin-bottom: 1rem; font-weight: 500;">
+        <div class="flash-message" style="background: #22c55e; color: white; padding: 0.75rem 1.5rem; border-radius: 6px; margin-bottom: 1rem; font-weight: 500;">
             {{ flash_message }}
         </div>
         {% endif %}
