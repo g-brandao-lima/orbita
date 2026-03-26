@@ -80,6 +80,19 @@
 
 ---
 
+## v1.2 Requirements
+
+### Visual Polish
+
+- [ ] **VIS-01**: Dashboard aplica paleta de cores do UI-SPEC: sky blue #0ea5e9 accent, verde #22c55e (LOW), amarelo #f59e0b (MEDIUM), vermelho #ef4444 (HIGH), fundo #f8fafc
+- [ ] **VIS-02**: Cards de grupo usam preco em fonte monospace 28px bold como elemento focal, com borda esquerda colorida por classificacao
+- [ ] **VIS-03**: Cards tem hover com sombra sutil (transicao 0.2s), separador no footer, e grupos inativos com opacidade 0.6
+- [ ] **VIS-04**: Summary bar usa fundo #1e293b com metricas em 20px bold e labels em 13px
+- [ ] **VIS-05**: Estado vazio tem SVG de aviao inline, texto em 14px, e botao CTA verde com min-height 40px
+- [ ] **VIS-06**: Tipografia usa escala de 4 tamanhos (13/14/20/28px) e 2 pesos (400/700) conforme UI-SPEC
+
+---
+
 ## v2 Requirements
 
 ### Extended Sources
