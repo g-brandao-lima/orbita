@@ -173,8 +173,12 @@ Plans:
   3. Cards respondem a hover com transicao de sombra em 0.2s, footer tem separador visivel, e grupos inativos aparecem com opacidade reduzida (0.6)
   4. Summary bar tem fundo escuro (#1e293b) com metricas em 20px bold e labels em 13px, visualmente distinta do restante da pagina
   5. Estado vazio exibe icone SVG de aviao, texto em 14px e botao CTA verde com min-height 40px, convidando o usuario a criar o primeiro grupo
-**Plans**: TBD
+**Plans**: 2 plans
 **UI hint**: yes
+
+Plans:
+- [ ] 09-01-PLAN.md - Paleta global (base.html) + cards, summary bar, estado vazio e tipografia (index.html) (VIS-01/02/03/04/05/06)
+- [ ] 09-02-PLAN.md - Paginas secundarias (detail, create, edit) + checkpoint visual (VIS-01/06)
 
 ## Progress
 
@@ -190,4 +194,4 @@ Plans:
 | 6. Quality & Feedback | v1.1 | 2/2 | Complete | 2026-03-26 |
 | 7. Consolidated Email | v1.1 | 2/2 | Complete | 2026-03-26 |
 | 8. Dashboard Redesign | v1.1 | 2/2 | Complete | 2026-03-26 |
-| 9. Visual Polish | v1.2 | 0/0 | Not started | - |
+| 9. Visual Polish | v1.2 | 0/2 | In progress | - |
