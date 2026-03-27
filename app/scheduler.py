@@ -11,16 +11,16 @@ scheduler = BackgroundScheduler()
 
 
 def init_scheduler():
-    """Inicializa o scheduler com job de polling a cada 6 horas."""
+    """Inicializa o scheduler com job de polling a cada 24 horas."""
     scheduler.add_job(
         run_polling_cycle,
-        trigger=IntervalTrigger(hours=6),
+        trigger=IntervalTrigger(hours=24),
         id="polling_cycle",
-        name="Amadeus polling cycle",
+        name="SerpAPI polling cycle",
         replace_existing=True,
     )
     scheduler.start()
-    logger.info("Scheduler started with 6-hour polling interval")
+    logger.info("Scheduler started with 24-hour polling interval")
 
 
 def shutdown_scheduler():

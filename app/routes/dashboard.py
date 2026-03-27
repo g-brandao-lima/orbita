@@ -15,9 +15,11 @@ from app.models import RouteGroup
 from app.services.dashboard_service import (
     get_groups_with_summary,
     get_dashboard_summary,
+    get_recent_activity,
     get_price_history,
     format_price_brl,
     format_date_br,
+    booking_urls,
 )
 from app.services.airport_service import is_valid_code, get_all_airports, search_airports
 
@@ -96,6 +98,7 @@ FLASH_MESSAGES = {
 def dashboard_index(request: Request, msg: str | None = None, db: Session = Depends(get_db)):
     groups = get_groups_with_summary(db)
     summary = get_dashboard_summary(db)
+    activity = get_recent_activity(db)
     flash_message = FLASH_MESSAGES.get(msg) if msg else None
     return templates.TemplateResponse(
         request=request,
@@ -103,8 +106,10 @@ def dashboard_index(request: Request, msg: str | None = None, db: Session = Depe
         context={
             "groups": groups,
             "summary": summary,
+            "activity": activity,
             "format_price_brl": format_price_brl,
             "format_date_br": format_date_br,
+            "booking_urls": booking_urls,
             "flash_message": flash_message,
         },
     )
@@ -138,6 +143,9 @@ def create_group_form(
     duration_days: int = Form(1),
     travel_start: datetime.date = Form(...),
     travel_end: datetime.date = Form(...),
+    mode: str = Form("normal"),
+    passengers: int = Form(1),
+    max_stops: str = Form(""),
     target_price: str = Form(""),
     db: Session = Depends(get_db),
 ):
@@ -158,6 +166,9 @@ def create_group_form(
             "duration_days": duration_days,
             "travel_start": travel_start,
             "travel_end": travel_end,
+            "mode": mode,
+            "passengers": passengers,
+            "max_stops": max_stops,
             "target_price": target_price,
         }
         return templates.TemplateResponse(
@@ -167,6 +178,9 @@ def create_group_form(
         )
 
     tp = float(target_price) if target_price.strip() else None
+    pax = max(1, min(9, passengers))
+    stops = int(max_stops) if max_stops.strip() else None
+    group_mode = mode if mode in ("normal", "exploracao") else "normal"
     group = RouteGroup(
         name=name.strip(),
         origins=parsed_origins,
@@ -174,6 +188,9 @@ def create_group_form(
         duration_days=duration_days,
         travel_start=travel_start,
         travel_end=travel_end,
+        mode=group_mode,
+        passengers=pax,
+        max_stops=stops,
         target_price=tp,
         is_active=True,
     )
@@ -220,6 +237,9 @@ def edit_group_form(
     duration_days: int = Form(1),
     travel_start: datetime.date = Form(...),
     travel_end: datetime.date = Form(...),
+    mode: str = Form("normal"),
+    passengers: int = Form(1),
+    max_stops: str = Form(""),
     target_price: str = Form(""),
     db: Session = Depends(get_db),
 ):
@@ -239,6 +259,9 @@ def edit_group_form(
             "duration_days": duration_days,
             "travel_start": travel_start,
             "travel_end": travel_end,
+            "mode": mode,
+            "passengers": passengers,
+            "max_stops": max_stops,
             "target_price": target_price,
         }
         return templates.TemplateResponse(
@@ -248,12 +271,18 @@ def edit_group_form(
         )
 
     tp = float(target_price) if target_price.strip() else None
+    pax = max(1, min(9, passengers))
+    stops = int(max_stops) if max_stops.strip() else None
+    group_mode = mode if mode in ("normal", "exploracao") else "normal"
     group.name = name.strip()
     group.origins = parsed_origins
     group.destinations = parsed_destinations
     group.duration_days = duration_days
     group.travel_start = travel_start
     group.travel_end = travel_end
+    group.mode = group_mode
+    group.passengers = pax
+    group.max_stops = stops
     group.target_price = tp
     db.commit()
     return RedirectResponse(url="/?msg=grupo_atualizado", status_code=303)
@@ -274,3 +303,18 @@ def toggle_group(group_id: int, db: Session = Depends(get_db)):
     db.commit()
     status = "ativado" if group.is_active else "desativado"
     return RedirectResponse(url=f"/?msg=grupo_{status}", status_code=303)
+
+
+FLASH_MESSAGES["polling_ok"] = "Busca manual concluída!"
+FLASH_MESSAGES["polling_erro"] = "Erro na busca. Tente novamente."
+
+
+@router.post("/polling/manual")
+def manual_polling():
+    """Força um ciclo de polling manual."""
+    try:
+        from app.services.polling_service import run_polling_cycle
+        run_polling_cycle()
+        return RedirectResponse(url="/?msg=polling_ok", status_code=303)
+    except Exception:
+        return RedirectResponse(url="/?msg=polling_erro", status_code=303)

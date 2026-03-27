@@ -5,7 +5,6 @@ from unittest.mock import patch
 from app.models import (
     RouteGroup,
     FlightSnapshot,
-    BookingClassSnapshot,
     DetectedSignal,
 )
 from app.services.signal_service import detect_signals
@@ -40,10 +39,9 @@ def _make_snapshot(
     ret_date=None,
     price=1500.0,
     classification=None,
-    booking_classes=None,
     collected_at=None,
 ):
-    """Creates and persists a FlightSnapshot with optional BookingClassSnapshots."""
+    """Creates and persists a FlightSnapshot."""
     if dep_date is None:
         dep_date = date(2026, 6, 15)
     if ret_date is None:
@@ -65,174 +63,12 @@ def _make_snapshot(
 
     db.add(snapshot)
     db.flush()
-
-    if booking_classes:
-        for bc in booking_classes:
-            db.add(
-                BookingClassSnapshot(
-                    flight_snapshot_id=snapshot.id,
-                    class_code=bc["class_code"],
-                    seats_available=bc["seats"],
-                    segment_direction=bc.get("direction", "OUTBOUND"),
-                )
-            )
-    db.flush()
     db.refresh(snapshot)
     return snapshot
 
 
 # ===========================================================================
-# SIGN-01: BALDE FECHANDO
-# ===========================================================================
-
-
-class TestBaldeFechando:
-    """Classe K ou Q caiu de >=3 para <=1 entre snapshots consecutivos."""
-
-    def test_balde_fechando_k_drops(self, db):
-        """K vai de 5 para 1 -> sinal BALDE_FECHANDO urgencia ALTA."""
-        rg = _make_route_group(db)
-
-        # Snapshot anterior: K=5
-        _make_snapshot(
-            db, rg,
-            booking_classes=[{"class_code": "K", "seats": 5}],
-            collected_at=datetime.datetime(2026, 6, 10, 6, 0, 0),
-        )
-
-        # Snapshot atual: K=1
-        current = _make_snapshot(
-            db, rg,
-            booking_classes=[{"class_code": "K", "seats": 1}],
-            collected_at=datetime.datetime(2026, 6, 10, 12, 0, 0),
-        )
-
-        signals = detect_signals(db, current)
-
-        assert len(signals) >= 1
-        balde = [s for s in signals if s.signal_type == "BALDE_FECHANDO"]
-        assert len(balde) == 1
-        assert balde[0].urgency == "ALTA"
-
-    def test_balde_fechando_q_drops(self, db):
-        """Q vai de 3 para 0 -> sinal BALDE_FECHANDO urgencia ALTA."""
-        rg = _make_route_group(db)
-
-        _make_snapshot(
-            db, rg,
-            booking_classes=[{"class_code": "Q", "seats": 3}],
-            collected_at=datetime.datetime(2026, 6, 10, 6, 0, 0),
-        )
-
-        current = _make_snapshot(
-            db, rg,
-            booking_classes=[{"class_code": "Q", "seats": 0}],
-            collected_at=datetime.datetime(2026, 6, 10, 12, 0, 0),
-        )
-
-        signals = detect_signals(db, current)
-
-        balde = [s for s in signals if s.signal_type == "BALDE_FECHANDO"]
-        assert len(balde) == 1
-        assert balde[0].urgency == "ALTA"
-
-    def test_balde_fechando_no_change(self, db):
-        """K permanece em 5 -> nenhum sinal."""
-        rg = _make_route_group(db)
-
-        _make_snapshot(
-            db, rg,
-            booking_classes=[{"class_code": "K", "seats": 5}],
-            collected_at=datetime.datetime(2026, 6, 10, 6, 0, 0),
-        )
-
-        current = _make_snapshot(
-            db, rg,
-            booking_classes=[{"class_code": "K", "seats": 5}],
-            collected_at=datetime.datetime(2026, 6, 10, 12, 0, 0),
-        )
-
-        signals = detect_signals(db, current)
-
-        balde = [s for s in signals if s.signal_type == "BALDE_FECHANDO"]
-        assert len(balde) == 0
-
-    def test_balde_fechando_drops_but_still_above_threshold(self, db):
-        """K vai de 7 para 2 -> nenhum sinal (ainda > 1)."""
-        rg = _make_route_group(db)
-
-        _make_snapshot(
-            db, rg,
-            booking_classes=[{"class_code": "K", "seats": 7}],
-            collected_at=datetime.datetime(2026, 6, 10, 6, 0, 0),
-        )
-
-        current = _make_snapshot(
-            db, rg,
-            booking_classes=[{"class_code": "K", "seats": 2}],
-            collected_at=datetime.datetime(2026, 6, 10, 12, 0, 0),
-        )
-
-        signals = detect_signals(db, current)
-
-        balde = [s for s in signals if s.signal_type == "BALDE_FECHANDO"]
-        assert len(balde) == 0
-
-
-# ===========================================================================
-# SIGN-02: BALDE REABERTO
-# ===========================================================================
-
-
-class TestBaldeReaberto:
-    """Classe que estava em 0 voltou a ter assentos."""
-
-    def test_balde_reaberto(self, db):
-        """M era 0, agora 3 -> sinal BALDE_REABERTO urgencia MAXIMA."""
-        rg = _make_route_group(db)
-
-        _make_snapshot(
-            db, rg,
-            booking_classes=[{"class_code": "M", "seats": 0}],
-            collected_at=datetime.datetime(2026, 6, 10, 6, 0, 0),
-        )
-
-        current = _make_snapshot(
-            db, rg,
-            booking_classes=[{"class_code": "M", "seats": 3}],
-            collected_at=datetime.datetime(2026, 6, 10, 12, 0, 0),
-        )
-
-        signals = detect_signals(db, current)
-
-        reaberto = [s for s in signals if s.signal_type == "BALDE_REABERTO"]
-        assert len(reaberto) == 1
-        assert reaberto[0].urgency == "MAXIMA"
-
-    def test_balde_reaberto_already_open(self, db):
-        """M era 2, agora 3 -> nenhum sinal (nao estava em 0)."""
-        rg = _make_route_group(db)
-
-        _make_snapshot(
-            db, rg,
-            booking_classes=[{"class_code": "M", "seats": 2}],
-            collected_at=datetime.datetime(2026, 6, 10, 6, 0, 0),
-        )
-
-        current = _make_snapshot(
-            db, rg,
-            booking_classes=[{"class_code": "M", "seats": 3}],
-            collected_at=datetime.datetime(2026, 6, 10, 12, 0, 0),
-        )
-
-        signals = detect_signals(db, current)
-
-        reaberto = [s for s in signals if s.signal_type == "BALDE_REABERTO"]
-        assert len(reaberto) == 0
-
-
-# ===========================================================================
-# SIGN-03: PRECO ABAIXO HISTORICO
+# PRECO ABAIXO HISTORICO
 # ===========================================================================
 
 
@@ -243,7 +79,6 @@ class TestPrecoAbaixoHistorico:
         """LOW + preco abaixo da media de 14 snapshots -> sinal PRECO_ABAIXO_HISTORICO."""
         rg = _make_route_group(db)
 
-        # 14 snapshots anteriores com preco medio de 2000
         for i in range(14):
             _make_snapshot(
                 db, rg,
@@ -251,7 +86,6 @@ class TestPrecoAbaixoHistorico:
                 collected_at=datetime.datetime(2026, 6, 1, 6, 0, 0) + timedelta(hours=6 * i),
             )
 
-        # Snapshot atual: preco 1200, classificacao LOW
         current = _make_snapshot(
             db, rg,
             price=1200.0,
@@ -336,7 +170,7 @@ class TestPrecoAbaixoHistorico:
 
 
 # ===========================================================================
-# SIGN-04: JANELA OTIMA
+# JANELA OTIMA
 # ===========================================================================
 
 
@@ -439,7 +273,7 @@ class TestJanelaOtima:
 
 
 # ===========================================================================
-# SIGN-05: DEDUPLICACAO
+# DEDUPLICACAO
 # ===========================================================================
 
 
@@ -450,9 +284,18 @@ class TestDeduplicacao:
         """Mesmo sinal dentro de 12h -> segundo nao e persistido."""
         rg = _make_route_group(db)
 
+        # 14 snapshots para historico
+        for i in range(14):
+            _make_snapshot(
+                db, rg,
+                price=2000.0,
+                collected_at=datetime.datetime(2026, 6, 1, 6, 0, 0) + timedelta(hours=6 * i),
+            )
+
         current = _make_snapshot(
             db, rg,
-            booking_classes=[{"class_code": "K", "seats": 1}],
+            price=1200.0,
+            classification="LOW",
             collected_at=datetime.datetime(2026, 6, 10, 12, 0, 0),
         )
 
@@ -464,34 +307,35 @@ class TestDeduplicacao:
             destination="GIG",
             departure_date=date(2026, 6, 15),
             return_date=date(2026, 6, 22),
-            signal_type="BALDE_FECHANDO",
-            urgency="ALTA",
-            details="K dropped",
-            price_at_detection=1500.0,
+            signal_type="PRECO_ABAIXO_HISTORICO",
+            urgency="MEDIA",
+            details="Preco baixo",
+            price_at_detection=1200.0,
             detected_at=datetime.datetime(2026, 6, 10, 6, 0, 0),
         )
         db.add(existing)
         db.flush()
 
-        # Snapshot anterior para trigger de BALDE_FECHANDO
-        _make_snapshot(
-            db, rg,
-            booking_classes=[{"class_code": "K", "seats": 5}],
-            collected_at=datetime.datetime(2026, 6, 10, 6, 0, 0),
-        )
-
         signals = detect_signals(db, current)
 
-        balde = [s for s in signals if s.signal_type == "BALDE_FECHANDO"]
-        assert len(balde) == 0
+        preco = [s for s in signals if s.signal_type == "PRECO_ABAIXO_HISTORICO"]
+        assert len(preco) == 0
 
     def test_deduplicacao_permite_apos_12h(self, db):
         """Mesmo sinal apos 12h -> segundo E persistido."""
         rg = _make_route_group(db)
 
+        for i in range(14):
+            _make_snapshot(
+                db, rg,
+                price=2000.0,
+                collected_at=datetime.datetime(2026, 6, 1, 6, 0, 0) + timedelta(hours=6 * i),
+            )
+
         current = _make_snapshot(
             db, rg,
-            booking_classes=[{"class_code": "K", "seats": 1}],
+            price=1200.0,
+            classification="LOW",
             collected_at=datetime.datetime(2026, 6, 10, 20, 0, 0),
         )
 
@@ -503,35 +347,37 @@ class TestDeduplicacao:
             destination="GIG",
             departure_date=date(2026, 6, 15),
             return_date=date(2026, 6, 22),
-            signal_type="BALDE_FECHANDO",
-            urgency="ALTA",
-            details="K dropped",
-            price_at_detection=1500.0,
+            signal_type="PRECO_ABAIXO_HISTORICO",
+            urgency="MEDIA",
+            details="Preco baixo",
+            price_at_detection=1200.0,
             detected_at=datetime.datetime(2026, 6, 10, 7, 0, 0),
         )
         db.add(existing)
         db.flush()
 
-        _make_snapshot(
-            db, rg,
-            booking_classes=[{"class_code": "K", "seats": 5}],
-            collected_at=datetime.datetime(2026, 6, 10, 14, 0, 0),
-        )
-
         signals = detect_signals(db, current)
 
-        balde = [s for s in signals if s.signal_type == "BALDE_FECHANDO"]
-        assert len(balde) >= 1
+        preco = [s for s in signals if s.signal_type == "PRECO_ABAIXO_HISTORICO"]
+        assert len(preco) >= 1
 
     def test_deduplicacao_different_route_not_blocked(self, db):
-        """Mesmo tipo de sinal mas rota diferente -> ambos persistidos."""
+        """Mesmo tipo de sinal mas rota diferente -> nao bloqueado."""
         rg = _make_route_group(db)
+
+        for i in range(14):
+            _make_snapshot(
+                db, rg,
+                price=2000.0,
+                collected_at=datetime.datetime(2026, 6, 1, 6, 0, 0) + timedelta(hours=6 * i),
+            )
 
         current = _make_snapshot(
             db, rg,
             origin="GRU",
             destination="GIG",
-            booking_classes=[{"class_code": "K", "seats": 1}],
+            price=1200.0,
+            classification="LOW",
             collected_at=datetime.datetime(2026, 6, 10, 12, 0, 0),
         )
 
@@ -543,25 +389,19 @@ class TestDeduplicacao:
             destination="SSA",
             departure_date=date(2026, 6, 15),
             return_date=date(2026, 6, 22),
-            signal_type="BALDE_FECHANDO",
-            urgency="ALTA",
-            details="K dropped",
-            price_at_detection=1500.0,
+            signal_type="PRECO_ABAIXO_HISTORICO",
+            urgency="MEDIA",
+            details="Preco baixo",
+            price_at_detection=1200.0,
             detected_at=datetime.datetime(2026, 6, 10, 6, 0, 0),
         )
         db.add(existing)
         db.flush()
 
-        _make_snapshot(
-            db, rg,
-            booking_classes=[{"class_code": "K", "seats": 5}],
-            collected_at=datetime.datetime(2026, 6, 10, 6, 0, 0),
-        )
-
         signals = detect_signals(db, current)
 
-        balde = [s for s in signals if s.signal_type == "BALDE_FECHANDO"]
-        assert len(balde) >= 1
+        preco = [s for s in signals if s.signal_type == "PRECO_ABAIXO_HISTORICO"]
+        assert len(preco) >= 1
 
 
 # ===========================================================================
@@ -572,46 +412,51 @@ class TestDeduplicacao:
 class TestEdgeCases:
     """Casos de borda para deteccao de sinais."""
 
-    def test_primeiro_snapshot_sem_sinal_balde(self, db):
-        """Primeiro snapshot (sem anterior) -> sem sinais BALDE, mas JANELA/PRECO podem disparar."""
+    def test_primeiro_snapshot_sem_sinal_preco(self, db):
+        """Primeiro snapshot sem historico -> sem sinal PRECO_ABAIXO_HISTORICO."""
         rg = _make_route_group(db)
 
-        current = _make_snapshot(
-            db, rg,
-            booking_classes=[{"class_code": "K", "seats": 1}],
-        )
-
-        signals = detect_signals(db, current)
-
-        balde_fechando = [s for s in signals if s.signal_type == "BALDE_FECHANDO"]
-        balde_reaberto = [s for s in signals if s.signal_type == "BALDE_REABERTO"]
-        assert len(balde_fechando) == 0
-        assert len(balde_reaberto) == 0
-
-    def test_multiple_signals_same_snapshot(self, db):
-        """Snapshot dispara BALDE_FECHANDO e PRECO_ABAIXO_HISTORICO ao mesmo tempo."""
-        rg = _make_route_group(db)
-
-        # 14 snapshots anteriores com preco alto e K=5
-        for i in range(14):
-            _make_snapshot(
-                db, rg,
-                price=2000.0,
-                booking_classes=[{"class_code": "K", "seats": 5}],
-                collected_at=datetime.datetime(2026, 6, 1, 6, 0, 0) + timedelta(hours=6 * i),
-            )
-
-        # Snapshot atual: K=1, preco baixo, classificacao LOW
         current = _make_snapshot(
             db, rg,
             price=1200.0,
             classification="LOW",
-            booking_classes=[{"class_code": "K", "seats": 1}],
-            collected_at=datetime.datetime(2026, 6, 10, 12, 0, 0),
+        )
+
+        signals = detect_signals(db, current)
+
+        preco = [s for s in signals if s.signal_type == "PRECO_ABAIXO_HISTORICO"]
+        assert len(preco) == 0
+
+    @patch("app.services.signal_service.date")
+    def test_multiple_signals_same_snapshot(self, mock_date, db):
+        """Snapshot dispara PRECO_ABAIXO_HISTORICO e JANELA_OTIMA ao mesmo tempo."""
+        today = date(2026, 5, 1)
+        mock_date.today.return_value = today
+        mock_date.side_effect = lambda *args, **kw: date(*args, **kw)
+
+        rg = _make_route_group(db)
+        dep = today + timedelta(days=45)  # dentro da janela domestica
+
+        for i in range(14):
+            _make_snapshot(
+                db, rg,
+                price=2000.0,
+                dep_date=dep,
+                ret_date=dep + timedelta(days=7),
+                collected_at=datetime.datetime(2026, 4, 1, 6, 0, 0) + timedelta(hours=6 * i),
+            )
+
+        current = _make_snapshot(
+            db, rg,
+            price=1200.0,
+            classification="LOW",
+            dep_date=dep,
+            ret_date=dep + timedelta(days=7),
+            collected_at=datetime.datetime(2026, 5, 1, 12, 0, 0),
         )
 
         signals = detect_signals(db, current)
 
         types = {s.signal_type for s in signals}
-        assert "BALDE_FECHANDO" in types
         assert "PRECO_ABAIXO_HISTORICO" in types
+        assert "JANELA_OTIMA" in types

@@ -5,7 +5,7 @@ class TestSchedulerSetup:
     """Tests for scheduler initialization and shutdown."""
 
     @patch("app.scheduler.BackgroundScheduler")
-    def test_scheduler_registers_job_with_6h_interval(self, mock_scheduler_cls):
+    def test_scheduler_registers_job_with_24h_interval(self, mock_scheduler_cls):
         from app.scheduler import init_scheduler
 
         mock_sched_instance = MagicMock()
@@ -34,7 +34,7 @@ class TestSchedulerSetup:
         from apscheduler.triggers.interval import IntervalTrigger
 
         assert isinstance(trigger, IntervalTrigger)
-        assert trigger.interval.total_seconds() == 6 * 3600
+        assert trigger.interval.total_seconds() == 24 * 3600
 
         # Verify scheduler was started
         mock_sched_instance.start.assert_called_once()

@@ -37,14 +37,19 @@ def run_polling_cycle():
 
 
 def _generate_date_pairs(
-    travel_start: date, travel_end: date, duration_days: int
+    travel_start: date, travel_end: date, duration_days: int, mode: str = "normal"
 ) -> list[tuple[date, date]]:
-    """Gera pares (departure_date, return_date) a cada DATE_STEP_DAYS dias dentro do periodo."""
+    """Gera pares (departure_date, return_date) dentro do período.
+
+    Normal: a cada 7 dias (busca precisa)
+    Exploração: a cada 30 dias (varredura ampla, economiza API)
+    """
+    step = 30 if mode == "exploracao" else DATE_STEP_DAYS
     pairs = []
     current = travel_start
     while current + timedelta(days=duration_days) <= travel_end:
         pairs.append((current, current + timedelta(days=duration_days)))
-        current += timedelta(days=DATE_STEP_DAYS)
+        current += timedelta(days=step)
     if not pairs and travel_start + timedelta(days=duration_days) <= travel_end + timedelta(
         days=duration_days
     ):
@@ -60,7 +65,7 @@ def _poll_group(db, client: SerpApiClient, group: RouteGroup):
     origins = group.origins
     destinations = group.destinations
     date_pairs = _generate_date_pairs(
-        group.travel_start, group.travel_end, group.duration_days
+        group.travel_start, group.travel_end, group.duration_days, group.mode or "normal"
     )
 
     accumulated_signals = []
@@ -76,6 +81,7 @@ def _poll_group(db, client: SerpApiClient, group: RouteGroup):
                         departure_date=dep_date.isoformat(),
                         return_date=ret_date.isoformat(),
                         max_results=5,
+                        max_stops=group.max_stops,
                     )
                 except Exception as e:
                     logger.warning(

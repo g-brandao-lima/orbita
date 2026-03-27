@@ -40,10 +40,11 @@ created: 2026-03-25
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
 | 4-01-01 | 01 | 1 | ALRT-01/02 | RED stub | `python -m pytest tests/test_alert_service.py -x -q` | ❌ W0 | ⬜ pending |
 | 4-01-02 | 01 | 1 | ALRT-01/02 | GREEN impl | `python -m pytest tests/test_alert_service.py -x -q` | ❌ W0 | ⬜ pending |
-| 4-02-01 | 02 | 1 | ALRT-02 | RED stub | `python -m pytest tests/test_silence_endpoint.py -x -q` | ❌ W0 | ⬜ pending |
-| 4-02-02 | 02 | 1 | ALRT-02 | GREEN impl | `python -m pytest tests/test_silence_endpoint.py -x -q && python -m pytest tests/ -x -q` | ❌ W0 | ⬜ pending |
-| 4-03-01 | 03 | 2 | ALRT-01/02/03 | integration | `python -m pytest tests/ -v --tb=short` | W0 | ⬜ pending |
-| 4-03-02 | 03 | 2 | ALL | checkpoint | Human verify email received | N/A | ⬜ pending |
+| 4-02-01 | 02 | 1 | ALRT-02 | RED stub | `python -m pytest tests/test_alert_routes.py -x -q` | ❌ W0 | ⬜ pending |
+| 4-02-02 | 02 | 1 | ALRT-02 | GREEN impl | `python -m pytest tests/test_alert_routes.py -x -q && python -m pytest tests/ -x -q` | ❌ W0 | ⬜ pending |
+| 4-03-01 | 03 | 2 | ALRT-01/02 | integration | `python -m pytest tests/ -v --tb=short` | W0 | ⬜ pending |
+| 4-03-02 | 03 | 2 | ALRT-01/02 | refactor | `python -m pytest tests/ -v --tb=short` | W0 | ⬜ pending |
+| 4-03-03 | 03 | 2 | ALL | checkpoint | Human verify email received | N/A | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -52,7 +53,7 @@ created: 2026-03-25
 ## Wave 0 Requirements
 
 - [ ] `tests/test_alert_service.py` — stubs: test_send_alert_called_on_signal, test_silenced_group_skipped, test_email_contains_signal_info, test_hmac_token_generation
-- [ ] `tests/test_silence_endpoint.py` — stubs: test_silence_endpoint_sets_silenced_until, test_invalid_token_rejected, test_silence_endpoint_returns_confirmation
+- [ ] `tests/test_alert_routes.py` — stubs: test_silence_endpoint_sets_silenced_until, test_invalid_token_rejected, test_silence_endpoint_returns_confirmation
 
 ---
 

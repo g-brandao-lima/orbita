@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 
 from app.models import (
     FlightSnapshot,
-    BookingClassSnapshot,
     DetectedSignal,
 )
 
@@ -16,10 +15,6 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
-CLOSING_CLASSES = {"K", "Q"}
-CLOSING_THRESHOLD_FROM = 3
-CLOSING_THRESHOLD_TO = 1
 
 BRAZILIAN_AIRPORTS = {
     "GRU", "CGH", "VCP",
@@ -88,18 +83,15 @@ def detect_signals(
     db: Session, snapshot: FlightSnapshot
 ) -> list[DetectedSignal]:
     """Orquestra deteccao de todos os tipos de sinal para um snapshot."""
-    previous = _get_previous_snapshot(db, snapshot)
-    candidates = _run_detectors(db, snapshot, previous)
+    candidates = _run_detectors(db, snapshot)
     return _deduplicate_and_persist(db, snapshot, candidates)
 
 
 def _run_detectors(
-    db: Session, snapshot: FlightSnapshot, previous: FlightSnapshot | None
+    db: Session, snapshot: FlightSnapshot
 ) -> list[DetectedSignal]:
     """Executa todos os detectores com isolamento de erros por detector."""
     detectors = [
-        lambda: _check_balde_fechando(snapshot, previous),
-        lambda: _check_balde_reaberto(snapshot, previous),
         lambda: _check_preco_abaixo_historico(db, snapshot),
         lambda: _check_janela_otima(snapshot),
     ]
@@ -135,51 +127,6 @@ def _deduplicate_and_persist(
     return new_signals
 
 
-# ---------------------------------------------------------------------------
-# Previous snapshot query
-# ---------------------------------------------------------------------------
-
-
-def _get_previous_snapshot(
-    db: Session, current: FlightSnapshot
-) -> FlightSnapshot | None:
-    """Busca o snapshot imediatamente anterior para a mesma rota."""
-    return (
-        db.query(FlightSnapshot)
-        .filter(
-            FlightSnapshot.route_group_id == current.route_group_id,
-            FlightSnapshot.origin == current.origin,
-            FlightSnapshot.destination == current.destination,
-            FlightSnapshot.departure_date == current.departure_date,
-            FlightSnapshot.return_date == current.return_date,
-            FlightSnapshot.id != current.id,
-            FlightSnapshot.collected_at < current.collected_at,
-        )
-        .order_by(FlightSnapshot.collected_at.desc())
-        .first()
-    )
-
-
-# ---------------------------------------------------------------------------
-# Booking class helpers
-# ---------------------------------------------------------------------------
-
-
-def _booking_classes_to_dict(
-    booking_classes: list[BookingClassSnapshot],
-) -> dict[str, int]:
-    """Converte lista de BookingClassSnapshot em dict {class_code: min_seats}.
-    Usa minimo entre OUTBOUND e INBOUND como gargalo."""
-    result: dict[str, int] = {}
-    for bc in booking_classes:
-        code = bc.class_code
-        if code not in result:
-            result[code] = bc.seats_available
-        else:
-            result[code] = min(result[code], bc.seats_available)
-    return result
-
-
 def _is_domestic(origin: str, destination: str) -> bool:
     return origin in BRAZILIAN_AIRPORTS and destination in BRAZILIAN_AIRPORTS
 
@@ -187,56 +134,6 @@ def _is_domestic(origin: str, destination: str) -> bool:
 # ---------------------------------------------------------------------------
 # Detectors (pure functions, no db.add)
 # ---------------------------------------------------------------------------
-
-
-def _check_balde_fechando(
-    current: FlightSnapshot, previous: FlightSnapshot | None
-) -> DetectedSignal | None:
-    """Detecta classe K ou Q caindo de >=3 para <=1 entre snapshots."""
-    if previous is None:
-        return None
-
-    prev_classes = _booking_classes_to_dict(previous.booking_classes)
-    curr_classes = _booking_classes_to_dict(current.booking_classes)
-
-    for class_code in CLOSING_CLASSES:
-        prev_seats = prev_classes.get(class_code, 0)
-        curr_seats = curr_classes.get(class_code, 0)
-
-        if prev_seats >= CLOSING_THRESHOLD_FROM and curr_seats <= CLOSING_THRESHOLD_TO:
-            return _create_signal(
-                current,
-                signal_type="BALDE_FECHANDO",
-                urgency="ALTA",
-                details=f"Classe {class_code}: {prev_seats} -> {curr_seats} assentos",
-            )
-    return None
-
-
-def _check_balde_reaberto(
-    current: FlightSnapshot, previous: FlightSnapshot | None
-) -> DetectedSignal | None:
-    """Detecta classes que estavam em 0 e voltaram a ter assentos."""
-    if previous is None:
-        return None
-
-    prev_classes = _booking_classes_to_dict(previous.booking_classes)
-    curr_classes = _booking_classes_to_dict(current.booking_classes)
-
-    reopened = [
-        f"{code}: 0 -> {seats}"
-        for code, seats in curr_classes.items()
-        if prev_classes.get(code, 0) == 0 and seats > 0
-    ]
-
-    if reopened:
-        return _create_signal(
-            current,
-            signal_type="BALDE_REABERTO",
-            urgency="MAXIMA",
-            details=f"Classes reabriram: {', '.join(reopened)}",
-        )
-    return None
 
 
 def _check_preco_abaixo_historico(

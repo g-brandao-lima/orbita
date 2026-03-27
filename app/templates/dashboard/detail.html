@@ -9,21 +9,21 @@
 {% endblock %}
 
 {% block content %}
-<a href="/" style="color: #0ea5e9; text-decoration: none; margin-bottom: 1rem; display: inline-block;">Voltar</a>
+<a href="/" style="color: #60a5fa; text-decoration: none; margin-bottom: 1rem; display: inline-block; font-size: 13px;">&larr; Voltar</a>
 
-<h1 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">{{ group.name }}</h1>
+<h1 style="font-size: 20px; font-weight: 700; margin-bottom: 0.5rem; color: #f1f5f9;">{{ group.name }}</h1>
 
-<div style="background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 1.5rem;">
-    <p><strong>Origens:</strong> {{ group.origins | join(", ") }}</p>
-    <p><strong>Destinos:</strong> {{ group.destinations | join(", ") }}</p>
-    <p><strong>Duracao:</strong> {{ group.duration_days }} dias</p>
-    <p><strong>Periodo:</strong> {{ format_date_br(group.travel_start) }} a {{ format_date_br(group.travel_end) }}</p>
+<div style="background: #1a1e2e; border: 1px solid #2d3748; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
+    <p style="color: #94a3b8; margin-bottom: 4px;"><strong style="color: #f1f5f9;">Origens:</strong> {{ group.origins | join(", ") }}</p>
+    <p style="color: #94a3b8; margin-bottom: 4px;"><strong style="color: #f1f5f9;">Destinos:</strong> {{ group.destinations | join(", ") }}</p>
+    <p style="color: #94a3b8; margin-bottom: 4px;"><strong style="color: #f1f5f9;">Duracao:</strong> {{ group.duration_days }} dias</p>
+    <p style="color: #94a3b8;"><strong style="color: #f1f5f9;">Periodo:</strong> {{ format_date_br(group.travel_start) }} a {{ format_date_br(group.travel_end) }}</p>
 </div>
 
 {% if chart_data.prices %}
-<div style="background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-    <h2 style="margin-bottom: 0.5rem;">Historico de Precos</h2>
-    <p style="color: #64748b; margin-bottom: 1rem;">Rota: {{ chart_data.route }}</p>
+<div style="background: #1a1e2e; border: 1px solid #2d3748; border-radius: 12px; padding: 1.5rem;">
+    <h2 style="margin-bottom: 0.5rem; font-size: 14px; font-weight: 700; color: #f1f5f9;">Histórico de Preços</h2>
+    <p style="color: #64748b; margin-bottom: 1rem; font-size: 13px;">Rota: {{ chart_data.route }}</p>
     <canvas id="priceChart"></canvas>
 </div>
 
@@ -40,19 +40,35 @@
                 borderColor: '#0ea5e9',
                 backgroundColor: 'rgba(14, 165, 233, 0.1)',
                 fill: true,
-                tension: 0.3
+                tension: 0.3,
+                pointBackgroundColor: '#0ea5e9',
+                pointBorderColor: '#1a1e2e',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6
             }]
         },
         options: {
             responsive: true,
+            plugins: {
+                legend: { labels: { color: '#94a3b8' } }
+            },
             scales: {
-                y: { beginAtZero: false }
+                y: {
+                    beginAtZero: false,
+                    ticks: { color: '#64748b' },
+                    grid: { color: 'rgba(45, 55, 72, 0.5)' }
+                },
+                x: {
+                    ticks: { color: '#64748b' },
+                    grid: { color: 'rgba(45, 55, 72, 0.3)' }
+                }
             }
         }
     });
 </script>
 {% else %}
-<div style="background: white; border-radius: 8px; padding: 2rem; text-align: center; color: #94a3b8;">
+<div style="background: #1a1e2e; border: 1px solid #2d3748; border-radius: 12px; padding: 2rem; text-align: center; color: #64748b;">
     <p>Nenhum dado coletado ainda</p>
 </div>
 {% endif %}

@@ -2,45 +2,85 @@
 
 {% block title %}Novo Grupo de Rota - Flight Monitor{% endblock %}
 
-{% block content %}
+{% block head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
 <style>
-    .form-label { display: block; font-weight: 600; margin-bottom: 0.15rem; }
-    .form-label .required { color: #dc2626; margin-left: 2px; }
-    .form-hint { display: block; font-size: 0.82rem; color: #64748b; margin-bottom: 0.4rem; }
-    .form-input { width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px; }
-    .form-group { margin-bottom: 1.25rem; }
+    .form-label { display: block; font-weight: 600; margin-bottom: 0.15rem; color: #f1f5f9; font-size: 14px; }
+    .form-label .required { color: #f87171; margin-left: 2px; }
+    .form-hint { display: block; font-size: 12px; color: #64748b; margin-bottom: 0.4rem; line-height: 1.4; }
+    .form-input {
+        width: 100%; padding: 10px 12px; border: 1px solid #2d3748; border-radius: 8px;
+        background: #0f1119; color: #f1f5f9; font-size: 14px; font-family: inherit;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
+    .form-input::placeholder { color: #4a5568; }
+    .form-group { margin-bottom: 20px; }
     .airport-search { position: relative; }
-    .airport-results { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1; border-top: none; border-radius: 0 0 4px 4px; max-height: 200px; overflow-y: auto; z-index: 10; display: none; }
-    .airport-results div { padding: 0.5rem; cursor: pointer; font-size: 0.9rem; }
-    .airport-results div:hover { background: #f0f4ff; }
-    .airport-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.4rem; }
-    .airport-tag { background: #e0e7ff; color: #3730a3; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.85rem; display: flex; align-items: center; gap: 0.3rem; }
-    .airport-tag button { background: none; border: none; color: #6366f1; cursor: pointer; font-size: 1rem; line-height: 1; padding: 0; }
+    .airport-results {
+        position: absolute; top: 100%; left: 0; right: 0; background: #1a1e2e;
+        border: 1px solid #2d3748; border-top: none; border-radius: 0 0 8px 8px;
+        max-height: 200px; overflow-y: auto; z-index: 10; display: none;
+    }
+    .airport-results div { padding: 10px 12px; cursor: pointer; font-size: 13px; color: #94a3b8; transition: background 0.15s; }
+    .airport-results div:hover { background: rgba(59, 130, 246, 0.1); color: #f1f5f9; }
+    .airport-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .airport-tag {
+        background: rgba(59, 130, 246, 0.15); color: #60a5fa; padding: 4px 10px;
+        border-radius: 6px; font-size: 13px; font-weight: 500;
+        display: flex; align-items: center; gap: 6px;
+    }
+    .airport-tag button { background: none; border: none; color: #60a5fa; cursor: pointer; font-size: 14px; line-height: 1; padding: 0; opacity: 0.7; }
+    .airport-tag button:hover { opacity: 1; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+    .btn-submit {
+        background: #3b82f6; color: white; padding: 10px 24px; border: none; border-radius: 8px;
+        font-weight: 600; font-size: 14px; cursor: pointer; min-height: 40px;
+        transition: all 0.2s; font-family: inherit;
+    }
+    .btn-submit:hover { background: #2563eb; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+    .btn-submit:active { transform: scale(0.97); }
+    /* Flatpickr dark theme overrides */
+    .flatpickr-calendar { background: #1a1e2e !important; border: 1px solid #2d3748 !important; box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important; border-radius: 10px !important; }
+    .flatpickr-months .flatpickr-month { background: #1a1e2e !important; }
+    .flatpickr-current-month .flatpickr-monthDropdown-months { background: #1a1e2e !important; color: #f1f5f9 !important; }
+    .flatpickr-day.selected { background: #3b82f6 !important; border-color: #3b82f6 !important; }
+    .flatpickr-day:hover { background: rgba(59, 130, 246, 0.2) !important; border-color: transparent !important; }
+    span.flatpickr-weekday { color: #64748b !important; }
+    .flatpickr-day { color: #f1f5f9 !important; border-radius: 6px !important; }
+    .flatpickr-day.flatpickr-disabled { color: #3f4652 !important; }
+    .flatpickr-months .flatpickr-prev-month, .flatpickr-months .flatpickr-next-month { fill: #94a3b8 !important; }
+    .flatpickr-months .flatpickr-prev-month:hover svg, .flatpickr-months .flatpickr-next-month:hover svg { fill: #f1f5f9 !important; }
 </style>
+{% endblock %}
 
-<h1 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem;">Novo Grupo de Rota</h1>
+{% block content %}
+<div style="max-width: 520px; margin: 0 auto;">
+<a href="/" style="color: #60a5fa; text-decoration: none; font-size: 13px; display: inline-block; margin-bottom: 16px;">&larr; Voltar</a>
+<h1 style="font-size: 20px; font-weight: 700; margin-bottom: 24px; color: #f1f5f9;">Novo Grupo de Rota</h1>
 
 {% if error %}
-<div style="background: #fef2f2; border: 1px solid #fca5a5; color: #dc2626; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+<div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 14px;">
     {{ error }}
 </div>
 {% endif %}
 
-<div style="background: white; border-radius: 8px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); max-width: 600px;">
+<div style="background: #1a1e2e; border: 1px solid #2d3748; border-radius: 12px; padding: 24px;">
     <form method="POST" action="/groups/create" novalidate>
         <div class="form-group">
             <label for="name" class="form-label">Nome do Grupo <span class="required">*</span></label>
             <span class="form-hint">Um apelido para identificar esta busca. Ex: "Portugal Julho"</span>
             <input type="text" id="name" name="name" required value="{{ form_data.name if form_data else '' }}"
-                   class="form-input">
+                   class="form-input" placeholder="Ex: Nordeste Dezembro">
         </div>
 
         <div class="form-group">
             <label class="form-label">Aeroportos de origem <span class="required">*</span></label>
-            <span class="form-hint">Digite o nome da cidade ou codigo IATA e selecione. Pode adicionar mais de um.</span>
+            <span class="form-hint">Digite o nome da cidade ou código IATA e selecione</span>
             <input type="hidden" id="origins" name="origins" value="{{ form_data.origins if form_data else '' }}">
             <div class="airport-search">
-                <input type="text" id="origins-search" placeholder="Buscar aeroporto... Ex: Sao Paulo, GRU"
+                <input type="text" id="origins-search" placeholder="Buscar... Ex: São Paulo, GRU"
                        class="form-input" autocomplete="off">
                 <div class="airport-results" id="origins-results"></div>
             </div>
@@ -49,10 +89,10 @@
 
         <div class="form-group">
             <label class="form-label">Aeroportos de destino <span class="required">*</span></label>
-            <span class="form-hint">Digite o nome da cidade ou codigo IATA e selecione. Pode adicionar mais de um.</span>
+            <span class="form-hint">Digite o nome da cidade ou código IATA e selecione</span>
             <input type="hidden" id="destinations" name="destinations" value="{{ form_data.destinations if form_data else '' }}">
             <div class="airport-search">
-                <input type="text" id="destinations-search" placeholder="Buscar aeroporto... Ex: Lisboa, LIS"
+                <input type="text" id="destinations-search" placeholder="Buscar... Ex: Lisboa, LIS"
                        class="form-input" autocomplete="off">
                 <div class="airport-results" id="destinations-results"></div>
             </div>
@@ -60,48 +100,164 @@
         </div>
 
         <div class="form-group">
-            <label for="duration_days" class="form-label">Duracao da viagem (dias) <span class="required">*</span></label>
-            <span class="form-hint">Quantos dias voce fica no destino. Ex: 14 = ida dia 1, volta dia 15</span>
+            <label for="duration_days" class="form-label">Duração da viagem (dias) <span class="required">*</span></label>
+            <span class="form-hint">Quantos dias você fica no destino. Ex: 14 = ida dia 1, volta dia 15</span>
             <input type="number" id="duration_days" name="duration_days" required min="1"
                    value="{{ form_data.duration_days if form_data else '' }}"
-                   class="form-input">
+                   class="form-input" placeholder="14">
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+        <div class="form-row">
             <div>
-                <label for="travel_start" class="form-label">Inicio do periodo <span class="required">*</span></label>
-                <span class="form-hint">A partir de quando voce toparia viajar</span>
-                <input type="date" id="travel_start" name="travel_start" required
+                <label for="travel_start" class="form-label" id="label-start">Início do período <span class="required">*</span></label>
+                <span class="form-hint" id="hint-start">A partir de quando você toparia viajar</span>
+                <input type="text" id="travel_start" name="travel_start" required
                        value="{{ form_data.travel_start if form_data else '' }}"
+                       class="form-input" placeholder="Selecionar data">
+            </div>
+            <div>
+                <label for="travel_end" class="form-label" id="label-end">Fim do período <span class="required">*</span></label>
+                <span class="form-hint" id="hint-end">Até quando você toparia viajar</span>
+                <input type="text" id="travel_end" name="travel_end" required
+                       value="{{ form_data.travel_end if form_data else '' }}"
+                       class="form-input" placeholder="Selecionar data">
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+            <div>
+                <label for="mode" class="form-label">Modo</label>
+                <select id="mode" name="mode" class="form-input">
+                    <option value="normal" {% if form_data and form_data.mode == 'normal' %}selected{% endif %}>Normal</option>
+                    <option value="exploracao" {% if form_data and form_data.mode == 'exploracao' %}selected{% endif %}>Exploração</option>
+                </select>
+            </div>
+            <div>
+                <label for="passengers" class="form-label">Passageiros</label>
+                <input type="number" id="passengers" name="passengers" min="1" max="9"
+                       value="{{ form_data.passengers if form_data else '2' }}"
                        class="form-input">
             </div>
             <div>
-                <label for="travel_end" class="form-label">Fim do periodo <span class="required">*</span></label>
-                <span class="form-hint">Ate quando voce toparia viajar</span>
-                <input type="date" id="travel_end" name="travel_end" required
-                       value="{{ form_data.travel_end if form_data else '' }}"
-                       class="form-input">
+                <label for="max_stops" class="form-label">Paradas</label>
+                <select id="max_stops" name="max_stops" class="form-input">
+                    <option value="" {% if not form_data or form_data.max_stops == '' %}selected{% endif %}>Qualquer</option>
+                    <option value="0" {% if form_data and form_data.max_stops == '0' %}selected{% endif %}>Direto</option>
+                    <option value="1" {% if form_data and form_data.max_stops == '1' %}selected{% endif %}>1 conexão</option>
+                </select>
+            </div>
+            <div>
+                <label for="target_price" class="form-label">Preço-alvo</label>
+                <input type="number" id="target_price" name="target_price" step="0.01"
+                       value="{{ form_data.target_price if form_data else '' }}"
+                       class="form-input" placeholder="R$">
             </div>
         </div>
 
-        <div class="form-group">
-            <label for="target_price" class="form-label">Preco-alvo (R$)</label>
-            <span class="form-hint">Opcional. Quanto voce toparia pagar por esta passagem</span>
-            <input type="number" id="target_price" name="target_price" step="0.01"
-                   value="{{ form_data.target_price if form_data else '' }}"
-                   class="form-input">
-        </div>
-
-        <div style="display: flex; gap: 1rem; align-items: center;">
-            <button type="submit" style="background: #22c55e; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 4px; font-weight: 700; cursor: pointer; min-height: 40px;">
-                Criar Grupo
-            </button>
-            <a href="/" style="color: #64748b; text-decoration: none;">Cancelar</a>
+        <div style="display: flex; gap: 16px; align-items: center; padding-top: 8px;">
+            <button type="submit" class="btn-submit">Criar Grupo</button>
+            <a href="/" style="color: #64748b; text-decoration: none; font-size: 14px;">Cancelar</a>
         </div>
     </form>
 </div>
+</div>
 
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
 <script>
+// Date pickers
+const fpEnd = flatpickr("#travel_end", {
+    locale: "pt",
+    dateFormat: "Y-m-d",
+    altInput: true,
+    altFormat: "d/m/Y",
+    minDate: "today",
+    theme: "dark",
+    disableMobile: true,
+    allowInput: true
+});
+const fpStart = flatpickr("#travel_start", {
+    locale: "pt",
+    dateFormat: "Y-m-d",
+    altInput: true,
+    altFormat: "d/m/Y",
+    minDate: "today",
+    theme: "dark",
+    disableMobile: true,
+    allowInput: true,
+    onClose: function(selectedDates) {
+        if (selectedDates.length > 0) {
+            fpEnd.set("minDate", selectedDates[0]);
+            fpEnd.open();
+        }
+    }
+});
+setupDateMask(fpStart);
+setupDateMask(fpEnd);
+
+// Mode switcher: muda hints das datas quando troca Normal/Exploração
+const modeSelect = document.getElementById('mode');
+const hintStart = document.getElementById('hint-start');
+const hintEnd = document.getElementById('hint-end');
+const labelStart = document.getElementById('label-start');
+const labelEnd = document.getElementById('label-end');
+
+function updateModeHints() {
+    if (modeSelect.value === 'exploracao') {
+        labelStart.innerHTML = 'Início da pesquisa <span class="required">*</span>';
+        labelEnd.innerHTML = 'Fim da pesquisa <span class="required">*</span>';
+        hintStart.textContent = 'O sistema varre mês a mês a partir daqui';
+        hintEnd.textContent = 'Até quando pesquisar (ex: daqui a 12 meses)';
+    } else {
+        labelStart.innerHTML = 'Início do período <span class="required">*</span>';
+        labelEnd.innerHTML = 'Fim do período <span class="required">*</span>';
+        hintStart.textContent = 'A partir de quando você toparia viajar';
+        hintEnd.textContent = 'Até quando você toparia viajar';
+    }
+}
+modeSelect.addEventListener('change', updateModeHints);
+updateModeHints();
+
+// Date input mask: dd/mm/aaaa, only numbers, auto-slashes, syncs with flatpickr
+function setupDateMask(fpInstance) {
+    const altInput = fpInstance.altInput;
+    if (!altInput) return;
+
+    altInput.addEventListener('keydown', function(e) {
+        // Allow: backspace, delete, tab, escape, enter, arrows
+        if ([8, 9, 27, 13, 46, 37, 38, 39, 40].includes(e.keyCode)) return;
+        // Block non-numbers
+        if ((e.keyCode < 48 || e.keyCode > 57) && (e.keyCode < 96 || e.keyCode > 105)) {
+            e.preventDefault();
+        }
+    });
+
+    altInput.addEventListener('input', function(e) {
+        let v = this.value.replace(/\D/g, '');
+        if (v.length > 8) v = v.slice(0, 8);
+
+        let formatted = '';
+        if (v.length > 0) formatted = v.slice(0, 2);
+        if (v.length > 2) formatted += '/' + v.slice(2, 4);
+        if (v.length > 4) formatted += '/' + v.slice(4, 8);
+
+        this.value = formatted;
+
+        // Sync with flatpickr when complete (dd/mm/aaaa = 10 chars)
+        if (formatted.length === 10) {
+            const parts = formatted.split('/');
+            const day = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10) - 1;
+            const year = parseInt(parts[2], 10);
+            const date = new Date(year, month, day);
+            if (!isNaN(date.getTime()) && date.getFullYear() === year) {
+                fpInstance.setDate(date, true);
+            }
+        }
+    });
+}
+
+// Airport search with keyboard navigation
 function setupAirportSearch(searchId, resultsId, tagsId, hiddenId) {
     const searchInput = document.getElementById(searchId);
     const resultsDiv = document.getElementById(resultsId);
@@ -109,8 +265,9 @@ function setupAirportSearch(searchId, resultsId, tagsId, hiddenId) {
     const hiddenInput = document.getElementById(hiddenId);
     let selected = [];
     let debounceTimer;
+    let activeIndex = -1;
+    let currentItems = [];
 
-    // Load initial values from hidden input
     const initial = hiddenInput.value.trim();
     if (initial) {
         initial.split(',').forEach(code => {
@@ -125,7 +282,7 @@ function setupAirportSearch(searchId, resultsId, tagsId, hiddenId) {
         selected.forEach(code => {
             const tag = document.createElement('span');
             tag.className = 'airport-tag';
-            tag.innerHTML = code + ' <button type="button" onclick="this.parentElement.remove()">&times;</button>';
+            tag.innerHTML = code + ' <button type="button">&times;</button>';
             tag.querySelector('button').addEventListener('click', () => {
                 selected = selected.filter(c => c !== code);
                 hiddenInput.value = selected.join(',');
@@ -136,42 +293,77 @@ function setupAirportSearch(searchId, resultsId, tagsId, hiddenId) {
         hiddenInput.value = selected.join(',');
     }
 
+    function highlightItem(index) {
+        currentItems.forEach((item, i) => {
+            item.style.background = i === index ? 'rgba(59, 130, 246, 0.15)' : '';
+            item.style.color = i === index ? '#f1f5f9' : '#94a3b8';
+        });
+        activeIndex = index;
+    }
+
+    function selectItem(code) {
+        selected.push(code);
+        renderTags();
+        searchInput.value = '';
+        resultsDiv.style.display = 'none';
+        activeIndex = -1;
+        currentItems = [];
+        searchInput.focus();
+    }
+
+    searchInput.addEventListener('keydown', function(e) {
+        if (currentItems.length === 0) return;
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            const next = activeIndex < currentItems.length - 1 ? activeIndex + 1 : 0;
+            highlightItem(next);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            const prev = activeIndex > 0 ? activeIndex - 1 : currentItems.length - 1;
+            highlightItem(prev);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (activeIndex >= 0 && activeIndex < currentItems.length) {
+                const code = currentItems[activeIndex].dataset.code;
+                if (code) selectItem(code);
+            }
+        } else if (e.key === 'Escape') {
+            resultsDiv.style.display = 'none';
+            activeIndex = -1;
+        }
+    });
+
     searchInput.addEventListener('input', function() {
         clearTimeout(debounceTimer);
+        activeIndex = -1;
         const q = this.value.trim();
-        if (q.length < 2) { resultsDiv.style.display = 'none'; return; }
-
+        if (q.length < 2) { resultsDiv.style.display = 'none'; currentItems = []; return; }
         debounceTimer = setTimeout(() => {
             fetch('/api/airports/search?q=' + encodeURIComponent(q))
                 .then(r => r.json())
                 .then(airports => {
                     resultsDiv.innerHTML = '';
-                    if (airports.length === 0) {
-                        resultsDiv.innerHTML = '<div style="color:#94a3b8">Nenhum aeroporto encontrado</div>';
+                    currentItems = [];
+                    const filtered = airports.filter(a => !selected.includes(a.code));
+                    if (filtered.length === 0) {
+                        resultsDiv.innerHTML = '<div style="color:#64748b;padding:10px 12px">Nenhum aeroporto encontrado</div>';
                     }
-                    airports.forEach(a => {
-                        if (selected.includes(a.code)) return;
+                    filtered.forEach(a => {
                         const div = document.createElement('div');
-                        div.textContent = a.code + ' — ' + a.city + ', ' + a.country + ' (' + a.name + ')';
-                        div.addEventListener('click', () => {
-                            selected.push(a.code);
-                            renderTags();
-                            searchInput.value = '';
-                            resultsDiv.style.display = 'none';
-                        });
+                        div.dataset.code = a.code;
+                        div.textContent = a.code + ' \u2014 ' + a.city + ', ' + a.country;
+                        div.addEventListener('click', () => selectItem(a.code));
                         resultsDiv.appendChild(div);
+                        currentItems.push(div);
                     });
                     resultsDiv.style.display = 'block';
                 });
         }, 200);
     });
 
-    searchInput.addEventListener('blur', () => {
-        setTimeout(() => { resultsDiv.style.display = 'none'; }, 200);
-    });
-    searchInput.addEventListener('focus', () => {
-        if (resultsDiv.children.length > 0) resultsDiv.style.display = 'block';
-    });
+    searchInput.addEventListener('blur', () => { setTimeout(() => { resultsDiv.style.display = 'none'; }, 200); });
+    searchInput.addEventListener('focus', () => { if (currentItems.length > 0) resultsDiv.style.display = 'block'; });
 }
 
 setupAirportSearch('origins-search', 'origins-results', 'origins-tags', 'origins');

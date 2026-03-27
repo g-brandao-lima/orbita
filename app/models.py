@@ -16,6 +16,9 @@ class RouteGroup(Base):
     travel_start: Mapped[datetime.date] = mapped_column(Date)
     travel_end: Mapped[datetime.date] = mapped_column(Date)
     target_price: Mapped[float | None] = mapped_column(Float, nullable=True)
+    passengers: Mapped[int] = mapped_column(Integer, default=1)
+    max_stops: Mapped[int | None] = mapped_column(Integer, nullable=True, default=None)
+    mode: Mapped[str] = mapped_column(String(20), default="normal")
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     silenced_until: Mapped[datetime.datetime | None] = mapped_column(
         DateTime, nullable=True, default=None

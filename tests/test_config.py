@@ -16,8 +16,7 @@ def test_settings_has_all_fields():
     s = Settings(_env_file=None)
 
     # Assert
-    assert hasattr(s, "amadeus_client_id")
-    assert hasattr(s, "amadeus_client_secret")
+    assert hasattr(s, "serpapi_api_key")
     assert hasattr(s, "gmail_sender")
     assert hasattr(s, "gmail_app_password")
     assert hasattr(s, "gmail_recipient")
