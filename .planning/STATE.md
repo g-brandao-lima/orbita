@@ -2,16 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Multi-usuario
-status: planning
-stopped_at: null
-last_updated: "2026-03-28"
-last_activity: 2026-03-28
+status: Ready to execute
+stopped_at: Completed 10-01-PLAN.md
+last_updated: "2026-03-28T19:18:49.621Z"
 progress:
   total_phases: 4
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_plans: 2
+  completed_plans: 1
 ---
 
 # Project State
@@ -21,16 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** Detectar o momento certo de comprar uma passagem antes que o preco suba, usando dados de inventario reais que nenhum sistema consumer expoe.
-**Current focus:** Phase 10 - PostgreSQL Foundation
+**Current focus:** Phase 10 — postgresql-foundation
 
 ## Current Position
 
-Phase: 10 of 13 (PostgreSQL Foundation)
-Plan: 0 of ? in current phase
-Status: Ready to plan
-Last activity: 2026-03-28 — Roadmap v2.0 criado (Phases 10-13)
-
-Progress: [██████████████████████░░░░░░░░] 69% (9/13 phases complete — v1.0-v1.2 shipped)
+Phase: 10 (postgresql-foundation) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -59,6 +53,8 @@ Progress: [██████████████████████░
 - Last 5 plans: 3min, 3min, 3min, 2min, 2min
 - Trend: Stable
 
+| Phase 10 P01 | 3min | 2 tasks | 7 files |
+
 ## Accumulated Context
 
 ### Decisions
@@ -71,6 +67,8 @@ Recent decisions affecting current work:
 - [v2.0]: user_id only on route_groups (child tables inherit via FK)
 - [v2.0]: Alembic replaces Base.metadata.create_all() in production
 - [v2.0]: Tests keep SQLite in-memory (no PostgreSQL dependency)
+- [Phase 10]: Alembic autogenerate para baseline migration (4 tabelas + indice detectados automaticamente)
+- [Phase 10]: env.py usa create_engine direto com get_url() ao inves de engine_from_config
 
 ### Pending Todos
 
@@ -88,6 +86,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-28
-Stopped at: Roadmap v2.0 created with 4 phases (10-13)
+Last session: 2026-03-28T19:18:49.615Z
+Stopped at: Completed 10-01-PLAN.md
 Resume file: None
