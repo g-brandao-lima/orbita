@@ -12,6 +12,11 @@ Detectar o momento certo de comprar uma passagem antes que o preço suba, usando
 
 ### Validated
 
+**Phase 10 (PostgreSQL Foundation) — validated 2026-03-28**
+- Sistema usa PostgreSQL (Neon.tech) em producao, SQLite in-memory nos testes
+- Alembic gerencia todas as migrations de schema (baseline com 4 tabelas)
+- 188 testes continuam passando com SQLite in-memory sem alteracao
+
 **Phase 1 (Foundation) — validated 2026-03-25**
 - Aplicação inicia com um único comando e responde em localhost
 - Banco SQLite criado automaticamente com todas as tabelas
@@ -134,4 +139,4 @@ Este documento evolui a cada transição de fase e milestone.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-28 after v2.0 milestone start*
+*Last updated: 2026-03-28 after Phase 10 completion*
