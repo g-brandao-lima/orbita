@@ -1,36 +1,34 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.2
-milestone_name: Visual Polish
+milestone: v2.0
+milestone_name: Multi-usuario
 status: planning
-stopped_at: Completed 09-02-PLAN.md
-last_updated: "2026-03-26T04:39:14.910Z"
-last_activity: 2026-03-26
+stopped_at: null
+last_updated: "2026-03-28"
+last_activity: 2026-03-28
 progress:
-  total_phases: 1
-  completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
-  percent: 95
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-26)
+See: .planning/PROJECT.md (updated 2026-03-28)
 
-**Core value:** Detectar o momento certo de comprar uma passagem antes que o preco suba, usando dados de booking class inventory (Amadeus API) que nenhum sistema consumer expoe.
-**Current focus:** Phase 09 - Visual Polish
+**Core value:** Detectar o momento certo de comprar uma passagem antes que o preco suba, usando dados de preco e sinais de oportunidade que nenhum sistema consumer expoe.
+**Current focus:** Defining requirements for v2.0
 
 ## Current Position
 
-Phase: 09 of 9 (Visual Polish)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-03-26
-
-Progress: [████████████████████░] 95% (21/22 phases-plans complete across all milestones)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-28 — Milestone v2.0 started
 
 ## Performance Metrics
 

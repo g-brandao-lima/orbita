@@ -2,7 +2,7 @@
 
 ## What This Is
 
-Sistema pessoal de monitoramento de passagens aéreas que rastreia a velocidade de fechamento dos baldes de inventário (booking classes) de voos para prever o momento ideal de compra ANTES que o preço suba — não depois. Para uso próprio, rodando localmente com deploy futuro no Fly.io.
+Sistema de monitoramento de passagens aereas que rastreia precos e sinais de oportunidade de compra usando dados de inventario (booking classes) e price insights. Multi-usuario com login via Google OAuth, deploy no Render com PostgreSQL persistente.
 
 ## Core Value
 
@@ -52,15 +52,15 @@ Detectar o momento certo de comprar uma passagem antes que o preço suba, usando
 
 ### Out of Scope
 
-- Efetuar compra de passagens — fora do escopo, apenas monitoramento
-- Web scraping — somente APIs oficiais (Amadeus)
-- Hotéis, carros, multimodal — produto focado em voos
-- Múltiplos usuários / autenticação — uso pessoal apenas
-- Aplicativo mobile — web responsivo é suficiente
-- Telegram / WhatsApp — Gmail resolve para uso pessoal; Telegram silenciado pelo usuário
-- Voos somente ida (one-way) — apenas roundtrip nesta versão
-- Multi-tenant / SaaS — produto pessoal
-- Integração Duffel/NDC — fase 2 se necessário
+- Efetuar compra de passagens — apenas monitoramento
+- Web scraping — somente APIs oficiais
+- Hoteis, carros, multimodal — produto focado em voos
+- Aplicativo mobile — web responsivo e suficiente
+- Telegram / WhatsApp — Gmail resolve; Telegram silenciado pelo usuario
+- Voos somente ida (one-way) — apenas roundtrip nesta versao
+- Integracao Duffel/NDC — fase futura se necessario
+- Login com email/senha — apenas Google OAuth no v2.0
+- Plano pago SerpAPI — free tier compartilhado por enquanto
 
 ## Context
 
@@ -85,34 +85,36 @@ Sistemas consumer (Google Flights, Kayak) são reativos: alertam quando o preço
 
 ## Constraints
 
-- **API**: Amadeus Self-Service free tier — 2.000 calls/mês; máximo ~4 grupos ativos com 2 pollings/dia
-- **Stack**: Python, FastAPI, SQLite, APScheduler, Gmail SMTP — sem JavaScript framework no frontend
-- **Infra**: Local first → Fly.io free tier; sem VPS pago nesta versão
-- **Usuários**: Single-user, sem autenticação complexa
-- **Scope**: Roundtrip only; voos GDS (não LCC direto)
+- **API**: SerpAPI free tier (250 buscas/mes) compartilhada entre usuarios
+- **Stack**: Python, FastAPI, PostgreSQL, APScheduler, Jinja2 — sem JS framework no frontend
+- **Infra**: Render (web) + Neon.tech (PostgreSQL) — ambos free tier
+- **Auth**: Google OAuth exclusivo (Google Cloud Console)
+- **Scope**: Roundtrip only; voos GDS (nao LCC direto)
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| SQLite over PostgreSQL | Uso pessoal, volume pequeno, zero configuração, arquivo único fácil de backup | — Pending |
-| APScheduler embedded (não Celery) | Single-user, sem necessidade de workers distribuídos | — Pending |
-| FastAPI + Jinja2 (sem JS framework) | Interface mínima, sem complexidade de build | — Pending |
-| Amadeus como fonte primária | Único que expõe availabilityClasses com contagem por booking class | — Pending |
-| Gmail para alertas | Usuário já usa, volume baixo de alertas, sem app extra necessário | — Pending |
-| Fly.io free tier para cloud | Zero custo, suporte a persistent volume para SQLite, sempre ativo | — Pending |
-| Roundtrip only na v1 | Simplifica modelo de dados e lógica de busca; one-way pode ser fase 2 | — Pending |
+| SQLite over PostgreSQL | Uso pessoal, volume pequeno, zero configuracao | ⚠️ Revisit — migrando para PostgreSQL no v2.0 |
+| APScheduler embedded (nao Celery) | Single-user, sem necessidade de workers distribuidos | ✓ Good |
+| FastAPI + Jinja2 (sem JS framework) | Interface minima, sem complexidade de build | ✓ Good |
+| SerpAPI como fonte primaria | Google Flights data via API, price insights incluidos | ✓ Good |
+| Gmail para alertas | Usuario ja usa, volume baixo de alertas | ✓ Good |
+| Render para deploy | Free tier, build automatico do GitHub | ✓ Good |
+| Roundtrip only | Simplifica modelo de dados e logica de busca | ✓ Good |
+| Google OAuth exclusivo (v2.0) | Sem gerenciar senhas, setup mais simples, usuarios ja tem Google | — Pending |
+| PostgreSQL via Neon.tech (v2.0) | Persistencia entre deploys, multi-usuario, free tier generoso | — Pending |
 
-## Current Milestone: v1.2 Visual Polish
+## Current Milestone: v2.0 Multi-usuario
 
-**Goal:** Aplicar o UI-SPEC aprovado para transformar o dashboard num visual profissional inspirado em Hopper/Linear/Going.com
+**Goal:** Transformar o Flight Monitor de ferramenta pessoal em produto multi-usuario com landing page publica, login via Google OAuth e banco PostgreSQL persistente.
 
 **Target features:**
-- Aplicar paleta de cores do UI-SPEC (sky blue accent, verde/amarelo/vermelho semantico)
-- Cards com preco monospace 28px, borda colorida, hover com sombra
-- Summary bar com fundo escuro e 3 metricas
-- Estado vazio com SVG aviao e CTA verde
-- Tipografia limpa com escala 13/14/20/28px
+- Landing page minimalista (about + diferencial vs Google Flights/Skyscanner)
+- Login exclusivo via Google OAuth
+- Migracao SQLite para PostgreSQL (Neon.tech free tier)
+- Multi-usuario com isolamento de dados por usuario
+- Redesign das telas autenticadas
 
 ## Evolution
 
@@ -132,4 +134,4 @@ Este documento evolui a cada transição de fase e milestone.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-26 after v1.2 milestone start*
+*Last updated: 2026-03-28 after v2.0 milestone start*
