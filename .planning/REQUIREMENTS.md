@@ -99,7 +99,7 @@
 
 - [x] **DB-01**: Sistema usa PostgreSQL (Neon.tech) como banco de dados em producao
 - [x] **DB-02**: Alembic gerencia todas as migrations de schema
-- [ ] **DB-03**: Testes continuam rodando com SQLite in-memory (sem dependencia de PostgreSQL)
+- [x] **DB-03**: Testes continuam rodando com SQLite in-memory (sem dependencia de PostgreSQL)
 
 ### Autenticacao
 
@@ -213,7 +213,7 @@
 | VIS-06 | Phase 9 | Complete |
 | DB-01 | Phase 10 | Complete |
 | DB-02 | Phase 10 | Complete |
-| DB-03 | Phase 10 | Pending |
+| DB-03 | Phase 10 | Complete |
 | AUTH-01 | Phase 11 | Pending |
 | AUTH-02 | Phase 11 | Pending |
 | AUTH-03 | Phase 11 | Pending |

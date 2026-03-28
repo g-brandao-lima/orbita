@@ -184,7 +184,7 @@ Plans:
 
 **Milestone Goal:** Transformar o Flight Monitor de ferramenta pessoal em produto multi-usuario com landing page publica, login via Google OAuth e banco PostgreSQL persistente.
 
-- [ ] **Phase 10: PostgreSQL Foundation** - Migrar banco para PostgreSQL com Alembic, mantendo todos os testes passando
+- [x] **Phase 10: PostgreSQL Foundation** - Migrar banco para PostgreSQL com Alembic, mantendo todos os testes passando (completed 2026-03-28)
 - [ ] **Phase 11: Google OAuth** - Login com Google, sessoes persistentes e infraestrutura de autenticacao
 - [ ] **Phase 12: Data Isolation** - Isolamento completo de dados por usuario, alertas por email do dono e controle de quota SerpAPI
 - [ ] **Phase 13: Landing Page** - Pagina publica com hero, proposta de valor e CTA de login
@@ -204,7 +204,7 @@ Plans:
 
 Plans:
 - [x] 10-01-PLAN.md - database.py condicional + Alembic init + baseline migration (DB-01, DB-02)
-- [ ] 10-02-PLAN.md - render.yaml + .env.example + regressao + checkpoint (DB-01, DB-03)
+- [x] 10-02-PLAN.md - render.yaml + .env.example + regressao + checkpoint (DB-01, DB-03)
 
 ### Phase 11: Google OAuth
 **Goal**: Usuario pode fazer login com Google e navegar pelo dashboard com sessao persistente, vendo seu nome e foto no header
@@ -256,7 +256,7 @@ Plans:
 | 7. Consolidated Email | v1.1 | 2/2 | Complete | 2026-03-26 |
 | 8. Dashboard Redesign | v1.1 | 2/2 | Complete | 2026-03-26 |
 | 9. Visual Polish | v1.2 | 2/2 | Complete | 2026-03-28 |
-| 10. PostgreSQL Foundation | v2.0 | 1/2 | In Progress|  |
+| 10. PostgreSQL Foundation | v2.0 | 2/2 | Complete   | 2026-03-28 |
 | 11. Google OAuth | v2.0 | 0/? | Not started | - |
 | 12. Data Isolation | v2.0 | 0/? | Not started | - |
 | 13. Landing Page | v2.0 | 0/? | Not started | - |
