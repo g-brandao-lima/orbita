@@ -200,7 +200,11 @@ Plans:
   2. Alembic gerencia o schema completo: `alembic upgrade head` cria todas as tabelas a partir de um banco vazio, e `alembic revision --autogenerate` detecta mudancas nos models
   3. Todos os 188+ testes existentes continuam passando com SQLite in-memory (nenhuma dependencia de PostgreSQL nos testes)
   4. Dados existentes no Render sobrevivem a um redeploy (persistencia real, nao mais SQLite efemero)
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 10-01-PLAN.md - database.py condicional + Alembic init + baseline migration (DB-01, DB-02)
+- [ ] 10-02-PLAN.md - render.yaml + .env.example + regressao + checkpoint (DB-01, DB-03)
 
 ### Phase 11: Google OAuth
 **Goal**: Usuario pode fazer login com Google e navegar pelo dashboard com sessao persistente, vendo seu nome e foto no header
@@ -252,7 +256,7 @@ Plans:
 | 7. Consolidated Email | v1.1 | 2/2 | Complete | 2026-03-26 |
 | 8. Dashboard Redesign | v1.1 | 2/2 | Complete | 2026-03-26 |
 | 9. Visual Polish | v1.2 | 2/2 | Complete | 2026-03-28 |
-| 10. PostgreSQL Foundation | v2.0 | 0/? | Not started | - |
+| 10. PostgreSQL Foundation | v2.0 | 0/2 | Planning | - |
 | 11. Google OAuth | v2.0 | 0/? | Not started | - |
 | 12. Data Isolation | v2.0 | 0/? | Not started | - |
 | 13. Landing Page | v2.0 | 0/? | Not started | - |
