@@ -270,25 +270,30 @@ def get_dashboard_summary(db: Session) -> dict:
                 if cheapest_price is None or min_price < cheapest_price:
                     cheapest_price = min_price
 
+    # BRT timezone (UTC-3, João Pessoa / Brasília)
+    brt_offset = timedelta(hours=-3)
+
     # Next polling from scheduler
     try:
         from app.scheduler import scheduler
         job = scheduler.get_job("polling_cycle")
         if job and job.next_run_time:
-            next_polling = job.next_run_time.strftime("%H:%M")
+            next_brt = job.next_run_time + brt_offset
+            next_polling = next_brt.strftime("%H:%M")
         else:
-            next_polling = "Automatico (1x/dia)"
+            next_polling = "Automático (1x/dia)"
     except Exception:
-        next_polling = "Automatico (1x/dia)"
+        next_polling = "Automático (1x/dia)"
 
-    # Last collection time
+    # Last collection time (converted to BRT)
     last_collected = (
         db.query(func.max(FlightSnapshot.collected_at))
         .scalar()
     )
     last_collection_str = None
     if last_collected:
-        last_collection_str = last_collected.strftime("%d/%m %H:%M")
+        last_brt = last_collected + brt_offset
+        last_collection_str = last_brt.strftime("%d/%m %H:%M")
 
     return {
         "active_count": active_count,
@@ -312,13 +317,14 @@ def get_recent_activity(db: Session, limit: int = 8) -> list[dict]:
         .all()
     )
 
+    brt = timedelta(hours=-3)
     for s in signals:
         items.append({
             "type": "signal",
             "icon": "alert",
             "text": f"{s.signal_type.replace('_', ' ').title()}: {s.origin} → {s.destination}",
             "detail": f"R$ {s.price_at_detection:,.0f}".replace(",", "."),
-            "time": s.detected_at,
+            "time": s.detected_at + brt if s.detected_at else s.detected_at,
             "urgency": s.urgency,
         })
 
@@ -346,7 +352,7 @@ def get_recent_activity(db: Session, limit: int = 8) -> list[dict]:
                 "icon": "sync",
                 "text": f"Coleta: {group.name}",
                 "detail": f"{count} voos encontrados",
-                "time": latest,
+                "time": latest + brt if latest else latest,
                 "urgency": None,
             })
 
