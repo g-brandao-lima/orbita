@@ -93,24 +93,55 @@
 
 ---
 
-## v2 Requirements
+## v2.0 Requirements
+
+### Database & Infra
+
+- [ ] **DB-01**: Sistema usa PostgreSQL (Neon.tech) como banco de dados em producao
+- [ ] **DB-02**: Alembic gerencia todas as migrations de schema
+- [ ] **DB-03**: Testes continuam rodando com SQLite in-memory (sem dependencia de PostgreSQL)
+
+### Autenticacao
+
+- [ ] **AUTH-01**: Usuario pode fazer login com um clique via Google OAuth
+- [ ] **AUTH-02**: Sessao do usuario persiste entre abas e refreshes do navegador
+- [ ] **AUTH-03**: Usuario pode fazer logout de qualquer pagina
+- [ ] **AUTH-04**: Header exibe nome e foto do usuario logado (dados do Google)
+- [ ] **AUTH-05**: Falha na autenticacao mostra mensagem clara na landing page
+
+### Multi-usuario
+
+- [ ] **MULTI-01**: Usuario ve apenas seus proprios grupos de rota, snapshots e sinais
+- [ ] **MULTI-02**: Alertas por email sao enviados para o email do proprio usuario (do Google)
+- [ ] **MULTI-03**: Dashboard exibe indicador de buscas SerpAPI restantes no mes (budget compartilhado)
+- [ ] **MULTI-04**: Usuario pode ver historico de todos os sinais detectados para seus grupos ("Meus alertas")
+
+### Landing Page
+
+- [ ] **LAND-01**: Visitante nao logado ve landing page publica com hero e descricao do produto
+- [ ] **LAND-02**: Landing page tem secao "Por que somos diferentes" comparando com Google Flights/Skyscanner
+- [ ] **LAND-03**: Landing page tem botao "Entrar com Google" como CTA principal
+- [ ] **LAND-04**: Landing page e responsiva (mobile-first)
+
+## Future Requirements
+
+### Deferred to v2.1+
+
+- **DEMO-01**: Grupo demo pre-criado no primeiro login do usuario
+- **QUOTA-01**: Limite de buscas SerpAPI por usuario (quando >20 usuarios)
+- **ADMIN-01**: Painel administrativo para gerenciar usuarios
+- **NOTIF-01**: Canais adicionais de notificacao (Telegram, push)
 
 ### Extended Sources
 
-- **SRC-01**: Integracao com Duffel API como fonte secundaria NDC para comparar precos exclusivos nao disponiveis no GDS
-- **SRC-02**: Integracao com SerpApi Google Flights para usar sinal de previsao "prices unlikely to drop" como confirmacao
+- **SRC-01**: Integracao com Duffel API como fonte secundaria NDC
+- **SRC-02**: Integracao com SerpApi para sinal de previsao "prices unlikely to drop"
 
 ### Extended Monitoring
 
-- **MON-01**: Suporte a voos de ida apenas (one-way), alem de roundtrip
-- **MON-02**: Historico de variacao por booking class individual (grafico Y, B, M... separados)
-- **MON-03**: Calculo automatico de custo total incluindo bagagem estimada por rota
-
-### Extended Interface
-
-- **UI-01**: Autocomplete de codigo IATA ao digitar aeroportos no formulario (busca por nome da cidade)
-- **UI-02**: Exportar historico de alertas em CSV
-- **UI-03**: Guia de deploy passo a passo para Fly.io integrado na interface
+- **MON-01**: Suporte a voos de ida apenas (one-way)
+- **MON-02**: Historico de variacao por booking class individual
+- **MON-03**: Calculo automatico de custo total incluindo bagagem
 
 ---
 
@@ -118,14 +149,16 @@
 
 | Feature | Reason |
 |---------|--------|
-| Compra de passagens | Apenas monitoramento - integracao com booking adiciona complexidade e responsabilidade |
-| Multiplos usuarios / autenticacao | Ferramenta pessoal; adicionar auth nao agrega valor agora |
+| Compra de passagens | Apenas monitoramento |
+| Login com email/senha | Google OAuth e universal no publico-alvo; sem gerenciar senhas |
 | Web scraping | Somente APIs oficiais; scraping viola ToS e e fragil |
-| Hoteis, carros, multimodal | Foco em voos - expansao dilui o core value |
-| App mobile nativo | Interface web responsiva e suficiente para o uso |
-| Telegram / WhatsApp | Gmail resolve para uso pessoal de baixo volume; Telegram silenciado pelo usuario |
-| Multi-tenant / SaaS | Escopo pessoal - virar SaaS e decisao de negocio futura |
-| Real-time streaming de precos | Polling a cada 6h e suficiente; streaming aumentaria custo de API |
+| Hoteis, carros, multimodal | Foco em voos |
+| App mobile nativo | Interface web responsiva e suficiente |
+| Telegram / WhatsApp / Push | Gmail resolve; canais extras adicionam complexidade |
+| Precos em tempo real (WebSocket) | SerpAPI tem 250 calls/mes; polling 1x/dia e o maximo |
+| Grupos colaborativos entre usuarios | Quebra modelo de isolamento |
+| Comparacao automatica de datas (3 meses) | Google Flights Explore ja faz isso bem |
+| Compartilhamento social de deals | Expoe dados internos de sinais |
 
 ---
 
@@ -179,11 +212,29 @@
 | VIS-05 | Phase 9 | Complete |
 | VIS-06 | Phase 9 | Complete |
 
+| DB-01 | — | Pending |
+| DB-02 | — | Pending |
+| DB-03 | — | Pending |
+| AUTH-01 | — | Pending |
+| AUTH-02 | — | Pending |
+| AUTH-03 | — | Pending |
+| AUTH-04 | — | Pending |
+| AUTH-05 | — | Pending |
+| MULTI-01 | — | Pending |
+| MULTI-02 | — | Pending |
+| MULTI-03 | — | Pending |
+| MULTI-04 | — | Pending |
+| LAND-01 | — | Pending |
+| LAND-02 | — | Pending |
+| LAND-03 | — | Pending |
+| LAND-04 | — | Pending |
+
 **Coverage:**
 - v1 requirements: 28 total, 28 mapped, 0 unmapped
 - v1.1 requirements: 11 total, 11 mapped, 0 unmapped
 - v1.2 requirements: 6 total, 6 mapped, 0 unmapped
+- v2.0 requirements: 16 total, 0 mapped, 16 unmapped ⚠️
 
 ---
 *Requirements defined: 2026-03-24*
-*Last updated: 2026-03-26 after v1.2 roadmap creation*
+*Last updated: 2026-03-28 after v2.0 requirements definition*
