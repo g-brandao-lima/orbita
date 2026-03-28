@@ -39,6 +39,12 @@ app.include_router(alerts_router, prefix="/api/v1")
 app.include_router(dashboard_router)
 
 
+@app.head("/")
+async def health_check():
+    """Endpoint HEAD para UptimeRobot keep-alive."""
+    return HTMLResponse(content="", status_code=200)
+
+
 ERROR_MESSAGES = {
     404: ("Pagina nao encontrada.", "O endereco que voce acessou nao existe."),
 }
