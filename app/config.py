@@ -8,6 +8,9 @@ class Settings(BaseSettings):
     gmail_app_password: str = ""
     gmail_recipient: str = ""
     app_base_url: str = "http://localhost:8000"
+    google_client_id: str = ""
+    google_client_secret: str = ""
+    session_secret_key: str = "dev-secret-change-in-production"
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
