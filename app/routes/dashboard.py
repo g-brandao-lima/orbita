@@ -141,8 +141,8 @@ def create_group_form(
     origins: str = Form(""),
     destinations: str = Form(""),
     duration_days: int = Form(1),
-    travel_start: datetime.date = Form(...),
-    travel_end: datetime.date = Form(...),
+    travel_start: datetime.date | None = Form(None),
+    travel_end: datetime.date | None = Form(None),
     mode: str = Form("normal"),
     passengers: int = Form(1),
     max_stops: str = Form(""),
@@ -152,6 +152,13 @@ def create_group_form(
     parsed_origins, parsed_destinations, error = _validate_form(
         name, origins, destinations, duration_days
     )
+
+    if not error and not travel_start:
+        error = "Data de início do período é obrigatória."
+    if not error and not travel_end:
+        error = "Data de fim do período é obrigatória."
+    if not error and travel_start and travel_end and travel_end <= travel_start:
+        error = "Data de fim deve ser posterior à data de início."
 
     if not error:
         active_count = _count_active_groups(db)
@@ -235,8 +242,8 @@ def edit_group_form(
     origins: str = Form(""),
     destinations: str = Form(""),
     duration_days: int = Form(1),
-    travel_start: datetime.date = Form(...),
-    travel_end: datetime.date = Form(...),
+    travel_start: datetime.date | None = Form(None),
+    travel_end: datetime.date | None = Form(None),
     mode: str = Form("normal"),
     passengers: int = Form(1),
     max_stops: str = Form(""),
@@ -250,6 +257,13 @@ def edit_group_form(
     parsed_origins, parsed_destinations, error = _validate_form(
         name, origins, destinations, duration_days
     )
+
+    if not error and not travel_start:
+        error = "Data de início do período é obrigatória."
+    if not error and not travel_end:
+        error = "Data de fim do período é obrigatória."
+    if not error and travel_start and travel_end and travel_end <= travel_start:
+        error = "Data de fim deve ser posterior à data de início."
 
     if error:
         form_data = {
