@@ -11,8 +11,6 @@ from fastapi.exceptions import HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
-from app.database import Base, engine
-
 logger = logging.getLogger(__name__)
 _TEMPLATES_DIR = Path(__file__).resolve().parent / "app" / "templates"
 _templates = Jinja2Templates(directory=str(_TEMPLATES_DIR))
@@ -20,7 +18,7 @@ _templates = Jinja2Templates(directory=str(_TEMPLATES_DIR))
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    Base.metadata.create_all(bind=engine)
+    # Schema gerenciado pelo Alembic (alembic upgrade head)
     from app.scheduler import init_scheduler, shutdown_scheduler
 
     init_scheduler()
