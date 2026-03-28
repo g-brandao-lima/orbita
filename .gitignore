@@ -1,6 +1,35 @@
+# Python
 venv/
 __pycache__/
-*.db
-.env
 *.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Database
+*.db
+
+# Environment
+.env
+
+# Testing
 .pytest_cache/
+htmlcov/
+.coverage
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code worktrees
+.claude/worktrees/
+
+# Planning (optional - remove if you want to track)
+# .planning/

@@ -103,7 +103,7 @@ def test_index_shows_signal_badge_alta(client, db):
 
     response = client.get("/")
 
-    assert "ALTA" in response.text
+    assert "Alta" in response.text
     assert "badge-alta" in response.text
 
 

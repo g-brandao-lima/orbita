@@ -254,3 +254,85 @@ def test_format_date_br_formats_correctly():
 
 def test_format_date_br_handles_none():
     assert format_date_br(None) == ""
+
+
+# --- Filtro por origens/destinos atuais do grupo ---
+
+
+def test_get_groups_with_summary_ignores_snapshots_from_removed_origin(db):
+    """Apos editar grupo e remover uma origem, snapshots da origem antiga
+    nao devem aparecer como cheapest_snapshot."""
+    group = _make_group(db, origins=["REC", "JPA"], destinations=["CGH"])
+    now = datetime.datetime(2026, 3, 20, 12, 0)
+    # Snapshot antigo com REC (mais barato)
+    _make_snapshot(db, group, price=800.0, origin="REC", destination="CGH",
+                   collected_at=now)
+    # Snapshot com JPA (mais caro)
+    _make_snapshot(db, group, price=1200.0, origin="JPA", destination="CGH",
+                   collected_at=now)
+
+    # Simula edicao: usuario removeu REC, ficou so JPA
+    group.origins = ["JPA"]
+    db.commit()
+
+    result = get_groups_with_summary(db)
+
+    assert result[0]["cheapest_snapshot"] is not None
+    assert result[0]["cheapest_snapshot"].origin == "JPA"
+    assert result[0]["cheapest_snapshot"].price == 1200.0
+
+
+def test_get_groups_with_summary_ignores_snapshots_from_removed_destination(db):
+    """Apos editar grupo e remover um destino, snapshots do destino antigo
+    nao devem aparecer."""
+    group = _make_group(db, origins=["JPA"], destinations=["CGH", "GRU"])
+    now = datetime.datetime(2026, 3, 20, 12, 0)
+    _make_snapshot(db, group, price=900.0, origin="JPA", destination="GRU",
+                   collected_at=now)
+    _make_snapshot(db, group, price=1500.0, origin="JPA", destination="CGH",
+                   collected_at=now)
+
+    # Simula edicao: removeu GRU
+    group.destinations = ["CGH"]
+    db.commit()
+
+    result = get_groups_with_summary(db)
+
+    assert result[0]["cheapest_snapshot"].destination == "CGH"
+    assert result[0]["cheapest_snapshot"].price == 1500.0
+
+
+def test_get_dashboard_summary_ignores_snapshots_from_removed_origin(db):
+    """Menor preco global nao deve considerar snapshots de origens removidas."""
+    group = _make_group(db, origins=["REC", "JPA"], destinations=["CGH"])
+    now = datetime.datetime(2026, 3, 20, 12, 0)
+    _make_snapshot(db, group, price=500.0, origin="REC", destination="CGH",
+                   collected_at=now)
+    _make_snapshot(db, group, price=1000.0, origin="JPA", destination="CGH",
+                   collected_at=now)
+
+    group.origins = ["JPA"]
+    db.commit()
+
+    result = get_dashboard_summary(db)
+
+    assert result["cheapest_price"] == 1000.0
+
+
+def test_get_price_history_ignores_snapshots_from_removed_origin(db):
+    """Historico de preco nao deve mostrar rota de origem removida."""
+    group = _make_group(db, origins=["REC", "JPA"], destinations=["CGH"])
+    now = datetime.datetime(2026, 3, 20, 12, 0)
+    # REC mais barato (seria a "cheapest route" sem filtro)
+    _make_snapshot(db, group, price=600.0, origin="REC", destination="CGH",
+                   collected_at=now)
+    _make_snapshot(db, group, price=1100.0, origin="JPA", destination="CGH",
+                   collected_at=now)
+
+    group.origins = ["JPA"]
+    db.commit()
+
+    result = get_price_history(db, group.id)
+
+    assert "JPA" in result["route"]
+    assert "REC" not in result["route"]

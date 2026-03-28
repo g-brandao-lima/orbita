@@ -1,349 +1,229 @@
 {% extends "base.html" %}
-
 {% block title %}Flight Monitor{% endblock %}
 
 {% block head %}
 <style>
-    #summary-bar {
+    /* Summary strip - compact, integrated */
+    .summary-strip {
         display: flex;
         align-items: center;
-        gap: 32px;
-        margin-bottom: 24px;
-        padding: 0;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        padding: 0 4px;
     }
-    .summary-item {
+    .summary-metrics {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+    }
+    .metric { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+    .metric-label { color: #64748b; }
+    .metric-value { color: #e2e8f0; font-weight: 600; }
+    .metric-value.green { color: #34d399; }
+
+    /* Empty state */
+    .empty-state { text-align: center; padding: 80px 24px; }
+    .empty-state svg { margin-bottom: 20px; }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+    .empty-state svg { animation: float 3s ease-in-out infinite; }
+    .empty-state h2 { font-size: 18px; font-weight: 700; color: #e2e8f0; margin-bottom: 6px; }
+    .empty-state p { color: #64748b; font-size: 14px; margin-bottom: 28px; max-width: 380px; margin-left: auto; margin-right: auto; }
+
+    /* Cards */
+    .cards { display: flex; flex-direction: column; gap: 12px; }
+    .card {
+        background: #111827;
+        border: 1px solid #1e293b;
+        border-radius: 10px;
+        padding: 20px 24px;
+        border-left: 3px solid #1e293b;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        position: relative;
+    }
+    .card:hover { border-color: #3b82f6; box-shadow: 0 4px 12px rgba(59,130,246,0.06); }
+    .card.border-low { border-left-color: #10b981; }
+    .card.border-medium { border-left-color: #f59e0b; }
+    .card.border-high { border-left-color: #ef4444; }
+    .card.inactive { opacity: 0.4; }
+    .card.inactive:hover { border-color: #1e293b; box-shadow: none; }
+
+    /* Card layout: 2 rows */
+    .card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+    .card-info { flex: 1; }
+    .card-name {
+        font-size: 15px;
+        font-weight: 700;
+        color: #f1f5f9;
+        margin-bottom: 4px;
         display: flex;
         align-items: center;
         gap: 8px;
     }
-    .summary-item .label {
-        font-size: 13px;
-        color: #64748b;
-        font-weight: 400;
-    }
-    .summary-item .value {
-        font-size: 14px;
-        font-weight: 700;
-        color: #e5e5e5;
-    }
-    .summary-item .value.price-value { color: #34d399; }
-    .summary-item .btn-poll {
-        background: none; border: 1px solid #2d3748; color: #64748b;
-        padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 500;
-        cursor: pointer; font-family: inherit; transition: all 0.2s;
-        display: inline-flex; align-items: center; gap: 5px;
-    }
-    .summary-item .btn-poll:hover { border-color: #10b981; color: #34d399; }
-    .empty-state {
-        text-align: center;
-        padding: 64px 32px;
-    }
-    .empty-state svg {
-        margin-bottom: 24px;
-        animation: float 3s ease-in-out infinite;
-    }
-    @keyframes float {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-12px); }
-    }
-    .empty-state h2 {
-        font-size: 20px;
-        font-weight: 700;
-        color: #f1f5f9;
-        margin-bottom: 8px;
-    }
-    .empty-state p {
-        color: #64748b;
-        font-size: 14px;
-        margin-bottom: 32px;
-        max-width: 400px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-    .empty-state .btn-create {
-        background: #10b981;
-        color: white;
-        padding: 10px 24px;
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 14px;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        min-height: 40px;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .empty-state .btn-create:hover {
-        background: #059669;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-    }
-    .cards-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-        gap: 24px;
-    }
-    .group-card {
-        position: relative;
-        background: #1a1e2e;
-        border: 1px solid #2d3748;
-        border-radius: 12px;
-        padding: 24px;
-        border-left: 4px solid #3f4652;
-        overflow: hidden;
-        transition:
-            transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-            box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-            border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .group-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.15), transparent);
-    }
-    .group-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 24px rgba(59, 130, 246, 0.08);
-        border-color: #3b82f6;
-    }
-    .group-card.border-low { border-left-color: #10b981; }
-    .group-card.border-medium { border-left-color: #f59e0b; }
-    .group-card.border-high { border-left-color: #ef4444; }
-    .group-card.border-none { border-left-color: #3f4652; }
-    .group-card.inactive { opacity: 0.4; }
-    .group-card.inactive:hover { transform: none; box-shadow: none; }
-    .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 12px;
-    }
-    .card-header .name-area { display: flex; align-items: center; gap: 8px; }
-    .card-header .name-area a {
-        font-size: 15px;
-        font-weight: 700;
-        color: #f1f5f9;
-        text-decoration: none;
-        letter-spacing: -0.01em;
-    }
-    .card-header .name-area a:hover { color: #60a5fa; }
-    .badge {
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-    .badge-inactive { background: rgba(100, 116, 139, 0.2); color: #64748b; }
-    .badge-maxima { background: rgba(239, 68, 68, 0.2); color: #f87171; }
-    .badge-alta { background: rgba(249, 115, 22, 0.2); color: #fb923c; }
-    .badge-media { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
-    .badge-sem { background: rgba(100, 116, 139, 0.15); color: #64748b; }
+    .card-name a { color: #f1f5f9; text-decoration: none; }
+    .card-name a:hover { color: #60a5fa; }
+    .card-route { font-size: 13px; color: #94a3b8; }
+    .card-dates { font-size: 12px; color: #64748b; margin-top: 2px; }
+    .card-price-area { text-align: right; flex-shrink: 0; }
     .card-price {
-        font-family: ui-monospace, "Cascadia Code", "SF Mono", Menlo, monospace;
-        font-size: 28px;
+        font-family: ui-monospace, 'Cascadia Code', 'SF Mono', Menlo, monospace;
+        font-size: 24px;
         font-weight: 700;
         line-height: 1.2;
-        margin-bottom: 8px;
         letter-spacing: -0.02em;
     }
+    .card-price-sub { font-size: 12px; color: #64748b; margin-top: 2px; }
     .price-low { color: #34d399; }
     .price-medium { color: #fbbf24; }
     .price-high { color: #f87171; }
     .price-none { color: #64748b; }
-    .card-route {
-        color: #94a3b8;
-        font-size: 14px;
-        margin-bottom: 4px;
-    }
-    .card-dates {
-        color: #64748b;
-        font-size: 13px;
-        margin-bottom: 16px;
-    }
-    .card-footer {
+
+    /* Card bottom: actions */
+    .card-bottom {
         display: flex;
-        gap: 12px;
         align-items: center;
-        padding-top: 16px;
-        border-top: 1px solid #2d3748;
+        gap: 8px;
+        padding-top: 12px;
+        border-top: 1px solid rgba(255,255,255,0.04);
     }
-    .card-footer a {
-        color: #60a5fa;
-        font-size: 13px;
-        font-weight: 600;
-        text-decoration: none;
-        transition: color 0.2s;
+    .card-bottom .spacer { flex: 1; }
+    .card-actions { display: flex; gap: 4px; }
+    .card-actions a {
+        font-size: 12px; color: #64748b; padding: 4px 10px; border: 1px solid #1e293b;
+        border-radius: 6px; transition: all 0.15s; text-decoration: none; min-height: 28px;
+        display: inline-flex; align-items: center;
     }
-    .card-footer a:hover { color: #93bbfd; }
-    .card-footer form { margin: 0; }
-    .card-footer button {
-        background: none;
-        border: 1px solid #2d3748;
-        padding: 4px 12px;
-        border-radius: 6px;
-        font-size: 13px;
-        cursor: pointer;
-        color: #94a3b8;
-        font-weight: 500;
-        transition: all 0.2s;
+    .card-actions a:hover { color: #e2e8f0; border-color: #334155; background: rgba(255,255,255,0.03); }
+
+    /* Badges */
+    .badge {
+        padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 700;
+        text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;
     }
-    .card-footer button:hover {
-        background: rgba(59, 130, 246, 0.1);
-        border-color: #3b82f6;
-        color: #60a5fa;
-    }
-    .awaiting-text {
-        color: #64748b;
-        font-style: italic;
-        font-size: 14px;
-        margin-bottom: 16px;
-    }
-    .btn-flights {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        color: #64748b;
-        font-size: 13px;
-        font-weight: 500;
-        text-decoration: none;
-        padding: 4px 10px;
-        border: 1px solid #2d3748;
-        border-radius: 6px;
-        transition: all 0.2s;
-        margin-left: auto;
-    }
-    .btn-flights:hover {
-        color: #f1f5f9;
-        border-color: #3b82f6;
-        background: rgba(59, 130, 246, 0.1);
-    }
-    .activity-empty {
-        color: #4a5568;
-        font-size: 13px;
-        text-align: center;
-        padding: 24px 0;
-    }
-    /* Activity Badge */
+    .badge-inactive { background: rgba(100,116,139,0.15); color: #64748b; }
+    .badge-maxima { background: rgba(239,68,68,0.15); color: #f87171; }
+    .badge-alta { background: rgba(249,115,22,0.15); color: #fb923c; }
+    .badge-media { background: rgba(245,158,11,0.15); color: #fbbf24; }
+    .badge-sem { background: rgba(100,116,139,0.1); color: #475569; }
+    .badge-explore { background: rgba(168,85,247,0.12); color: #c084fc; }
+
+    /* Awaiting */
+    .awaiting { color: #475569; font-size: 13px; font-style: italic; padding: 8px 0; }
+
+    /* Activity badge */
     .activity-badge {
-        position: fixed;
-        bottom: 24px;
-        right: 24px;
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        background: #1a1e2e;
-        border: 1px solid #2d3748;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.2s;
-        z-index: 100;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        position: fixed; bottom: 20px; right: 20px; width: 40px; height: 40px;
+        border-radius: 50%; background: #111827; border: 1px solid #1e293b;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; transition: all 0.2s; z-index: 100;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
-    .activity-badge:hover {
-        border-color: #3b82f6;
-        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2);
-    }
+    .activity-badge:hover { border-color: #3b82f6; }
+    .activity-badge:focus-visible { outline: 2px solid #60a5fa; outline-offset: 2px; }
     .activity-badge::after {
-        content: '';
-        position: absolute;
-        width: 8px;
-        height: 8px;
-        background: #3b82f6;
-        border-radius: 50%;
-        top: -1px;
-        right: -1px;
-        opacity: 0;
-        transition: opacity 0.3s;
+        content: ''; position: absolute; width: 7px; height: 7px;
+        background: #3b82f6; border-radius: 50%; top: -1px; right: -1px;
+        opacity: 0; transition: opacity 0.3s;
     }
-    .activity-badge.has-activity::after {
-        opacity: 1;
-        animation: badge-pulse 2s ease-in-out infinite;
-    }
-    @keyframes badge-pulse {
-        0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.6); }
-        50% { box-shadow: 0 0 0 6px rgba(59, 130, 246, 0); }
-    }
+    .activity-badge.has-activity::after { opacity: 1; }
     .activity-dropdown {
-        position: absolute;
-        bottom: 56px;
-        right: 0;
-        width: 320px;
-        background: #1a1e2e;
-        border: 1px solid #2d3748;
-        border-radius: 12px;
-        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
-        max-height: 0;
-        overflow: hidden;
-        opacity: 0;
-        transform: translateY(8px);
-        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-        pointer-events: none;
+        position: absolute; bottom: 48px; right: 0; width: 300px;
+        background: #111827; border: 1px solid #1e293b; border-radius: 10px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        max-height: 0; overflow: hidden; opacity: 0; transform: translateY(4px);
+        transition: all 0.2s ease; pointer-events: none;
     }
     .activity-badge.active .activity-dropdown {
-        max-height: 400px;
-        opacity: 1;
-        transform: translateY(0);
-        pointer-events: auto;
-        overflow-y: auto;
+        max-height: 360px; opacity: 1; transform: translateY(0); pointer-events: auto; overflow-y: auto;
     }
     .activity-dropdown-header {
-        font-size: 11px;
-        font-weight: 600;
-        color: #64748b;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        padding: 14px 16px 8px;
+        font-size: 10px; font-weight: 600; color: #475569; text-transform: uppercase;
+        letter-spacing: 0.06em; padding: 12px 14px 6px;
     }
     .activity-dropdown-item {
-        display: flex;
-        gap: 10px;
-        padding: 10px 16px;
-        border-bottom: 1px solid rgba(45, 55, 72, 0.4);
-        align-items: flex-start;
-        transition: background 0.15s;
+        display: flex; gap: 8px; padding: 8px 14px; align-items: flex-start;
+        border-bottom: 1px solid rgba(255,255,255,0.03); transition: background 0.1s;
     }
     .activity-dropdown-item:last-child { border-bottom: none; }
-    .activity-dropdown-item:hover { background: rgba(59, 130, 246, 0.05); }
-    .activity-dropdown-dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        margin-top: 6px;
-        flex-shrink: 0;
-    }
+    .activity-dropdown-item:hover { background: rgba(255,255,255,0.02); }
+    .activity-dropdown-dot { width: 5px; height: 5px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
     .activity-dropdown-dot.signal { background: #fbbf24; }
     .activity-dropdown-dot.polling { background: #a855f7; }
-    .activity-dropdown-content { flex: 1; min-width: 0; }
-    .activity-dropdown-text {
-        font-size: 13px;
-        color: #e2e8f0;
-        margin-bottom: 2px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    .activity-dropdown-meta {
-        font-size: 11px;
-        color: #4a5568;
-        display: flex;
-        gap: 8px;
-    }
+    .activity-dropdown-text { font-size: 12px; color: #cbd5e1; }
+    .activity-dropdown-meta { font-size: 11px; color: #475569; display: flex; gap: 6px; margin-top: 1px; }
     .activity-dropdown-detail { color: #34d399; font-weight: 600; }
+    .activity-empty { color: #334155; font-size: 12px; text-align: center; padding: 20px 0; }
 
+    /* Sparkline */
+    .sparkline {
+        display: flex;
+        align-items: flex-end;
+        gap: 2px;
+        height: 24px;
+        margin-top: 4px;
+    }
+    .sparkline-bar {
+        width: 4px;
+        border-radius: 1px;
+        background: #1e293b;
+        min-height: 2px;
+        transition: background 0.2s;
+    }
+    .sparkline-bar.current { background: #3b82f6; }
+    .sparkline-bar.low { background: #10b981; }
+
+    /* Card meta line */
+    .card-meta {
+        display: flex;
+        gap: 12px;
+        font-size: 11px;
+        color: #475569;
+        margin-top: 4px;
+    }
+    .card-meta .best-ever { color: #10b981; }
+
+    /* Footer */
+    .page-footer {
+        text-align: center;
+        padding: 32px 0 16px;
+        font-size: 11px;
+        color: #334155;
+    }
+
+    /* Insights row */
+    .card-insights {
+        display: flex;
+        gap: 16px;
+        padding: 8px 0 4px;
+        flex-wrap: wrap;
+    }
+    .insight {
+        font-size: 11px;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .insight-value { font-weight: 600; }
+    .insight-down { color: #34d399; }
+    .insight-up { color: #f87171; }
+    .insight-stable { color: #64748b; }
+    .insight-highlight { color: #fbbf24; }
+
+    /* Responsive */
     @media (max-width: 768px) {
-        #summary-bar { flex-wrap: wrap; gap: 12px 24px; padding: 12px 16px; justify-content: flex-start; }
-        .cards-grid { grid-template-columns: 1fr; }
+        .summary-strip { flex-direction: column; gap: 12px; align-items: flex-start; }
+        .card-top { flex-direction: column; }
+        .card-price-area { text-align: left; }
+        .card-actions { flex-wrap: wrap; }
     }
     @media (hover: none) {
-        .group-card:hover { transform: none; box-shadow: none; }
+        .card:hover { border-color: #1e293b; box-shadow: none; }
     }
 </style>
 {% endblock %}
@@ -351,98 +231,152 @@
 {% block content %}
 {% if not groups %}
 <div class="empty-state">
-    <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.3c.4-.2.6-.6.5-1.1z"/>
     </svg>
     <h2>Nenhum grupo cadastrado</h2>
-    <p>Comece monitorando sua primeira rota. Voce recebera alertas quando o preco estiver bom.</p>
-    <a href="/groups/create" class="btn-create">+ Criar primeiro grupo</a>
+    <p>Comece monitorando sua primeira rota. Você receberá alertas quando o preço estiver bom.</p>
+    <a href="/groups/create" class="btn btn-primary">+ Criar primeiro grupo</a>
 </div>
+
 {% else %}
 
-<div id="summary-bar">
-    <div class="summary-item">
-        <span class="label">Grupos ativos:</span>
-        <span class="value">{{ summary.active_count }}</span>
+<div class="summary-strip">
+    <div class="summary-metrics">
+        <div class="metric">
+            <span class="metric-label">Grupos:</span>
+            <span class="metric-value">{{ summary.active_count }}</span>
+        </div>
+        <div class="metric">
+            <span class="metric-label">Menor preço:</span>
+            <span class="metric-value green">{{ format_price_brl(summary.cheapest_price) if summary.cheapest_price else "—" }}</span>
+        </div>
+        <div class="metric">
+            <span class="metric-label">Próxima busca:</span>
+            <span class="metric-value">{{ summary.next_polling }}</span>
+        </div>
     </div>
-    <div class="summary-item">
-        <span class="label">Menor preço:</span>
-        <span class="value{% if summary.cheapest_price %} price-value{% endif %}">{{ format_price_brl(summary.cheapest_price) if summary.cheapest_price else "—" }}</span>
-    </div>
-    <div class="summary-item">
-        <span class="label">Próxima busca:</span>
-        <span class="value">{{ summary.next_polling }}</span>
-    </div>
-    <div class="summary-item">
-        <form method="POST" action="/polling/manual" style="margin:0;" id="polling-form">
-            <button type="submit" class="btn-poll" id="polling-btn">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-                Buscar agora
-            </button>
-        </form>
-    </div>
+    <form method="POST" action="/polling/manual" style="margin:0;" id="polling-form">
+        <button type="submit" class="btn btn-success" id="polling-btn">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Buscar agora
+        </button>
+    </form>
 </div>
 
-<div class="cards-grid">
+<div class="cards">
     {% for item in groups %}
-    {% set classification = item.cheapest_snapshot.price_classification if item.cheapest_snapshot and item.cheapest_snapshot.price_classification else None %}
-    <div class="group-card {% if classification == 'LOW' %}border-low{% elif classification == 'MEDIUM' %}border-medium{% elif classification == 'HIGH' %}border-high{% else %}border-none{% endif %}{% if not item.group.is_active %} inactive{% endif %}">
-        <div class="card-header">
-            <div class="name-area">
-                <a href="/groups/{{ item.group.id }}">{{ item.group.name }}</a>
-                {% if not item.group.is_active %}
-                <span class="badge badge-inactive">Inativo</span>
-                {% endif %}
-                {% if item.group.mode == 'exploracao' %}
-                <span class="badge" style="background:rgba(168,85,247,0.15);color:#c084fc;">Exploração</span>
+    {% set snap = item.cheapest_snapshot %}
+    {% set cls = snap.price_classification if snap and snap.price_classification else None %}
+    {% set pax = item.group.passengers if item.group.passengers else 1 %}
+
+    <div class="card {% if cls == 'LOW' %}border-low{% elif cls == 'MEDIUM' %}border-medium{% elif cls == 'HIGH' %}border-high{% endif %} {% if not item.group.is_active %}inactive{% endif %}">
+        <div class="card-top">
+            <div class="card-info">
+                <div class="card-name">
+                    <a href="/groups/{{ item.group.id }}">{{ item.group.name }}</a>
+                    {% if not item.group.is_active %}<span class="badge badge-inactive">Inativo</span>{% endif %}
+                    {% if item.group.mode == 'exploracao' %}<span class="badge badge-explore">Exploração</span>{% endif %}
+                    {% if item.signal %}
+                        {% if item.signal.urgency == "MAXIMA" %}<span class="badge badge-maxima">Máxima</span>
+                        {% elif item.signal.urgency == "ALTA" %}<span class="badge badge-alta">Alta</span>
+                        {% elif item.signal.urgency == "MEDIA" %}<span class="badge badge-media">Média</span>
+                        {% endif %}
+                    {% else %}
+                        <span class="badge badge-sem">Sem sinal</span>
+                    {% endif %}
+                </div>
+                {% if snap %}
+                <div class="card-route">
+                    {{ snap.origin }} → {{ snap.destination }}
+                    {% if snap.airline %}· {{ snap.airline }}{% endif %}
+                    {% if item.group.max_stops == 0 %}<span style="color:#34d399"> Direto</span>{% elif item.group.max_stops == 1 %}<span> · 1 conexão</span>{% endif %}
+                </div>
+                <div class="card-dates">
+                    Ida: {{ format_date_br(snap.departure_date) }} · Volta: {{ format_date_br(snap.return_date) }}
+                </div>
+                <div class="card-meta">
+                    {% if item.best_ever %}<span>Melhor já visto: <span class="best-ever">R$ {{ "%.0f"|format(item.best_ever) }}</span></span>{% endif %}
+                    {% if item.collection_count %}<span>{{ item.collection_count }} coleta{{ 's' if item.collection_count > 1 else '' }}</span>{% endif %}
+                </div>
+                {% else %}
+                <div class="awaiting">Aguardando coleta</div>
                 {% endif %}
             </div>
-            {% if item.signal %}
-                {% if item.signal.urgency == "MAXIMA" %}
-                <span class="badge badge-maxima">MAXIMA</span>
-                {% elif item.signal.urgency == "ALTA" %}
-                <span class="badge badge-alta">ALTA</span>
-                {% elif item.signal.urgency == "MEDIA" %}
-                <span class="badge badge-media">MEDIA</span>
+
+            {% if snap %}
+            <div class="card-price-area">
+                <div class="card-price {% if cls == 'LOW' %}price-low{% elif cls == 'MEDIUM' %}price-medium{% elif cls == 'HIGH' %}price-high{% else %}price-none{% endif %}">
+                    {{ format_price_brl(snap.price * pax) }}
+                </div>
+                {% if pax > 1 %}<div class="card-price-sub">{{ pax }} passageiros</div>{% endif %}
+                {% if item.sparkline and item.sparkline|length > 1 %}
+                <div class="sparkline" title="Tendência dos últimos dias">
+                    {% set spark_max = item.sparkline|max %}
+                    {% set spark_min = item.sparkline|min %}
+                    {% for val in item.sparkline %}
+                    <div class="sparkline-bar{% if loop.last %} current{% elif val == spark_min %} low{% endif %}"
+                         style="height: {{ ((val - spark_min) / (spark_max - spark_min) * 18 + 4) if spark_max != spark_min else 12 }}px;"></div>
+                    {% endfor %}
+                </div>
                 {% endif %}
-            {% else %}
-            <span class="badge badge-sem">Sem sinal</span>
+            </div>
             {% endif %}
         </div>
 
-        {% if item.cheapest_snapshot %}
-        {% set pax = item.group.passengers if item.group.passengers else 1 %}
-        {% set total_price = item.cheapest_snapshot.price * pax %}
-        <div class="card-price {% if classification == 'LOW' %}price-low{% elif classification == 'MEDIUM' %}price-medium{% elif classification == 'HIGH' %}price-high{% else %}price-none{% endif %}">
-            {{ format_price_brl(total_price) }}
-            {% if pax > 1 %}<span style="font-size: 13px; font-weight: 500; color: #64748b; margin-left: 6px;">{{ pax }} passageiros</span>{% endif %}
+        {% if snap %}
+        <div class="card-insights">
+            {% if item.price_trend %}
+                {% if item.price_trend.direction == 'down' %}
+                <div class="insight">
+                    <span>↓</span>
+                    <span class="insight-value insight-down">{{ item.price_trend.change_pct }}%</span>
+                    <span>vs última coleta</span>
+                </div>
+                {% elif item.price_trend.direction == 'up' %}
+                <div class="insight">
+                    <span>↑</span>
+                    <span class="insight-value insight-up">+{{ item.price_trend.change_pct }}%</span>
+                    <span>vs última coleta</span>
+                </div>
+                {% else %}
+                <div class="insight">
+                    <span>→</span>
+                    <span class="insight-value insight-stable">estável</span>
+                </div>
+                {% endif %}
+            {% endif %}
+            {% if item.best_day %}
+            <div class="insight">
+                <span>Melhor dia:</span>
+                <span class="insight-value insight-highlight">{{ item.best_day.name }}</span>
+            </div>
+            {% endif %}
+            {% if item.price_comparison %}
+            <div class="insight">
+                <span>Economia conexão:</span>
+                <span class="insight-value insight-down">R$ {{ "%.0f"|format(item.price_comparison.savings) }}</span>
+            </div>
+            {% endif %}
         </div>
-        <div class="card-route">
-            {{ item.cheapest_snapshot.origin }} &rarr; {{ item.cheapest_snapshot.destination }}
-            {% if item.cheapest_snapshot.airline %}&middot; {{ item.cheapest_snapshot.airline }}{% endif %}
-            {% if item.group.max_stops == 0 %}<span style="color: #34d399; font-size: 12px; margin-left: 4px;">Direto</span>{% elif item.group.max_stops == 1 %}<span style="color: #94a3b8; font-size: 12px; margin-left: 4px;">1 conexão</span>{% endif %}
-        </div>
-        <div class="card-dates">
-            Ida: {{ format_date_br(item.cheapest_snapshot.departure_date) }} | Volta: {{ format_date_br(item.cheapest_snapshot.return_date) }}
-        </div>
-        {% else %}
-        <div class="awaiting-text">Aguardando coleta</div>
         {% endif %}
 
-        <div class="card-footer">
-            <a href="/groups/{{ item.group.id }}/edit">Editar</a>
-            <form method="POST" action="/groups/{{ item.group.id }}/toggle" style="margin: 0;">
-                <button type="submit">
+        <div class="card-bottom">
+            <a href="/groups/{{ item.group.id }}/edit" class="btn btn-ghost" style="padding:4px 12px;font-size:12px;min-height:28px;">Editar</a>
+            <form method="POST" action="/groups/{{ item.group.id }}/toggle" style="margin:0;"
+                  {% if item.group.is_active %}onsubmit="return confirm('Desativar o grupo {{ item.group.name }}? O polling será pausado.')"{% endif %}>
+                <button type="submit" class="btn btn-ghost" style="padding:4px 12px;font-size:12px;min-height:28px;">
                     {% if item.group.is_active %}Desativar{% else %}Ativar{% endif %}
                 </button>
             </form>
-            {% if item.cheapest_snapshot %}
-            {% set urls = booking_urls(item.cheapest_snapshot.origin, item.cheapest_snapshot.destination, item.cheapest_snapshot.departure_date, item.cheapest_snapshot.return_date, item.group.passengers or 1) %}
-            <span style="display:inline-flex; gap:6px; margin-left:auto;">
-                <a href="{{ urls.kayak }}" target="_blank" class="btn-flights" title="Buscar no Kayak">Kayak</a>
-                <a href="{{ urls.skyscanner }}" target="_blank" class="btn-flights" title="Buscar no Skyscanner">Skyscanner</a>
-                <a href="{{ urls.momondo }}" target="_blank" class="btn-flights" title="Buscar no Momondo">Momondo</a>
-            </span>
+            <div class="spacer"></div>
+            {% if snap %}
+            {% set urls = booking_urls(snap.origin, snap.destination, snap.departure_date, snap.return_date, pax) %}
+            <div class="card-actions">
+                <a href="{{ urls.kayak }}" target="_blank" rel="noopener" aria-label="Buscar no Kayak">Kayak</a>
+                <a href="{{ urls.skyscanner }}" target="_blank" rel="noopener" aria-label="Buscar no Skyscanner">Skyscanner</a>
+                <a href="{{ urls.momondo }}" target="_blank" rel="noopener" aria-label="Buscar no Momondo">Momondo</a>
+            </div>
             {% endif %}
         </div>
     </div>
@@ -450,10 +384,10 @@
 </div>
 {% endif %}
 
-<!-- Activity Badge Dropdown -->
+<!-- Activity Badge -->
 {% if activity %}
-<div id="activity-badge" class="activity-badge {% if activity %}has-activity{% endif %}" onclick="this.classList.toggle('active')">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<div id="activity-badge" class="activity-badge {% if activity %}has-activity{% endif %}" onclick="this.classList.toggle('active')" role="button" tabindex="0" aria-label="Ver atividade recente" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.classList.toggle('active')}">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>
     </svg>
     <div class="activity-dropdown">
@@ -461,7 +395,7 @@
         {% for item in activity %}
         <div class="activity-dropdown-item">
             <div class="activity-dropdown-dot {{ item.type }}"></div>
-            <div class="activity-dropdown-content">
+            <div>
                 <div class="activity-dropdown-text">{{ item.text }}</div>
                 <div class="activity-dropdown-meta">
                     <span class="activity-dropdown-detail">{{ item.detail }}</span>
@@ -474,12 +408,25 @@
 </div>
 {% endif %}
 
+<div class="page-footer">
+    Flight Monitor v1.2{% if summary and summary.last_collection %} · Última coleta: {{ summary.last_collection }}{% endif %}
+</div>
+
 <script>
 document.addEventListener('click', function(e) {
-    const badge = document.getElementById('activity-badge');
-    if (badge && !badge.contains(e.target)) {
-        badge.classList.remove('active');
-    }
+    var b = document.getElementById('activity-badge');
+    if (b && !b.contains(e.target)) b.classList.remove('active');
 });
+
+// Notify in tab title when there are signals
+{% if groups %}
+    {% set has_signal = [] %}
+    {% for item in groups %}
+        {% if item.signal %}{% if has_signal.append(1) %}{% endif %}{% endif %}
+    {% endfor %}
+    {% if has_signal %}
+    document.title = '(!) ' + document.title;
+    {% endif %}
+{% endif %}
 </script>
 {% endblock %}

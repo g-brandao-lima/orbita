@@ -28,6 +28,8 @@ def get_groups_with_summary(db: Session) -> list[dict]:
                 .filter(
                     FlightSnapshot.route_group_id == group.id,
                     FlightSnapshot.collected_at >= cycle_start,
+                    FlightSnapshot.origin.in_(group.origins),
+                    FlightSnapshot.destination.in_(group.destinations),
                 )
                 .order_by(FlightSnapshot.price.asc())
                 .first()
@@ -51,12 +53,137 @@ def get_groups_with_summary(db: Session) -> list[dict]:
             .first()
         )
 
+        # Price trend: compare current cheapest with previous cycle
+        price_trend = None
+        if cheapest_snapshot is not None and latest_collected is not None:
+            prev_cycle_end = cycle_start
+            prev_cycle_start = prev_cycle_end - timedelta(hours=26)
+            prev_cheapest = (
+                db.query(func.min(FlightSnapshot.price))
+                .filter(
+                    FlightSnapshot.route_group_id == group.id,
+                    FlightSnapshot.collected_at >= prev_cycle_start,
+                    FlightSnapshot.collected_at < prev_cycle_end,
+                    FlightSnapshot.origin.in_(group.origins),
+                    FlightSnapshot.destination.in_(group.destinations),
+                )
+                .scalar()
+            )
+            if prev_cheapest and prev_cheapest > 0:
+                change_pct = ((cheapest_snapshot.price - prev_cheapest) / prev_cheapest) * 100
+                price_trend = {
+                    "previous": prev_cheapest,
+                    "change_pct": round(change_pct, 1),
+                    "direction": "down" if change_pct < -1 else "up" if change_pct > 1 else "stable",
+                }
+
+        # Best day of week (from historical data)
+        best_day = None
+        day_prices = (
+            db.query(
+                func.strftime("%w", FlightSnapshot.departure_date).label("dow"),
+                func.avg(FlightSnapshot.price).label("avg_price"),
+                func.count().label("cnt"),
+            )
+            .filter(
+                FlightSnapshot.route_group_id == group.id,
+                FlightSnapshot.origin.in_(group.origins),
+                FlightSnapshot.destination.in_(group.destinations),
+            )
+            .group_by("dow")
+            .having(func.count() >= 3)
+            .order_by(func.avg(FlightSnapshot.price).asc())
+            .first()
+        )
+        if day_prices:
+            day_names = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"]
+            dow_idx = int(day_prices.dow)
+            best_day = {"name": day_names[dow_idx], "avg_price": round(day_prices.avg_price, 0)}
+
+        # Direct vs connection price comparison
+        price_comparison = None
+        if latest_collected is not None:
+            cycle_start_comp = latest_collected - timedelta(hours=2)
+            direct_price = (
+                db.query(func.min(FlightSnapshot.price))
+                .filter(
+                    FlightSnapshot.route_group_id == group.id,
+                    FlightSnapshot.collected_at >= cycle_start_comp,
+                    FlightSnapshot.origin.in_(group.origins),
+                    FlightSnapshot.destination.in_(group.destinations),
+                )
+                .scalar()
+            )
+            if direct_price and cheapest_snapshot:
+                all_min = cheapest_snapshot.price
+                if direct_price > all_min * 1.1:
+                    price_comparison = {
+                        "direct": direct_price,
+                        "cheapest": all_min,
+                        "savings": round(direct_price - all_min, 0),
+                    }
+
+        # Historical best price ever
+        best_ever = None
+        if cheapest_snapshot is not None:
+            historical_min = (
+                db.query(func.min(FlightSnapshot.price))
+                .filter(
+                    FlightSnapshot.route_group_id == group.id,
+                    FlightSnapshot.origin.in_(group.origins),
+                    FlightSnapshot.destination.in_(group.destinations),
+                )
+                .scalar()
+            )
+            if historical_min and historical_min < cheapest_snapshot.price:
+                best_ever = round(historical_min, 0)
+
+        # Collection count
+        collection_count = (
+            db.query(func.count(func.distinct(
+                func.strftime("%Y-%m-%d %H", FlightSnapshot.collected_at)
+            )))
+            .filter(FlightSnapshot.route_group_id == group.id)
+            .scalar()
+        ) or 0
+
+        # Sparkline data (last 7 prices for mini chart)
+        sparkline = []
+        if collection_count >= 2:
+            spark_snaps = (
+                db.query(FlightSnapshot.price, FlightSnapshot.collected_at)
+                .filter(
+                    FlightSnapshot.route_group_id == group.id,
+                    FlightSnapshot.origin.in_(group.origins),
+                    FlightSnapshot.destination.in_(group.destinations),
+                )
+                .order_by(FlightSnapshot.collected_at.desc())
+                .limit(30)
+                .all()
+            )
+            # Group by collection cycle, take min price per cycle
+            seen_hours = set()
+            for s in reversed(spark_snaps):
+                hour_key = s.collected_at.strftime("%Y-%m-%d-%H") if s.collected_at else None
+                if hour_key and hour_key not in seen_hours:
+                    seen_hours.add(hour_key)
+                    sparkline.append(s.price)
+            sparkline = sparkline[-7:]
+
         result.append({
             "group": group,
             "cheapest_snapshot": cheapest_snapshot,
             "signal": signal,
+            "price_trend": price_trend,
+            "best_day": best_day,
+            "price_comparison": price_comparison,
+            "best_ever": best_ever,
+            "collection_count": collection_count,
+            "sparkline": sparkline,
         })
 
+    # Sort by cheapest price (groups with data first, then by price ascending)
+    result.sort(key=lambda x: x["cheapest_snapshot"].price if x["cheapest_snapshot"] else float("inf"))
     return result
 
 
@@ -64,12 +191,18 @@ def get_price_history(db: Session, group_id: int, days: int = 14) -> dict:
     """Return price history labels and prices for the cheapest route of a group."""
     cutoff = datetime.datetime.utcnow() - timedelta(days=days)
 
+    group = db.query(RouteGroup).filter(RouteGroup.id == group_id).first()
+    if group is None:
+        return {"labels": [], "prices": [], "route": ""}
+
     # Find the cheapest route (origin, destination) by average price
     cheapest_route = (
         db.query(FlightSnapshot.origin, FlightSnapshot.destination)
         .filter(
             FlightSnapshot.route_group_id == group_id,
             FlightSnapshot.collected_at >= cutoff,
+            FlightSnapshot.origin.in_(group.origins),
+            FlightSnapshot.destination.in_(group.destinations),
         )
         .group_by(FlightSnapshot.origin, FlightSnapshot.destination)
         .order_by(func.min(FlightSnapshot.price).asc())
@@ -128,6 +261,8 @@ def get_dashboard_summary(db: Session) -> dict:
                 .filter(
                     FlightSnapshot.route_group_id == group.id,
                     FlightSnapshot.collected_at >= cycle_start,
+                    FlightSnapshot.origin.in_(group.origins),
+                    FlightSnapshot.destination.in_(group.destinations),
                 )
                 .scalar()
             )
@@ -146,10 +281,20 @@ def get_dashboard_summary(db: Session) -> dict:
     except Exception:
         next_polling = "Automatico (1x/dia)"
 
+    # Last collection time
+    last_collected = (
+        db.query(func.max(FlightSnapshot.collected_at))
+        .scalar()
+    )
+    last_collection_str = None
+    if last_collected:
+        last_collection_str = last_collected.strftime("%d/%m %H:%M")
+
     return {
         "active_count": active_count,
         "cheapest_price": cheapest_price,
         "next_polling": next_polling,
+        "last_collection": last_collection_str,
     }
 
 
