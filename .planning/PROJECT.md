@@ -12,6 +12,13 @@ Detectar o momento certo de comprar uma passagem antes que o preço suba, usando
 
 ### Validated
 
+**Phase 12 (Data Isolation) — validated 2026-03-29**
+- Isolamento completo por usuario (user_id FK em route_groups, queries filtradas)
+- Alertas por email enviados para email do Google do dono do grupo
+- Indicador de buscas SerpAPI restantes no dashboard (250/mes, cores semanticas)
+- Pagina "Meus Alertas" com historico de sinais filtrado por usuario
+- 218 testes passando (16 novos: 6 isolamento + 5 quota + 5 alertas)
+
 **Phase 11 (Google OAuth) — validated 2026-03-28**
 - Login via Google OAuth com um clique (Authlib + OIDC)
 - Sessao persistente via cookie assinado (sem expiracao, ate logout)
@@ -147,4 +154,4 @@ Este documento evolui a cada transição de fase e milestone.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-28 after Phase 11 completion*
+*Last updated: 2026-03-29 after Phase 12 completion*
