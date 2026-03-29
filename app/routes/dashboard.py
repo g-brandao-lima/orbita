@@ -48,10 +48,12 @@ def _validate_iata_codes(codes: list[str]) -> str | None:
     return None
 
 
-def _count_active_groups(db: Session, exclude_id: int | None = None) -> int:
+def _count_active_groups(db: Session, user_id: int | None = None, exclude_id: int | None = None) -> int:
     query = select(func.count()).select_from(RouteGroup).where(
         RouteGroup.is_active == True  # noqa: E712
     )
+    if user_id is not None:
+        query = query.where(RouteGroup.user_id == user_id)
     if exclude_id is not None:
         query = query.where(RouteGroup.id != exclude_id)
     return db.scalar(query)
@@ -105,9 +107,10 @@ def dashboard_index(
     db: Session = Depends(get_db),
     user: User | None = Depends(get_current_user),
 ):
-    groups = get_groups_with_summary(db)
-    summary = get_dashboard_summary(db)
-    activity = get_recent_activity(db)
+    user_id = user.id if user else None
+    groups = get_groups_with_summary(db, user_id=user_id)
+    summary = get_dashboard_summary(db, user_id=user_id)
+    activity = get_recent_activity(db, user_id=user_id)
     flash_message = FLASH_MESSAGES.get(msg) if msg else None
     return templates.TemplateResponse(
         request=request,
@@ -175,7 +178,7 @@ def create_group_form(
         error = "Data de fim deve ser posterior à data de início."
 
     if not error:
-        active_count = _count_active_groups(db)
+        active_count = _count_active_groups(db, user_id=user.id if user else None)
         if active_count >= MAX_ACTIVE_GROUPS:
             error = f"Limite de {MAX_ACTIVE_GROUPS} grupos ativos atingido."
 
@@ -214,6 +217,7 @@ def create_group_form(
         max_stops=stops,
         target_price=tp,
         is_active=True,
+        user_id=user.id if user else None,
     )
     db.add(group)
     db.commit()
@@ -230,8 +234,10 @@ def dashboard_detail(
     group = db.query(RouteGroup).filter(RouteGroup.id == group_id).first()
     if group is None:
         raise HTTPException(status_code=404, detail="Grupo nao encontrado")
+    if user and group.user_id != user.id:
+        raise HTTPException(status_code=404, detail="Grupo nao encontrado")
 
-    chart_data = get_price_history(db, group_id)
+    chart_data = get_price_history(db, group_id, user_id=user.id if user else None)
     return templates.TemplateResponse(
         request=request,
         name="dashboard/detail.html",
@@ -248,6 +254,8 @@ def edit_group_page(
 ):
     group = db.query(RouteGroup).filter(RouteGroup.id == group_id).first()
     if group is None:
+        raise HTTPException(status_code=404, detail="Grupo nao encontrado")
+    if user and group.user_id != user.id:
         raise HTTPException(status_code=404, detail="Grupo nao encontrado")
     return templates.TemplateResponse(
         request=request,
@@ -275,6 +283,8 @@ def edit_group_form(
 ):
     group = db.query(RouteGroup).filter(RouteGroup.id == group_id).first()
     if group is None:
+        raise HTTPException(status_code=404, detail="Grupo nao encontrado")
+    if user and group.user_id != user.id:
         raise HTTPException(status_code=404, detail="Grupo nao encontrado")
 
     parsed_origins, parsed_destinations, error = _validate_form(
@@ -326,13 +336,19 @@ def edit_group_form(
 
 
 @router.post("/groups/{group_id}/toggle")
-def toggle_group(group_id: int, db: Session = Depends(get_db)):
+def toggle_group(
+    group_id: int,
+    db: Session = Depends(get_db),
+    user: User | None = Depends(get_current_user),
+):
     group = db.query(RouteGroup).filter(RouteGroup.id == group_id).first()
     if group is None:
         raise HTTPException(status_code=404, detail="Grupo nao encontrado")
+    if user and group.user_id != user.id:
+        raise HTTPException(status_code=404, detail="Grupo nao encontrado")
 
     if not group.is_active:
-        active_count = _count_active_groups(db, exclude_id=group_id)
+        active_count = _count_active_groups(db, user_id=user.id if user else None, exclude_id=group_id)
         if active_count >= MAX_ACTIVE_GROUPS:
             return RedirectResponse(url="/", status_code=303)
 

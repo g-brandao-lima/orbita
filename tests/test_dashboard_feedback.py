@@ -40,9 +40,9 @@ def test_create_group_redirects_with_msg(client, db):
     assert "?msg=grupo_criado" in response.headers["location"]
 
 
-def test_edit_group_redirects_with_msg(client, db):
+def test_edit_group_redirects_with_msg(client, db, test_user):
     """POST /groups/{id}/edit retorna 303 com ?msg=grupo_atualizado."""
-    group = _make_group(db)
+    group = _make_group(db, user_id=test_user.id)
 
     response = client.post(f"/groups/{group.id}/edit", data={
         "name": "Updated",
@@ -58,9 +58,9 @@ def test_edit_group_redirects_with_msg(client, db):
     assert "?msg=grupo_atualizado" in response.headers["location"]
 
 
-def test_toggle_group_redirects_with_msg(client, db):
+def test_toggle_group_redirects_with_msg(client, db, test_user):
     """POST /groups/{id}/toggle retorna 303 com ?msg=grupo_ no Location."""
-    group = _make_group(db, is_active=True)
+    group = _make_group(db, is_active=True, user_id=test_user.id)
 
     response = client.post(f"/groups/{group.id}/toggle", follow_redirects=False)
 

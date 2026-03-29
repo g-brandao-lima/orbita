@@ -77,9 +77,9 @@ def test_index_returns_html(client):
     assert "text/html" in response.headers["content-type"]
 
 
-def test_index_shows_group_names(client, db):
-    _make_group(db, name="Europa Verao")
-    _make_group(db, name="Asia Inverno")
+def test_index_shows_group_names(client, db, test_user):
+    _make_group(db, name="Europa Verao", user_id=test_user.id)
+    _make_group(db, name="Asia Inverno", user_id=test_user.id)
 
     response = client.get("/")
 
@@ -87,8 +87,8 @@ def test_index_shows_group_names(client, db):
     assert "Asia Inverno" in response.text
 
 
-def test_index_shows_cheapest_price(client, db):
-    group = _make_group(db)
+def test_index_shows_cheapest_price(client, db, test_user):
+    group = _make_group(db, user_id=test_user.id)
     _make_snapshot(db, group, price=3500.0)
 
     response = client.get("/")
@@ -96,8 +96,8 @@ def test_index_shows_cheapest_price(client, db):
     assert "R$ 3.500,00" in response.text
 
 
-def test_index_shows_signal_badge_alta(client, db):
-    group = _make_group(db)
+def test_index_shows_signal_badge_alta(client, db, test_user):
+    group = _make_group(db, user_id=test_user.id)
     snap = _make_snapshot(db, group)
     _make_signal(db, group, snap, urgency="ALTA")
 
@@ -107,8 +107,8 @@ def test_index_shows_signal_badge_alta(client, db):
     assert "badge-alta" in response.text
 
 
-def test_index_shows_no_signal_badge(client, db):
-    _make_group(db)
+def test_index_shows_no_signal_badge(client, db, test_user):
+    _make_group(db, user_id=test_user.id)
 
     response = client.get("/")
 
@@ -137,8 +137,8 @@ def test_index_has_nav_links(client):
 
 # --- Detail page tests ---
 
-def test_detail_returns_html(client, db):
-    group = _make_group(db)
+def test_detail_returns_html(client, db, test_user):
+    group = _make_group(db, user_id=test_user.id)
 
     response = client.get(f"/groups/{group.id}")
 
@@ -146,8 +146,8 @@ def test_detail_returns_html(client, db):
     assert "text/html" in response.headers["content-type"]
 
 
-def test_detail_shows_chart_data(client, db):
-    group = _make_group(db)
+def test_detail_shows_chart_data(client, db, test_user):
+    group = _make_group(db, user_id=test_user.id)
     for i in range(3):
         collected = datetime.datetime(2026, 3, 18 + i, 10, 0)
         _make_snapshot(db, group, price=3000.0 + i * 100, collected_at=collected)
@@ -158,8 +158,8 @@ def test_detail_shows_chart_data(client, db):
     assert "cdn.jsdelivr.net/npm/chart.js@4.5.1" in response.text
 
 
-def test_detail_empty_group_message(client, db):
-    group = _make_group(db)
+def test_detail_empty_group_message(client, db, test_user):
+    group = _make_group(db, user_id=test_user.id)
 
     response = client.get(f"/groups/{group.id}")
 
@@ -254,8 +254,8 @@ def test_create_group_invalid_iata(client, db):
 
 # --- Edit form tests ---
 
-def test_edit_form_page_prefilled(client, db):
-    group = _make_group(db, name="Editar Grupo")
+def test_edit_form_page_prefilled(client, db, test_user):
+    group = _make_group(db, name="Editar Grupo", user_id=test_user.id)
 
     response = client.get(f"/groups/{group.id}/edit")
 
@@ -264,8 +264,8 @@ def test_edit_form_page_prefilled(client, db):
     assert 'method="POST"' in response.text.lower() or "method=\"POST\"" in response.text
 
 
-def test_edit_group_via_form(client, db):
-    group = _make_group(db, name="Antes")
+def test_edit_group_via_form(client, db, test_user):
+    group = _make_group(db, name="Antes", user_id=test_user.id)
 
     response = client.post(f"/groups/{group.id}/edit", data={
         "name": "Depois",
@@ -287,8 +287,8 @@ def test_edit_group_via_form(client, db):
 
 # --- Toggle tests ---
 
-def test_toggle_group_active(client, db):
-    group = _make_group(db, is_active=True)
+def test_toggle_group_active(client, db, test_user):
+    group = _make_group(db, is_active=True, user_id=test_user.id)
 
     response = client.post(f"/groups/{group.id}/toggle", follow_redirects=False)
 
@@ -303,10 +303,10 @@ def test_toggle_group_active(client, db):
     assert group.is_active is True
 
 
-def test_toggle_respects_limit(client, db):
+def test_toggle_respects_limit(client, db, test_user):
     for i in range(10):
-        _make_group(db, name=f"Active {i}", is_active=True)
-    inactive = _make_group(db, name="Inactive", is_active=False)
+        _make_group(db, name=f"Active {i}", is_active=True, user_id=test_user.id)
+    inactive = _make_group(db, name="Inactive", is_active=False, user_id=test_user.id)
 
     response = client.post(f"/groups/{inactive.id}/toggle", follow_redirects=False)
 
