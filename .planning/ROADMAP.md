@@ -237,7 +237,7 @@ Plans:
 Plans:
 - [ ] 12-01-PLAN.md - user_id FK + migration + isolamento completo de services e routes (MULTI-01)
 - [ ] 12-02-PLAN.md - Email alertas para dono do grupo + pagina Meus Alertas (MULTI-02, MULTI-04)
-- [ ] 12-03-PLAN.md - Contador SerpAPI global + indicador no dashboard (MULTI-03)
+- [x] 12-03-PLAN.md - Contador SerpAPI global + indicador no dashboard (MULTI-03)
 
 ### Phase 13: Landing Page
 **Goal**: Visitante nao logado ve uma landing page publica que explica o produto e convida a entrar com Google
@@ -268,5 +268,5 @@ Plans:
 | 9. Visual Polish | v1.2 | 2/2 | Complete | 2026-03-28 |
 | 10. PostgreSQL Foundation | v2.0 | 2/2 | Complete    | 2026-03-28 |
 | 11. Google OAuth | v2.0 | 3/3 | Complete    | 2026-03-28 |
-| 12. Data Isolation | v2.0 | 0/3 | Not started | - |
+| 12. Data Isolation | v2.0 | 1/3 | In Progress|  |
 | 13. Landing Page | v2.0 | 0/? | Not started | - |

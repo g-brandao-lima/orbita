@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Multi-usuario
-status: Ready to plan
-stopped_at: Completed 11-03-PLAN.md
-last_updated: "2026-03-28T22:04:26.255Z"
+status: Ready to execute
+stopped_at: Completed 12-03-PLAN.md
+last_updated: "2026-03-29T02:38:59.586Z"
 progress:
   total_phases: 4
   completed_phases: 2
-  total_plans: 5
-  completed_plans: 5
+  total_plans: 8
+  completed_plans: 6
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** Detectar o momento certo de comprar uma passagem antes que o preco suba, usando dados de inventario reais que nenhum sistema consumer expoe.
-**Current focus:** Phase 11 — google-oauth
+**Current focus:** Phase 12 — data-isolation
 
 ## Current Position
 
-Phase: 12
-Plan: Not started
+Phase: 12 (data-isolation) — EXECUTING
+Plan: 2 of 3
 
 ## Performance Metrics
 
@@ -58,6 +58,7 @@ Plan: Not started
 | Phase 11 P01 | 3min | 2 tasks | 8 files |
 | Phase 11 P02 | 3min | 1 tasks | 7 files |
 | Phase 11-google-oauth P03 | 4min | 3 tasks | 5 files |
+| Phase 12 P03 | 4min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -78,6 +79,8 @@ Recent decisions affecting current work:
 - [Phase 11]: client fixture autenticado por padrao via session cookie assinado para nao quebrar testes existentes
 - [Phase 11-google-oauth]: Avatar initials use accent blue #3b82f6 per design system
 - [Phase 11-google-oauth]: Gunicorn --forwarded-allow-ips=* for Render proxy HTTPS redirect_uri
+- [Phase 12]: Global SerpAPI counter per year_month string with unique constraint, no per-user split
+- [Phase 12]: Quota check at polling cycle start, increment after each SerpAPI call
 
 ### Pending Todos
 
@@ -95,6 +98,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-28T22:00:31.277Z
-Stopped at: Completed 11-03-PLAN.md
+Last session: 2026-03-29T02:38:59.579Z
+Stopped at: Completed 12-03-PLAN.md
 Resume file: None
