@@ -235,7 +235,7 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 12-01-PLAN.md - user_id FK + migration + isolamento completo de services e routes (MULTI-01)
+- [x] 12-01-PLAN.md - user_id FK + migration + isolamento completo de services e routes (MULTI-01)
 - [ ] 12-02-PLAN.md - Email alertas para dono do grupo + pagina Meus Alertas (MULTI-02, MULTI-04)
 - [x] 12-03-PLAN.md - Contador SerpAPI global + indicador no dashboard (MULTI-03)
 
@@ -268,5 +268,5 @@ Plans:
 | 9. Visual Polish | v1.2 | 2/2 | Complete | 2026-03-28 |
 | 10. PostgreSQL Foundation | v2.0 | 2/2 | Complete    | 2026-03-28 |
 | 11. Google OAuth | v2.0 | 3/3 | Complete    | 2026-03-28 |
-| 12. Data Isolation | v2.0 | 1/3 | In Progress|  |
+| 12. Data Isolation | v2.0 | 2/3 | In Progress|  |
 | 13. Landing Page | v2.0 | 0/? | Not started | - |

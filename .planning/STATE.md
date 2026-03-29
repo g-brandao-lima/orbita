@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Multi-usuario
 status: Ready to execute
-stopped_at: Completed 12-03-PLAN.md
-last_updated: "2026-03-29T02:38:59.586Z"
+stopped_at: Completed 12-01-PLAN.md
+last_updated: "2026-03-29T02:41:18.969Z"
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 8
-  completed_plans: 6
+  completed_plans: 7
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Phase: 12 (data-isolation) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 
 ## Performance Metrics
 
@@ -59,6 +59,7 @@ Plan: 2 of 3
 | Phase 11 P02 | 3min | 1 tasks | 7 files |
 | Phase 11-google-oauth P03 | 4min | 3 tasks | 5 files |
 | Phase 12 P03 | 4min | 2 tasks | 7 files |
+| Phase 12 P01 | 6min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -81,6 +82,7 @@ Recent decisions affecting current work:
 - [Phase 11-google-oauth]: Gunicorn --forwarded-allow-ips=* for Render proxy HTTPS redirect_uri
 - [Phase 12]: Global SerpAPI counter per year_month string with unique constraint, no per-user split
 - [Phase 12]: Quota check at polling cycle start, increment after each SerpAPI call
+- [Phase 12]: user_id nullable on route_groups for backward compat; ownership returns 404 not 403
 
 ### Pending Todos
 
@@ -98,6 +100,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-29T02:38:59.579Z
-Stopped at: Completed 12-03-PLAN.md
+Last session: 2026-03-29T02:41:18.951Z
+Stopped at: Completed 12-01-PLAN.md
 Resume file: None

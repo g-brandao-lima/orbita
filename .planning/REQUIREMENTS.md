@@ -111,7 +111,7 @@
 
 ### Multi-usuario
 
-- [ ] **MULTI-01**: Usuario ve apenas seus proprios grupos de rota, snapshots e sinais
+- [x] **MULTI-01**: Usuario ve apenas seus proprios grupos de rota, snapshots e sinais
 - [ ] **MULTI-02**: Alertas por email sao enviados para o email do proprio usuario (do Google)
 - [x] **MULTI-03**: Dashboard exibe indicador de buscas SerpAPI restantes no mes (budget compartilhado)
 - [ ] **MULTI-04**: Usuario pode ver historico de todos os sinais detectados para seus grupos ("Meus alertas")
@@ -219,7 +219,7 @@
 | AUTH-03 | Phase 11 | Complete |
 | AUTH-04 | Phase 11 | Complete |
 | AUTH-05 | Phase 11 | Complete |
-| MULTI-01 | Phase 12 | Pending |
+| MULTI-01 | Phase 12 | Complete |
 | MULTI-02 | Phase 12 | Pending |
 | MULTI-03 | Phase 12 | Complete |
 | MULTI-04 | Phase 12 | Pending |
