@@ -501,3 +501,35 @@ def test_consolidated_email_plain_text_fallback():
     assert "GRU" in plain_part
     assert "JFK" in plain_part
     assert "2.750,00" in plain_part
+
+
+# ---------------------------------------------------------------------------
+# Tests — compose_consolidated_email com recipient_email (12-02)
+# ---------------------------------------------------------------------------
+
+
+def test_consolidated_email_recipient_email_sets_to_header():
+    """compose_consolidated_email com recipient_email seta msg['To'] para o email informado."""
+    # Arrange
+    group = _make_group(name="GRU-MIA")
+    snapshots = [_make_snapshot(price=3000.00)]
+    signals = _make_signals_list(1)
+
+    # Act
+    msg = compose_consolidated_email(signals, snapshots, group, recipient_email="user@example.com")
+
+    # Assert
+    assert msg["To"] == "user@example.com"
+
+
+def test_compose_alert_email_recipient_email_sets_to_header():
+    """compose_alert_email com recipient_email seta msg['To'] para o email informado."""
+    # Arrange
+    group = _make_group()
+    signal = _make_signal()
+
+    # Act
+    msg = compose_alert_email(signal, group, recipient_email="owner@example.com")
+
+    # Assert
+    assert msg["To"] == "owner@example.com"
