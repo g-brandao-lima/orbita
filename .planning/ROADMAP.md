@@ -232,7 +232,12 @@ Plans:
   2. Alertas por email sao enviados para o email do Google do dono do grupo (nao mais para um email fixo em .env)
   3. Dashboard exibe indicador de buscas SerpAPI restantes no mes, visivel para todos os usuarios (budget compartilhado global)
   4. Usuario pode acessar pagina "Meus alertas" com historico de todos os sinais detectados para seus grupos
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 12-01-PLAN.md - user_id FK + migration + isolamento completo de services e routes (MULTI-01)
+- [ ] 12-02-PLAN.md - Email alertas para dono do grupo + pagina Meus Alertas (MULTI-02, MULTI-04)
+- [ ] 12-03-PLAN.md - Contador SerpAPI global + indicador no dashboard (MULTI-03)
 
 ### Phase 13: Landing Page
 **Goal**: Visitante nao logado ve uma landing page publica que explica o produto e convida a entrar com Google
@@ -263,5 +268,5 @@ Plans:
 | 9. Visual Polish | v1.2 | 2/2 | Complete | 2026-03-28 |
 | 10. PostgreSQL Foundation | v2.0 | 2/2 | Complete    | 2026-03-28 |
 | 11. Google OAuth | v2.0 | 3/3 | Complete    | 2026-03-28 |
-| 12. Data Isolation | v2.0 | 0/? | Not started | - |
+| 12. Data Isolation | v2.0 | 0/3 | Not started | - |
 | 13. Landing Page | v2.0 | 0/? | Not started | - |
