@@ -188,7 +188,7 @@ Plans:
 - [x] **Phase 11: Google OAuth** - Login com Google, sessoes persistentes e infraestrutura de autenticacao (completed 2026-03-28)
 - [x] **Phase 12: Data Isolation** - Isolamento completo de dados por usuario, alertas por email do dono e controle de quota SerpAPI (completed 2026-03-29)
 - [x] **Phase 13: Landing Page** - Pagina publica com hero, proposta de valor e CTA de login (completed 2026-03-30)
-- [ ] **Phase 14: Production Fixes** - Corrigir func.strftime SQLite-only e adicionar APP_BASE_URL ao render.yaml
+- [x] **Phase 14: Production Fixes** - Corrigir func.strftime SQLite-only e adicionar APP_BASE_URL ao render.yaml (completed 2026-03-30)
 
 ## Phase Details
 
@@ -268,7 +268,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 14-01-PLAN.md — Substituir func.strftime por Python-side processing + adicionar APP_BASE_URL ao render.yaml (DB-01, MULTI-01, MULTI-02, MULTI-03)
+- [x] 14-01-PLAN.md — Substituir func.strftime por Python-side processing + adicionar APP_BASE_URL ao render.yaml (DB-01, MULTI-01, MULTI-02, MULTI-03)
 
 ## Progress
 
@@ -289,4 +289,4 @@ Plans:
 | 11. Google OAuth | v2.0 | 3/3 | Complete    | 2026-03-28 |
 | 12. Data Isolation | v2.0 | 3/3 | Complete    | 2026-03-29 |
 | 13. Landing Page | v2.0 | 1/1 | Complete    | 2026-03-30 |
-| 14. Production Fixes | v2.0 | 0/? | Not started | - |
+| 14. Production Fixes | v2.0 | 1/1 | Complete   | 2026-03-30 |

@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Multi-usuario
-status: Milestone complete
-stopped_at: Completed 13-01-PLAN.md
-last_updated: "2026-03-30T03:17:11.677Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 14-01-PLAN.md
+last_updated: "2026-03-30T15:44:07.726Z"
 progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 9
-  completed_plans: 9
+  total_phases: 5
+  completed_phases: 5
+  total_plans: 10
+  completed_plans: 10
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** Detectar o momento certo de comprar uma passagem antes que o preco suba, usando dados de inventario reais que nenhum sistema consumer expoe.
-**Current focus:** Phase 13 — landing-page
+**Current focus:** Phase 14 — production-fixes
 
 ## Current Position
 
-Phase: 13
-Plan: Not started
+Phase: 14 (production-fixes) — EXECUTING
+Plan: 1 of 1
 
 ## Performance Metrics
 
@@ -62,6 +62,7 @@ Plan: Not started
 | Phase 12 P01 | 6min | 2 tasks | 8 files |
 | Phase 12 P02 | 4min | 1 tasks | 7 files |
 | Phase 13 P01 | 2min | 3 tasks | 2 files |
+| Phase 14 P01 | 3min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -89,6 +90,7 @@ Recent decisions affecting current work:
 - [Phase 12]: joinedload(RouteGroup.user) in polling to avoid N+1 queries
 - [Phase 13]: Rota unica / com condicional user is None, sem rota /landing separada
 - [Phase 13]: CSS inline no template landing via block head, sem arquivo CSS separado
+- [Phase 14]: Python-side weekday() grouping for dialect-agnostic best_day query
 
 ### Pending Todos
 
@@ -106,6 +108,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T03:14:08.608Z
-Stopped at: Completed 13-01-PLAN.md
+Last session: 2026-03-30T15:44:07.711Z
+Stopped at: Completed 14-01-PLAN.md
 Resume file: None

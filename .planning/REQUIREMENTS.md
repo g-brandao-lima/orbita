@@ -211,7 +211,7 @@
 | VIS-04 | Phase 9 | Complete |
 | VIS-05 | Phase 9 | Complete |
 | VIS-06 | Phase 9 | Complete |
-| DB-01 | Phase 14 | Pending |
+| DB-01 | Phase 14 | Complete |
 | DB-02 | Phase 10 | Complete |
 | DB-03 | Phase 10 | Complete |
 | AUTH-01 | Phase 11 | Complete |
@@ -219,9 +219,9 @@
 | AUTH-03 | Phase 11 | Complete |
 | AUTH-04 | Phase 11 | Complete |
 | AUTH-05 | Phase 11 | Complete |
-| MULTI-01 | Phase 14 | Pending |
-| MULTI-02 | Phase 14 | Pending |
-| MULTI-03 | Phase 14 | Pending |
+| MULTI-01 | Phase 14 | Complete |
+| MULTI-02 | Phase 14 | Complete |
+| MULTI-03 | Phase 14 | Complete |
 | MULTI-04 | Phase 12 | Complete |
 | LAND-01 | Phase 13 | Complete |
 | LAND-02 | Phase 13 | Complete |
