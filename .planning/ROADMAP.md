@@ -248,7 +248,10 @@ Plans:
   2. Landing page contem secao "Por que somos diferentes" comparando Flight Monitor com Google Flights e Skyscanner
   3. Botao "Entrar com Google" aparece como CTA principal e inicia o fluxo OAuth ao ser clicado
   4. Landing page e responsiva e utilizavel em telas mobile (layout mobile-first)
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 13-01-PLAN.md - Landing page template + rota condicional + checkpoint visual (LAND-01, LAND-02, LAND-03, LAND-04)
 **UI hint**: yes
 
 ## Progress
