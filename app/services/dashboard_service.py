@@ -1,4 +1,5 @@
 import datetime
+from collections import defaultdict
 from datetime import timedelta
 
 from sqlalchemy import case, func
@@ -84,28 +85,33 @@ def get_groups_with_summary(db: Session, user_id: int | None = None) -> list[dic
                     "direction": "down" if change_pct < -1 else "up" if change_pct > 1 else "stable",
                 }
 
-        # Best day of week (from historical data)
+        # Best day of week (from historical data) - dialect-agnostic
         best_day = None
-        day_prices = (
-            db.query(
-                func.strftime("%w", FlightSnapshot.departure_date).label("dow"),
-                func.avg(FlightSnapshot.price).label("avg_price"),
-                func.count().label("cnt"),
-            )
+        day_snaps = (
+            db.query(FlightSnapshot.departure_date, FlightSnapshot.price)
             .filter(
                 FlightSnapshot.route_group_id == group.id,
                 FlightSnapshot.origin.in_(group.origins),
                 FlightSnapshot.destination.in_(group.destinations),
+                FlightSnapshot.departure_date.isnot(None),
             )
-            .group_by("dow")
-            .having(func.count() >= 3)
-            .order_by(func.avg(FlightSnapshot.price).asc())
-            .first()
+            .all()
         )
-        if day_prices:
-            day_names = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"]
-            dow_idx = int(day_prices.dow)
-            best_day = {"name": day_names[dow_idx], "avg_price": round(day_prices.avg_price, 0)}
+        if day_snaps:
+            day_prices_map = defaultdict(list)
+            for snap in day_snaps:
+                dow = snap.departure_date.weekday()  # 0=Monday
+                day_prices_map[dow].append(snap.price)
+            day_names = ["Segunda", "Terca", "Quarta", "Quinta", "Sexta", "Sabado", "Domingo"]
+            candidates = [
+                (dow, sum(prices) / len(prices))
+                for dow, prices in day_prices_map.items()
+                if len(prices) >= 3
+            ]
+            if candidates:
+                candidates.sort(key=lambda x: x[1])
+                best_dow, best_avg = candidates[0]
+                best_day = {"name": day_names[best_dow], "avg_price": round(best_avg, 0)}
 
         # Direct vs connection price comparison
         price_comparison = None
@@ -145,14 +151,15 @@ def get_groups_with_summary(db: Session, user_id: int | None = None) -> list[dic
             if historical_min and historical_min < cheapest_snapshot.price:
                 best_ever = round(historical_min, 0)
 
-        # Collection count
-        collection_count = (
-            db.query(func.count(func.distinct(
-                func.strftime("%Y-%m-%d %H", FlightSnapshot.collected_at)
-            )))
+        # Collection count - dialect-agnostic (Python-side grouping)
+        collected_times = (
+            db.query(FlightSnapshot.collected_at)
             .filter(FlightSnapshot.route_group_id == group.id)
-            .scalar()
-        ) or 0
+            .all()
+        )
+        collection_count = len(set(
+            ct[0].strftime("%Y-%m-%d %H") for ct in collected_times if ct[0]
+        ))
 
         # Sparkline data (last 7 prices for mini chart)
         sparkline = []

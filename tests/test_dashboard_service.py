@@ -319,6 +319,68 @@ def test_get_dashboard_summary_ignores_snapshots_from_removed_origin(db):
     assert result["cheapest_price"] == 1000.0
 
 
+# --- best_day and collection_count dialect-agnostic tests ---
+
+
+def test_best_day_returns_correct_day_name(db):
+    """best_day retorna o nome do dia da semana com menor media de preco
+    quando ha >= 3 snapshots naquele dia."""
+    group = _make_group(db)
+    now = datetime.datetime(2026, 3, 20, 12, 0)
+    # Sunday (2026-05-10 is a Sunday) - 3 snapshots, avg = 4000
+    for i in range(3):
+        _make_snapshot(db, group, price=3500.0 + i * 500,
+                       departure_date=datetime.date(2026, 5, 10),
+                       collected_at=now + timedelta(hours=i))
+    # Monday (2026-05-11) - 3 snapshots, avg = 2000 (cheaper!)
+    for i in range(3):
+        _make_snapshot(db, group, price=1500.0 + i * 500,
+                       departure_date=datetime.date(2026, 5, 11),
+                       collected_at=now + timedelta(hours=i))
+
+    result = get_groups_with_summary(db)
+
+    assert result[0]["best_day"] is not None
+    assert result[0]["best_day"]["name"] == "Segunda"
+    assert result[0]["best_day"]["avg_price"] == 2000.0
+
+
+def test_best_day_returns_none_when_less_than_3_snapshots(db):
+    """best_day retorna None quando nenhum dia da semana tem >= 3 snapshots."""
+    group = _make_group(db)
+    now = datetime.datetime(2026, 3, 20, 12, 0)
+    # Only 2 snapshots for same day
+    _make_snapshot(db, group, price=3000.0,
+                   departure_date=datetime.date(2026, 5, 10),
+                   collected_at=now)
+    _make_snapshot(db, group, price=3500.0,
+                   departure_date=datetime.date(2026, 5, 10),
+                   collected_at=now + timedelta(hours=1))
+
+    result = get_groups_with_summary(db)
+
+    assert result[0]["best_day"] is None
+
+
+def test_collection_count_counts_distinct_hours(db):
+    """collection_count conta horas distintas de coleta."""
+    group = _make_group(db)
+    # 3 snapshots in same hour = 1 collection
+    base = datetime.datetime(2026, 3, 20, 12, 0)
+    _make_snapshot(db, group, price=3000.0, collected_at=base)
+    _make_snapshot(db, group, price=3100.0,
+                   collected_at=base + timedelta(minutes=15))
+    _make_snapshot(db, group, price=3200.0,
+                   collected_at=base + timedelta(minutes=30))
+    # 1 snapshot in different hour = 2nd collection
+    _make_snapshot(db, group, price=2900.0,
+                   collected_at=base + timedelta(hours=6))
+
+    result = get_groups_with_summary(db)
+
+    assert result[0]["collection_count"] == 2
+
+
 def test_get_price_history_ignores_snapshots_from_removed_origin(db):
     """Historico de preco nao deve mostrar rota de origem removida."""
     group = _make_group(db, origins=["REC", "JPA"], destinations=["CGH"])
