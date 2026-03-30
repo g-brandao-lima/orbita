@@ -265,7 +265,10 @@ Plans:
   2. APP_BASE_URL declarado no render.yaml como env var sync:false
   3. Link de silenciar alerta no email aponta para URL de producao (nao localhost)
   4. Todos os 218+ testes continuam passando
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 14-01-PLAN.md — Substituir func.strftime por Python-side processing + adicionar APP_BASE_URL ao render.yaml (DB-01, MULTI-01, MULTI-02, MULTI-03)
 
 ## Progress
 
