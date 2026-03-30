@@ -24,3 +24,5 @@ services:
         sync: false
       - key: SESSION_SECRET_KEY
         sync: false
+      - key: APP_BASE_URL
+        sync: false
