@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+    html { scroll-behavior: smooth; }
+
+    /* Landing sections */
+    .landing-hero {
+        text-align: center;
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 64px 0;
+    }
+    .landing-hero-icon {
+        margin-bottom: 24px;
+    }
+    .landing-hero h1 {
+        font-size: 40px;
+        font-weight: 700;
+        line-height: 1.1;
+        color: #e2e8f0;
+        margin-bottom: 16px;
+    }
+    .landing-hero-subtitle {
+        font-size: 16px;
+        font-weight: 400;
+        line-height: 1.6;
+        color: #94a3b8;
+        max-width: 520px;
+        margin: 0 auto;
+    }
+    .landing-cta {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 32px;
+        background: linear-gradient(135deg, #0ea5e9, #3b82f6);
+        color: #fff;
+        font-size: 16px;
+        font-weight: 700;
+        padding: 16px 32px;
+        border-radius: 10px;
+        min-height: 44px;
+        text-decoration: none;
+        box-shadow: 0 2px 12px rgba(14, 165, 233, 0.25);
+        transition: all 0.2s ease;
+    }
+    .landing-cta:hover {
+        background: #0284c7;
+        box-shadow: 0 4px 20px rgba(14, 165, 233, 0.35);
+        color: #fff;
+    }
+    .landing-cta:active {
+        transform: scale(0.97);
+    }
+
+    /* Sections */
+    .landing-section {
+        padding: 64px 0;
+    }
+    .landing-section-heading {
+        text-align: center;
+        font-size: 24px;
+        font-weight: 700;
+        color: #e2e8f0;
+        line-height: 1.2;
+        margin-bottom: 32px;
+    }
+
+    /* Step and feature grids */
+    .landing-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+    }
+
+    /* Cards */
+    .landing-card {
+        background: #111827;
+        border: 1px solid #1e293b;
+        border-radius: 12px;
+        padding: 24px;
+    }
+
+    /* Step cards */
+    .step-number {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #0ea5e9;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+    }
+    .step-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #e2e8f0;
+        margin-bottom: 8px;
+    }
+    .step-desc {
+        font-size: 13px;
+        font-weight: 400;
+        color: #94a3b8;
+        line-height: 1.5;
+    }
+
+    /* Feature cards */
+    .feature-card {
+        transition: border-color 0.2s ease;
+    }
+    .feature-card:hover {
+        border-color: #0ea5e9;
+    }
+    .feature-icon {
+        width: 48px;
+        height: 48px;
+        background: rgba(14, 165, 233, 0.1);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+    }
+    .feature-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #e2e8f0;
+        margin-bottom: 8px;
+    }
+    .feature-desc {
+        font-size: 13px;
+        font-weight: 400;
+        color: #94a3b8;
+        line-height: 1.5;
+    }
+
+    /* Final CTA section */
+    .landing-final-cta {
+        border-top: 1px solid #1e293b;
+        padding: 64px 0;
+        text-align: center;
+    }
+    .landing-final-cta h2 {
+        font-size: 24px;
+        font-weight: 700;
+        color: #e2e8f0;
+        line-height: 1.2;
+    }
+    .landing-final-cta .landing-cta {
+        margin-top: 24px;
+    }
+    .landing-final-subtext {
+        font-size: 13px;
+        font-weight: 400;
+        color: #64748b;
+        margin-top: 16px;
+    }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+        .landing-hero {
+            padding-top: 48px;
+        }
+        .landing-hero h1 {
+            font-size: 28px;
+        }
+        .landing-section-heading,
+        .landing-final-cta h2 {
+            font-size: 20px;
+        }
+        .landing-section {
+            padding: 48px 0;
+        }
+        .landing-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+        .landing-card {
+            padding: 24px 16px;
+        }
+        .landing-cta {
+            padding: 16px 24px;
+        }
+        .landing-final-cta {
+            padding: 48px 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section class="landing-hero">
+    <div class="landing-hero-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.3c.4-.2.6-.6.5-1.1z"/>
+        </svg>
+    </div>
+    <h1>Saiba quando comprar antes que o preco suba.</h1>
+    <p class="landing-hero-subtitle">Monitoramos voos 24h por dia e avisamos quando e a melhor hora de comprar sua passagem.</p>
+    <a href="/auth/login" class="landing-cta">Comecar gratis</a>
+</section>
+
+<!-- Como funciona -->
+<section class="landing-section">
+    <h2 class="landing-section-heading">Como funciona</h2>
+    <div class="landing-grid">
+        <div class="landing-card">
+            <div class="step-number">1</div>
+            <div class="step-title">Configure seus voos</div>
+            <div class="step-desc">Escolha origens, destinos e datas. O monitoramento comeca automaticamente.</div>
+        </div>
+        <div class="landing-card">
+            <div class="step-number">2</div>
+            <div class="step-title">Receba sinais inteligentes</div>
+            <div class="step-desc">Nosso sistema analisa precos e disponibilidade 24h por dia e detecta o momento ideal de compra.</div>
+        </div>
+        <div class="landing-card">
+            <div class="step-number">3</div>
+            <div class="step-title">Compre na hora certa</div>
+            <div class="step-desc">Receba alertas no seu email quando for a melhor hora de garantir sua passagem.</div>
+        </div>
+    </div>
+</section>
+
+<!-- Por que somos diferentes -->
+<section class="landing-section">
+    <h2 class="landing-section-heading">Por que somos diferentes</h2>
+    <div class="landing-grid">
+        <div class="landing-card feature-card">
+            <div class="feature-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+            </div>
+            <div class="feature-title">Sinais antes do preco subir</div>
+            <div class="feature-desc">Detectamos quando assentos baratos estao acabando, antes que o preco aumente. Voce compra no momento certo.</div>
+        </div>
+        <div class="landing-card feature-card">
+            <div class="feature-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path></svg>
+            </div>
+            <div class="feature-title">Monitoramento passivo 24h</div>
+            <div class="feature-desc">Configure uma vez e esqueca. O sistema verifica seus voos automaticamente e so te aciona quando vale a pena.</div>
+        </div>
+        <div class="landing-card feature-card">
+            <div class="feature-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            </div>
+            <div class="feature-title">Alerta direto no seu email</div>
+            <div class="feature-desc">Sem apps extras. Quando detectamos uma oportunidade, voce recebe um email claro com tudo que precisa saber.</div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA final -->
+<section class="landing-final-cta">
+    <h2>Pronto para encontrar a passagem ideal?</h2>
+    <a href="/auth/login" class="landing-cta">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+            <path fill="none" d="M0 0h48v48H0z"/>
+        </svg>
+        Entrar com Google
+    </a>
+    <p class="landing-final-subtext">Gratis. Sem cartao de credito.</p>
+</section>
+{% endblock %}
