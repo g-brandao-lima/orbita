@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Multi-usuario
-status: Ready to plan
-stopped_at: Phase 13 UI-SPEC approved
-last_updated: "2026-03-30T02:16:28.211Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 13-01-PLAN.md
+last_updated: "2026-03-30T03:14:08.619Z"
 progress:
   total_phases: 4
-  completed_phases: 3
-  total_plans: 8
-  completed_plans: 8
+  completed_phases: 4
+  total_plans: 9
+  completed_plans: 9
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** Detectar o momento certo de comprar uma passagem antes que o preco suba, usando dados de inventario reais que nenhum sistema consumer expoe.
-**Current focus:** Phase 12 — data-isolation
+**Current focus:** Phase 13 — landing-page
 
 ## Current Position
 
-Phase: 13
-Plan: Not started
+Phase: 13 (landing-page) — EXECUTING
+Plan: 1 of 1
 
 ## Performance Metrics
 
@@ -61,6 +61,7 @@ Plan: Not started
 | Phase 12 P03 | 4min | 2 tasks | 7 files |
 | Phase 12 P01 | 6min | 2 tasks | 8 files |
 | Phase 12 P02 | 4min | 1 tasks | 7 files |
+| Phase 13 P01 | 2min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,8 @@ Recent decisions affecting current work:
 - [Phase 12]: user_id nullable on route_groups for backward compat; ownership returns 404 not 403
 - [Phase 12]: recipient_email as optional param with gmail_recipient fallback for backward compat
 - [Phase 12]: joinedload(RouteGroup.user) in polling to avoid N+1 queries
+- [Phase 13]: Rota unica / com condicional user is None, sem rota /landing separada
+- [Phase 13]: CSS inline no template landing via block head, sem arquivo CSS separado
 
 ### Pending Todos
 
@@ -103,6 +106,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T02:16:28.205Z
-Stopped at: Phase 13 UI-SPEC approved
-Resume file: .planning/phases/13-landing-page/13-UI-SPEC.md
+Last session: 2026-03-30T03:14:08.608Z
+Stopped at: Completed 13-01-PLAN.md
+Resume file: None

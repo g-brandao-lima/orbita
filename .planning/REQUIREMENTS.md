@@ -118,10 +118,10 @@
 
 ### Landing Page
 
-- [ ] **LAND-01**: Visitante nao logado ve landing page publica com hero e descricao do produto
-- [ ] **LAND-02**: Landing page tem secao "Por que somos diferentes" comparando com Google Flights/Skyscanner
-- [ ] **LAND-03**: Landing page tem botao "Entrar com Google" como CTA principal
-- [ ] **LAND-04**: Landing page e responsiva (mobile-first)
+- [x] **LAND-01**: Visitante nao logado ve landing page publica com hero e descricao do produto
+- [x] **LAND-02**: Landing page tem secao "Por que somos diferentes" comparando com Google Flights/Skyscanner
+- [x] **LAND-03**: Landing page tem botao "Entrar com Google" como CTA principal
+- [x] **LAND-04**: Landing page e responsiva (mobile-first)
 
 ## Future Requirements
 
@@ -223,10 +223,10 @@
 | MULTI-02 | Phase 12 | Complete |
 | MULTI-03 | Phase 12 | Complete |
 | MULTI-04 | Phase 12 | Complete |
-| LAND-01 | Phase 13 | Pending |
-| LAND-02 | Phase 13 | Pending |
-| LAND-03 | Phase 13 | Pending |
-| LAND-04 | Phase 13 | Pending |
+| LAND-01 | Phase 13 | Complete |
+| LAND-02 | Phase 13 | Complete |
+| LAND-03 | Phase 13 | Complete |
+| LAND-04 | Phase 13 | Complete |
 
 **Coverage:**
 - v1 requirements: 28 total, 28 mapped, 0 unmapped
