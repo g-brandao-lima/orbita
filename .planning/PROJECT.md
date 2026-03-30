@@ -12,6 +12,12 @@ Detectar o momento certo de comprar uma passagem antes que o preço suba, usando
 
 ### Validated
 
+**Phase 13 (Landing Page) — validated 2026-03-30**
+- Landing page publica com hero, "Como funciona" (3 passos), "Diferenciais" (3 cards SVG), CTA final
+- Rota / condicional: nao logado = landing, logado = dashboard
+- Dark mode coeso com dashboard, mobile-first responsivo
+- CTAs linkam para /auth/login (fluxo OAuth)
+
 **Phase 12 (Data Isolation) — validated 2026-03-29**
 - Isolamento completo por usuario (user_id FK em route_groups, queries filtradas)
 - Alertas por email enviados para email do Google do dono do grupo
@@ -154,4 +160,4 @@ Este documento evolui a cada transição de fase e milestone.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-29 after Phase 12 completion*
+*Last updated: 2026-03-30 after Phase 13 completion — Milestone v2.0 complete*
