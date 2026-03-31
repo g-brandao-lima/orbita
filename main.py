@@ -61,7 +61,7 @@ async def health_check():
 
 
 ERROR_MESSAGES = {
-    404: ("Pagina nao encontrada.", "O endereco que voce acessou nao existe."),
+    404: ("Página não encontrada.", "O endereço que você acessou não existe."),
 }
 DEFAULT_ERROR = ("Algo deu errado no servidor.", "Tente novamente em alguns instantes.")
 

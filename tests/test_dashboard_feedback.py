@@ -91,7 +91,7 @@ def test_404_shows_friendly_error(client):
     response = client.get("/groups/99999")
 
     assert response.status_code == 404
-    assert "Pagina nao encontrada" in response.text
+    assert "não encontrada" in response.text
     assert "Voltar ao inicio" in response.text
 
 

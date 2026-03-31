@@ -70,6 +70,64 @@ def verify_silence_token(token: str, group_id: int) -> bool:
     return hmac.compare_digest(token, expected)
 
 
+def compose_welcome_email(user_name: str, user_email: str) -> MIMEMultipart:
+    """Compoe email de boas-vindas para novo usuario."""
+    first_name = user_name.split(" ")[0] if user_name else "Viajante"
+    dashboard_url = f"{settings.app_base_url}/"
+
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = f"Bem-vindo ao Flight Monitor, {first_name}!"
+    msg["From"] = settings.gmail_sender
+    msg["To"] = user_email
+
+    plain = (
+        f"Olá, {first_name}!\n\n"
+        "Sua conta no Flight Monitor foi criada.\n\n"
+        "O que o Flight Monitor faz:\n"
+        "- Monitora preços de passagens aéreas 24h por dia\n"
+        "- Detecta o momento ideal de compra antes que o preço suba\n"
+        "- Envia alertas direto no seu email\n\n"
+        f"Crie seu primeiro grupo de monitoramento: {dashboard_url}\n\n"
+        "Boas viagens!\n"
+        "Equipe Flight Monitor"
+    )
+
+    html = (
+        '<html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;'
+        'background:#0b0e14;color:#e2e8f0;padding:32px;">'
+        '<div style="text-align:center;margin-bottom:24px;">'
+        '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" '
+        'fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+        '<path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2'
+        'c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 '
+        '3.5 5.3c.3.4.8.5 1.3.3l.5-.3c.4-.2.6-.6.5-1.1z"/></svg>'
+        '</div>'
+        f'<h1 style="text-align:center;font-size:24px;margin:0 0 8px;">Olá, {first_name}!</h1>'
+        '<p style="text-align:center;color:#94a3b8;font-size:16px;margin:0 0 32px;">'
+        'Sua conta no Flight Monitor foi criada.</p>'
+        '<div style="background:#111827;border:1px solid #1e293b;border-radius:12px;padding:24px;'
+        'margin-bottom:24px;">'
+        '<p style="font-size:14px;color:#94a3b8;margin:0 0 16px;">O que o Flight Monitor faz:</p>'
+        '<ul style="font-size:14px;color:#e2e8f0;padding-left:20px;margin:0;">'
+        '<li style="margin-bottom:8px;">Monitora preços de passagens aéreas 24h por dia</li>'
+        '<li style="margin-bottom:8px;">Detecta o momento ideal de compra antes que o preço suba</li>'
+        '<li>Envia alertas direto no seu email</li>'
+        '</ul></div>'
+        '<div style="text-align:center;">'
+        f'<a href="{dashboard_url}" style="display:inline-block;background:linear-gradient(135deg,'
+        '#0ea5e9,#3b82f6);color:#fff;font-size:16px;font-weight:700;padding:14px 32px;'
+        'border-radius:10px;text-decoration:none;">Criar meu primeiro grupo</a>'
+        '</div>'
+        '<p style="text-align:center;color:#64748b;font-size:13px;margin-top:32px;">'
+        'Boas viagens!<br>Equipe Flight Monitor</p>'
+        '</body></html>'
+    )
+
+    msg.attach(MIMEText(plain, "plain", "utf-8"))
+    msg.attach(MIMEText(html, "html", "utf-8"))
+    return msg
+
+
 def should_alert(group: RouteGroup) -> bool:
     """Retorna True se o grupo nao esta silenciado no momento.
 

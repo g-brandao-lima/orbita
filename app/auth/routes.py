@@ -2,9 +2,14 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
+import logging
+
 from app.auth.oauth import oauth
 from app.database import get_db
 from app.models import User
+from app.services.alert_service import compose_welcome_email, send_email
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -27,7 +32,8 @@ async def auth_callback(request: Request, db: Session = Depends(get_db)):
         return RedirectResponse(url="/?msg=login_erro", status_code=303)
 
     user = db.query(User).filter(User.google_id == userinfo["sub"]).first()
-    if not user:
+    is_new_user = user is None
+    if is_new_user:
         user = User(
             google_id=userinfo["sub"],
             email=userinfo["email"],
@@ -39,6 +45,13 @@ async def auth_callback(request: Request, db: Session = Depends(get_db)):
         db.refresh(user)
 
     request.session["user_id"] = user.id
+
+    if is_new_user:
+        try:
+            welcome_msg = compose_welcome_email(user.name, user.email)
+            send_email(welcome_msg)
+        except Exception:
+            logger.warning("Failed to send welcome email to %s", user.email)
     return RedirectResponse(url="/", status_code=303)
 
 

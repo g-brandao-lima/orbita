@@ -94,8 +94,8 @@ FLASH_MESSAGES = {
     "grupo_atualizado": "Grupo atualizado com sucesso!",
     "grupo_ativado": "Grupo ativado com sucesso!",
     "grupo_desativado": "Grupo desativado com sucesso!",
-    "login_required": "Faca login para acessar.",
-    "login_erro": "Erro ao conectar com Google. Tente novamente.",
+    "login_required": "Faça login para acessar.",
+    "login_erro": "Erro ao conectar com o Google. Tente novamente.",
     "login_cancelado": "Login cancelado.",
 }
 
