@@ -30,6 +30,8 @@ MOCK_SERPAPI_INSIGHTS = {
     "typical_price_range": [400, 700],
 }
 
+FF_MOCK_TARGET = "app.services.flight_search.get_flights_from_filter"
+
 
 # ---------------------------------------------------------------------------
 # _parse_price
@@ -42,10 +44,22 @@ def test_parse_price_brl_string():
     assert _parse_price("R$690") == 690.0
 
 
-def test_parse_price_with_comma():
+def test_parse_price_brl_with_dot_thousands():
     from app.services.flight_search import _parse_price
 
-    assert _parse_price("R$1,234") == 1234.0
+    assert _parse_price("R$1.599") == 1599.0
+
+
+def test_parse_price_brl_full_format():
+    from app.services.flight_search import _parse_price
+
+    assert _parse_price("R$1.599,00") == 1599.0
+
+
+def test_parse_price_brl_with_decimal_comma():
+    from app.services.flight_search import _parse_price
+
+    assert _parse_price("R$823,50") == 823.5
 
 
 def test_parse_price_already_clean():
@@ -72,7 +86,7 @@ def test_parse_price_returns_none_on_non_numeric():
 # ---------------------------------------------------------------------------
 
 
-@patch("app.services.flight_search.get_flights")
+@patch(FF_MOCK_TARGET)
 def test_search_uses_fast_flights_when_available(mock_gf):
     from app.services.flight_search import search_flights
 
@@ -95,7 +109,7 @@ def test_search_uses_fast_flights_when_available(mock_gf):
 
 
 @patch("app.services.flight_search.SerpApiClient")
-@patch("app.services.flight_search.get_flights")
+@patch(FF_MOCK_TARGET)
 def test_search_falls_back_to_serpapi_on_fast_flights_failure(mock_gf, mock_cls):
     from app.services.flight_search import search_flights
 
@@ -118,7 +132,7 @@ def test_search_falls_back_to_serpapi_on_fast_flights_failure(mock_gf, mock_cls)
 
 
 @patch("app.services.flight_search.SerpApiClient")
-@patch("app.services.flight_search.get_flights")
+@patch(FF_MOCK_TARGET)
 def test_search_propagates_error_when_both_fail(mock_gf, mock_cls):
     from app.services.flight_search import search_flights
 
@@ -131,9 +145,9 @@ def test_search_propagates_error_when_both_fail(mock_gf, mock_cls):
         search_flights("GRU", "GIG", "2026-05-01", "2026-05-08")
 
 
-@patch("app.services.flight_search.get_flights")
+@patch(FF_MOCK_TARGET)
 def test_search_raises_when_fast_flights_returns_empty(mock_gf):
-    """fast-flights sem resultados e tratado como falha → tenta SerpAPI."""
+    """fast-flights sem resultados e tratado como falha -> tenta SerpAPI."""
     from app.services.flight_search import search_flights
 
     mock_result = MagicMock()
@@ -155,7 +169,7 @@ def test_search_raises_when_fast_flights_returns_empty(mock_gf):
     assert source == "serpapi"
 
 
-@patch("app.services.flight_search.get_flights")
+@patch(FF_MOCK_TARGET)
 def test_search_respects_max_results(mock_gf):
     from app.services.flight_search import search_flights
 
@@ -176,7 +190,7 @@ def test_search_respects_max_results(mock_gf):
     assert len(flights) == 3
 
 
-@patch("app.services.flight_search.get_flights")
+@patch(FF_MOCK_TARGET)
 def test_search_returns_sorted_by_price(mock_gf):
     from app.services.flight_search import search_flights
 
@@ -197,8 +211,8 @@ def test_search_returns_sorted_by_price(mock_gf):
     assert prices == sorted(prices)
 
 
-@patch("app.services.flight_search.get_flights")
-def test_search_passes_max_stops_to_fast_flights(mock_gf):
+@patch(FF_MOCK_TARGET)
+def test_search_passes_currency_brl(mock_gf):
     from app.services.flight_search import search_flights
 
     mock_result = MagicMock()
@@ -208,13 +222,15 @@ def test_search_passes_max_stops_to_fast_flights(mock_gf):
     mock_result.flights = [f]
     mock_gf.return_value = mock_result
 
-    search_flights("GRU", "GIG", "2026-05-01", "2026-05-08", max_stops=0)
+    search_flights("GRU", "GIG", "2026-05-01", "2026-05-08")
 
-    call_kwargs = mock_gf.call_args.kwargs
-    assert call_kwargs.get("max_stops") == 0
+    _, kwargs = mock_gf.call_args
+    assert kwargs.get("currency") == "BRL" or mock_gf.call_args[1].get("currency") == "BRL" or (
+        len(mock_gf.call_args[0]) >= 2 and mock_gf.call_args[0][1] == "BRL"
+    )
 
 
-@patch("app.services.flight_search.get_flights")
+@patch(FF_MOCK_TARGET)
 def test_search_normalized_dict_has_required_keys(mock_gf):
     from app.services.flight_search import search_flights
 

@@ -6,7 +6,8 @@ from app.services.serpapi_client import SerpApiClient
 logger = logging.getLogger(__name__)
 
 try:
-    from fast_flights import FlightData, Passengers, get_flights
+    from fast_flights import FlightData, Passengers, get_flights_from_filter
+    from fast_flights.flights_impl import TFSData
     _FF_AVAILABLE = True
 except ImportError:
     logger.warning("fast-flights nao instalado; usando apenas SerpAPI")
@@ -57,7 +58,7 @@ def _search_fast_flights(
     if not _FF_AVAILABLE:
         raise RuntimeError("fast-flights nao esta instalado")
 
-    result = get_flights(
+    tfs = TFSData.from_interface(
         flight_data=[
             FlightData(date=departure_date, from_airport=origin, to_airport=destination),
             FlightData(date=return_date, from_airport=destination, to_airport=origin),
@@ -67,6 +68,7 @@ def _search_fast_flights(
         seat="economy",
         max_stops=max_stops,
     )
+    result = get_flights_from_filter(tfs, currency="BRL")
 
     if not result.flights:
         raise ValueError("fast-flights nao retornou resultados")
@@ -93,7 +95,18 @@ def _search_fast_flights(
 def _parse_price(price_str: str | None) -> float | None:
     if not price_str:
         return None
-    cleaned = re.sub(r"[^\d.]", "", price_str)
+    # Remove currency symbols, spaces, etc.
+    cleaned = re.sub(r"[^\d.,]", "", price_str)
+    # Brazilian format: "1.234,56" → dot=thousands, comma=decimal
+    if "," in cleaned and "." in cleaned:
+        cleaned = cleaned.replace(".", "").replace(",", ".")
+    elif "," in cleaned:
+        cleaned = cleaned.replace(",", ".")
+    # "1.234" with no comma: dot is thousands separator (BRL), not decimal
+    elif "." in cleaned and cleaned.count(".") == 1:
+        parts = cleaned.split(".")
+        if len(parts[1]) == 3:
+            cleaned = cleaned.replace(".", "")
     try:
         return float(cleaned)
     except (ValueError, TypeError):
