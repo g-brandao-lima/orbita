@@ -1,11 +1,16 @@
 import logging
 import re
 
-from fast_flights import FlightData, Passengers, get_flights
-
 from app.services.serpapi_client import SerpApiClient
 
 logger = logging.getLogger(__name__)
+
+try:
+    from fast_flights import FlightData, Passengers, get_flights
+    _FF_AVAILABLE = True
+except ImportError:
+    logger.warning("fast-flights nao instalado; usando apenas SerpAPI")
+    _FF_AVAILABLE = False
 
 
 def search_flights(
@@ -49,6 +54,9 @@ def _search_fast_flights(
     max_results: int,
     max_stops: int | None,
 ) -> list[dict]:
+    if not _FF_AVAILABLE:
+        raise RuntimeError("fast-flights nao esta instalado")
+
     result = get_flights(
         flight_data=[
             FlightData(date=departure_date, from_airport=origin, to_airport=destination),
