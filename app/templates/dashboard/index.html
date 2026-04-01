@@ -260,12 +260,15 @@
             <span class="metric-value{% if summary.api_remaining is defined and summary.api_remaining <= 10 %}" style="color: #ef4444{% elif summary.api_remaining is defined and summary.api_remaining <= 50 %}" style="color: #f59e0b{% endif %}">{{ summary.api_remaining if summary.api_remaining is defined else "—" }}/{{ summary.api_quota if summary.api_quota is defined else 250 }}</span>
         </div>
     </div>
-    <form method="POST" action="/polling/manual" style="margin:0;" id="polling-form">
-        <button type="submit" class="btn btn-success" id="polling-btn">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-            Buscar agora
-        </button>
-    </form>
+    <div style="display:flex;gap:8px;align-items:center;">
+        <a href="/groups/create" class="btn btn-primary" style="padding:6px 14px;font-size:13px;">+ Criar grupo</a>
+        <form method="POST" action="/polling/manual" style="margin:0;" id="polling-form">
+            <button type="submit" class="btn btn-success" id="polling-btn">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                Buscar agora
+            </button>
+        </form>
+    </div>
 </div>
 
 <div class="cards">
