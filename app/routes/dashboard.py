@@ -2,7 +2,7 @@ import re
 import datetime
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, Form, HTTPException, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import func, select
@@ -395,16 +395,17 @@ def toggle_group(
     return RedirectResponse(url=f"/?msg=grupo_{status}", status_code=303)
 
 
-FLASH_MESSAGES["polling_ok"] = "Busca manual concluída!"
+FLASH_MESSAGES["polling_ok"] = "Busca iniciada em segundo plano. Atualize a página em instantes."
 FLASH_MESSAGES["polling_erro"] = "Erro na busca. Tente novamente."
 
 
+def _run_polling_background() -> None:
+    from app.services.polling_service import run_polling_cycle
+    run_polling_cycle()
+
+
 @router.post("/polling/manual")
-def manual_polling():
-    """Força um ciclo de polling manual."""
-    try:
-        from app.services.polling_service import run_polling_cycle
-        run_polling_cycle()
-        return RedirectResponse(url="/?msg=polling_ok", status_code=303)
-    except Exception:
-        return RedirectResponse(url="/?msg=polling_erro", status_code=303)
+def manual_polling(background_tasks: BackgroundTasks):
+    """Dispara o ciclo de polling em background e redireciona imediatamente."""
+    background_tasks.add_task(_run_polling_background)
+    return RedirectResponse(url="/?msg=polling_ok", status_code=303)
