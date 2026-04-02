@@ -7,7 +7,6 @@ import logging
 from app.auth.oauth import oauth
 from app.database import get_db
 from app.models import User
-from app.services.alert_service import compose_welcome_email, send_email
 
 logger = logging.getLogger(__name__)
 
@@ -47,11 +46,7 @@ async def auth_callback(request: Request, db: Session = Depends(get_db)):
     request.session["user_id"] = user.id
 
     if is_new_user:
-        try:
-            welcome_msg = compose_welcome_email(user.name, user.email)
-            send_email(welcome_msg)
-        except Exception:
-            logger.warning("Failed to send welcome email to %s", user.email)
+        logger.info("New user registered: %s (%s)", user.name, user.email)
     return RedirectResponse(url="/", status_code=303)
 
 
