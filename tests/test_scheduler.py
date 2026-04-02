@@ -17,19 +17,16 @@ class TestSchedulerSetup:
 
         init_scheduler()
 
-        mock_sched_instance.add_job.assert_called_once()
+        assert mock_sched_instance.add_job.call_count == 2
 
-        call_kwargs = mock_sched_instance.add_job.call_args
-        assert call_kwargs.kwargs.get("id") == "polling_cycle" or (
-            len(call_kwargs.args) > 0
-            and call_kwargs[1].get("id") == "polling_cycle"
-        )
+        job_ids = [c.kwargs.get("id") for c in mock_sched_instance.add_job.call_args_list]
+        assert "polling_morning" in job_ids
+        assert "polling_afternoon" in job_ids
 
-        # Check trigger is CronTrigger at 07:00 UTC (04:00 BRT)
-        trigger = call_kwargs.kwargs.get("trigger") or call_kwargs.args[1]
         from apscheduler.triggers.cron import CronTrigger
-
-        assert isinstance(trigger, CronTrigger)
+        for call in mock_sched_instance.add_job.call_args_list:
+            trigger = call.kwargs.get("trigger")
+            assert isinstance(trigger, CronTrigger)
 
         mock_sched_instance.start.assert_called_once()
 

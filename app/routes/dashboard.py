@@ -395,6 +395,33 @@ def toggle_group(
     return RedirectResponse(url=f"/?msg=grupo_{status}", status_code=303)
 
 
+FLASH_MESSAGES["grupo_excluido"] = "Grupo excluído com sucesso."
+
+
+@router.post("/groups/{group_id}/delete")
+def delete_group(
+    group_id: int,
+    db: Session = Depends(get_db),
+    user: User | None = Depends(get_current_user),
+):
+    group = db.query(RouteGroup).filter(RouteGroup.id == group_id).first()
+    if group is None:
+        raise HTTPException(status_code=404, detail="Grupo nao encontrado")
+    if user and group.user_id != user.id:
+        raise HTTPException(status_code=404, detail="Grupo nao encontrado")
+
+    from app.models import FlightSnapshot, DetectedSignal, BookingClassSnapshot
+    snapshot_ids = [s.id for s in db.query(FlightSnapshot.id).filter(FlightSnapshot.route_group_id == group_id).all()]
+    if snapshot_ids:
+        db.query(BookingClassSnapshot).filter(BookingClassSnapshot.flight_snapshot_id.in_(snapshot_ids)).delete(synchronize_session=False)
+        db.query(DetectedSignal).filter(DetectedSignal.flight_snapshot_id.in_(snapshot_ids)).delete(synchronize_session=False)
+    db.query(FlightSnapshot).filter(FlightSnapshot.route_group_id == group_id).delete(synchronize_session=False)
+    db.query(DetectedSignal).filter(DetectedSignal.route_group_id == group_id).delete(synchronize_session=False)
+    db.delete(group)
+    db.commit()
+    return RedirectResponse(url="/?msg=grupo_excluido", status_code=303)
+
+
 FLASH_MESSAGES["polling_ok"] = "Busca iniciada em segundo plano. Atualize a página em instantes."
 FLASH_MESSAGES["polling_erro"] = "Erro na busca. Tente novamente."
 

@@ -10,13 +10,22 @@
         justify-content: space-between;
         margin-bottom: 20px;
         padding: 0 4px;
+        gap: 12px;
+        flex-wrap: wrap;
     }
     .summary-metrics {
         display: flex;
         align-items: center;
         gap: 24px;
+        flex-wrap: wrap;
     }
-    .metric { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+    .summary-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-shrink: 0;
+    }
+    .metric { display: flex; align-items: center; gap: 6px; font-size: 13px; white-space: nowrap; }
     .metric-label { color: #64748b; }
     .metric-value { color: #e2e8f0; font-weight: 600; }
     .metric-value.green { color: #34d399; }
@@ -260,10 +269,10 @@
             <span class="metric-value{% if summary.api_remaining is defined and summary.api_remaining <= 10 %}" style="color: #ef4444{% elif summary.api_remaining is defined and summary.api_remaining <= 50 %}" style="color: #f59e0b{% endif %}">{{ summary.api_remaining if summary.api_remaining is defined else "—" }}/{{ summary.api_quota if summary.api_quota is defined else 250 }}</span>
         </div>
     </div>
-    <div style="display:flex;gap:8px;align-items:center;">
+    <div class="summary-actions">
         <a href="/groups/create" class="btn btn-primary" style="padding:6px 14px;font-size:13px;">+ Criar grupo</a>
         <form method="POST" action="/polling/manual" style="margin:0;" id="polling-form">
-            <button type="submit" class="btn btn-success" id="polling-btn">
+            <button type="submit" class="btn btn-success" style="padding:6px 14px;font-size:13px;">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
                 Buscar agora
             </button>
@@ -378,6 +387,10 @@
                 <button type="submit" class="btn btn-ghost" style="padding:4px 12px;font-size:12px;min-height:28px;">
                     {% if item.group.is_active %}Desativar{% else %}Ativar{% endif %}
                 </button>
+            </form>
+            <form method="POST" action="/groups/{{ item.group.id }}/delete" style="margin:0;"
+                  onsubmit="return confirm('Excluir o grupo {{ item.group.name }}? Todos os dados de preço serão perdidos.')">
+                <button type="submit" class="btn btn-ghost" style="padding:4px 12px;font-size:12px;min-height:28px;color:#ef4444;">Excluir</button>
             </form>
             <div class="spacer"></div>
             {% if snap %}

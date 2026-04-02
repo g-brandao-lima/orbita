@@ -305,17 +305,22 @@ def get_dashboard_summary(db: Session, user_id: int | None = None) -> dict:
     # BRT timezone (UTC-3, João Pessoa / Brasília)
     brt_offset = timedelta(hours=-3)
 
-    # Next polling from scheduler
+    # Next polling from scheduler (picks the earliest of all jobs)
     try:
         from app.scheduler import scheduler
-        job = scheduler.get_job("polling_cycle")
-        if job and job.next_run_time:
-            next_brt = job.next_run_time + brt_offset
+        next_times = []
+        for job_id in ("polling_morning", "polling_afternoon"):
+            job = scheduler.get_job(job_id)
+            if job and job.next_run_time:
+                next_times.append(job.next_run_time)
+        if next_times:
+            earliest = min(next_times)
+            next_brt = earliest + brt_offset
             next_polling = next_brt.strftime("%H:%M")
         else:
-            next_polling = "Automático (1x/dia)"
+            next_polling = "04:00 e 16:00"
     except Exception:
-        next_polling = "Automático (1x/dia)"
+        next_polling = "04:00 e 16:00"
 
     # Last collection time (converted to BRT)
     last_collected = (

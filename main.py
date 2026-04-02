@@ -88,8 +88,16 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         loc = err.get("loc", [])
         field = loc[-1] if loc else "campo"
         label = FIELD_LABELS.get(field, field)
-        field_msgs.append(f"{label}: valor inválido")
-    error_text = "; ".join(field_msgs) if field_msgs else "Preencha todos os campos corretamente."
+        err_type = err.get("type", "")
+        if "missing" in err_type:
+            field_msgs.append(f"{label} é obrigatório")
+        elif "date" in err_type or "datetime" in err_type:
+            field_msgs.append(f"{label}: selecione uma data válida")
+        elif "int" in err_type or "float" in err_type:
+            field_msgs.append(f"{label}: informe um número válido")
+        else:
+            field_msgs.append(f"{label}: preencha corretamente")
+    error_text = "; ".join(field_msgs) if field_msgs else "Preencha todos os campos obrigatórios."
 
     referer = request.headers.get("referer", "/")
     if "/groups/create" in str(request.url) or "/groups/create" in referer:
