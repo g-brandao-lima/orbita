@@ -123,6 +123,36 @@
 - [x] **LAND-03**: Landing page tem botao "Entrar com Google" como CTA principal
 - [x] **LAND-04**: Landing page e responsiva (mobile-first)
 
+## v2.1 Requirements
+
+### Clareza de Preco
+
+- [ ] **PRICE-01**: Usuario ve rotulo fixo "por pessoa, ida e volta" em todos os pontos de exibicao de preco (dashboard cards, grafico, alertas, email)
+- [ ] **PRICE-02**: Quando grupo tem mais de 1 passageiro, usuario ve o total calculado em todos os contextos (dashboard, email, alertas) alem do preco unitario
+- [ ] **PRICE-03**: Sistema envia numero correto de passageiros para a API fast-flights (correcao do bug Passengers(adults=1) hardcoded)
+
+### Infraestrutura
+
+- [ ] **CI-01**: Push ou PR na branch main dispara execucao automatica de pytest via GitHub Actions
+- [ ] **CI-02**: Render so faz deploy apos CI checks passarem (configuracao "After CI Checks Pass")
+- [ ] **JWT-01**: Autenticacao usa JWT em cookie httponly em vez de sessao stateful para verificacao de identidade
+- [ ] **JWT-02**: SessionMiddleware permanece ativo exclusivamente para o fluxo OAuth (state do Authlib)
+- [ ] **JWT-03**: Token JWT expira em 7 dias, usuario precisa re-logar apos expiracao
+- [ ] **RATE-01**: Endpoints tem rate limiting por usuario autenticado (ou IP via X-Forwarded-For para anonimos)
+- [ ] **RATE-02**: Limites variam por custo da operacao (escrita > leitura > autocomplete)
+
+### Otimizacao
+
+- [ ] **CACHE-01**: Resultados de busca SerpAPI sao cacheados in-memory com TTL de 13h para evitar chamadas duplicadas no mesmo ciclo de polling
+- [ ] **CACHE-02**: Cache key inclui todos os parametros relevantes (origem, destino, datas, passengers, max_stops)
+
+### Limpeza
+
+- [ ] **CLEAN-01**: Tabela booking_class_snapshots removida do banco via migration Alembic
+- [ ] **CLEAN-02**: Modelo BookingClassSnapshot e todas as referencias removidos do codigo
+
+---
+
 ## Future Requirements
 
 ### Deferred to v2.1+
@@ -236,4 +266,4 @@
 
 ---
 *Requirements defined: 2026-03-24*
-*Last updated: 2026-03-30 after gap closure phase 14 added*
+*Last updated: 2026-04-03 after v2.1 milestone requirements added*
