@@ -37,4 +37,4 @@ jobs:
           SMTP_PASSWORD: test-smtp-pass
           APP_BASE_URL: http://localhost:8000
         run: |
-          pytest --ignore=tests/test_amadeus_client.py -q
+          pytest -q

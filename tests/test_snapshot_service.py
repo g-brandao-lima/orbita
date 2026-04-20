@@ -1,7 +1,7 @@
 import datetime
 from datetime import date
 
-from app.models import RouteGroup, FlightSnapshot, BookingClassSnapshot
+from app.models import RouteGroup, FlightSnapshot
 from app.services.snapshot_service import save_flight_snapshot
 
 
@@ -75,34 +75,6 @@ def test_flight_snapshot_persisted(db):
     assert loaded.collected_at is not None
 
 
-def test_snapshot_has_booking_classes(db):
-    """FlightSnapshot carrega BookingClassSnapshot via relationship."""
-    rg = _create_route_group(db)
-
-    snapshot = FlightSnapshot(
-        route_group_id=rg.id,
-        origin="GRU",
-        destination="GIG",
-        departure_date=date(2026, 5, 1),
-        return_date=date(2026, 5, 8),
-        price=450.0,
-        currency="BRL",
-        airline="LA",
-        booking_classes=[
-            BookingClassSnapshot(class_code="Y", seats_available=9, segment_direction="OUTBOUND"),
-            BookingClassSnapshot(class_code="B", seats_available=4, segment_direction="OUTBOUND"),
-            BookingClassSnapshot(class_code="M", seats_available=3, segment_direction="OUTBOUND"),
-        ],
-    )
-    db.add(snapshot)
-    db.commit()
-    db.refresh(snapshot)
-
-    assert len(snapshot.booking_classes) == 3
-    codes = {bc.class_code for bc in snapshot.booking_classes}
-    assert codes == {"Y", "B", "M"}
-
-
 def test_snapshot_with_price_metrics(db):
     """FlightSnapshot persiste campos nullable de price metrics."""
     rg = _create_route_group(db)
@@ -164,7 +136,7 @@ def test_snapshot_price_metrics_nullable(db):
 
 
 def test_save_flight_snapshot_function(db):
-    """save_flight_snapshot cria FlightSnapshot + BookingClassSnapshot no banco."""
+    """save_flight_snapshot cria FlightSnapshot no banco."""
     rg = _create_route_group(db)
 
     snapshot_data = {
@@ -182,11 +154,6 @@ def test_save_flight_snapshot_function(db):
         "price_third_quartile": 600.0,
         "price_max": 900.0,
         "price_classification": "LOW",
-        "booking_classes": [
-            {"class_code": "Y", "seats_available": 9, "segment_direction": "OUTBOUND"},
-            {"class_code": "B", "seats_available": 4, "segment_direction": "OUTBOUND"},
-            {"class_code": "M", "seats_available": 3, "segment_direction": "OUTBOUND"},
-        ],
     }
 
     result = save_flight_snapshot(db, snapshot_data)
@@ -194,11 +161,10 @@ def test_save_flight_snapshot_function(db):
     assert result.id is not None
     assert result.origin == "GRU"
     assert result.price == 450.0
-    assert len(result.booking_classes) == 3
 
     from_db = db.get(FlightSnapshot, result.id)
     assert from_db is not None
-    assert len(from_db.booking_classes) == 3
+    assert from_db.price_classification == "LOW"
 
 
 # ---------------------------------------------------------------------------

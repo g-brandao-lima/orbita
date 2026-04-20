@@ -423,10 +423,9 @@ def delete_group(
     if user and group.user_id != user.id:
         raise HTTPException(status_code=404, detail="Grupo nao encontrado")
 
-    from app.models import FlightSnapshot, DetectedSignal, BookingClassSnapshot
+    from app.models import FlightSnapshot, DetectedSignal
     snapshot_ids = [s.id for s in db.query(FlightSnapshot.id).filter(FlightSnapshot.route_group_id == group_id).all()]
     if snapshot_ids:
-        db.query(BookingClassSnapshot).filter(BookingClassSnapshot.flight_snapshot_id.in_(snapshot_ids)).delete(synchronize_session=False)
         db.query(DetectedSignal).filter(DetectedSignal.flight_snapshot_id.in_(snapshot_ids)).delete(synchronize_session=False)
     db.query(FlightSnapshot).filter(FlightSnapshot.route_group_id == group_id).delete(synchronize_session=False)
     db.query(DetectedSignal).filter(DetectedSignal.route_group_id == group_id).delete(synchronize_session=False)

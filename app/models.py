@@ -76,19 +76,6 @@ class FlightSnapshot(Base):
     )
 
     route_group: Mapped["RouteGroup"] = relationship("RouteGroup", backref="snapshots")
-    booking_classes: Mapped[list["BookingClassSnapshot"]] = relationship(
-        "BookingClassSnapshot", backref="flight_snapshot", cascade="all, delete-orphan"
-    )
-
-
-class BookingClassSnapshot(Base):
-    __tablename__ = "booking_class_snapshots"
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    flight_snapshot_id: Mapped[int] = mapped_column(ForeignKey("flight_snapshots.id"))
-    class_code: Mapped[str] = mapped_column(String(1))
-    seats_available: Mapped[int] = mapped_column(Integer)
-    segment_direction: Mapped[str] = mapped_column(String(10))
 
 
 class DetectedSignal(Base):

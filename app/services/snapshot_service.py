@@ -1,7 +1,7 @@
 import datetime
 
 from sqlalchemy.orm import Session
-from app.models import FlightSnapshot, BookingClassSnapshot
+from app.models import FlightSnapshot
 
 
 def get_historical_price_range(
@@ -64,13 +64,9 @@ def is_duplicate_snapshot(
 
 
 def save_flight_snapshot(db: Session, data: dict) -> FlightSnapshot:
-    """Persiste um FlightSnapshot com seus BookingClassSnapshots."""
-    booking_classes_data = data.pop("booking_classes", [])
-
+    """Persiste um FlightSnapshot."""
+    data.pop("booking_classes", None)  # compat: argumento legado ignorado
     snapshot = FlightSnapshot(**data)
-    for bc_data in booking_classes_data:
-        snapshot.booking_classes.append(BookingClassSnapshot(**bc_data))
-
     db.add(snapshot)
     db.commit()
     db.refresh(snapshot)

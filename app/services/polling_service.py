@@ -228,7 +228,6 @@ def _process_flight(db, group, origin, destination, dep_date, ret_date, flight, 
         "airline": airline,
         "price_classification": classification,
         "source": source,
-        "booking_classes": [],
         **price_metrics,
     }
     snapshot = save_flight_snapshot(db, snapshot_data)
