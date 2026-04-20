@@ -22,6 +22,27 @@ def _create_route_group(db):
     return rg
 
 
+def test_save_flight_snapshot_persists_source(db):
+    """source e armazenado corretamente no FlightSnapshot (Phase 17.1)."""
+    rg = _create_route_group(db)
+    data = {
+        "route_group_id": rg.id,
+        "origin": "GRU",
+        "destination": "LIS",
+        "departure_date": date(2026, 6, 1),
+        "return_date": date(2026, 6, 15),
+        "price": 3000.0,
+        "currency": "BRL",
+        "airline": "LATAM",
+        "source": "serpapi",
+        "booking_classes": [],
+    }
+    snap = save_flight_snapshot(db, data)
+    assert snap.source == "serpapi"
+    reloaded = db.get(FlightSnapshot, snap.id)
+    assert reloaded.source == "serpapi"
+
+
 def test_flight_snapshot_persisted(db):
     """FlightSnapshot persiste no banco com todos os campos preenchidos."""
     rg = _create_route_group(db)

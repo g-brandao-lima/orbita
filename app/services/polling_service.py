@@ -135,7 +135,7 @@ def _poll_group(db, group: RouteGroup):
                 for flight in flights:
                     result = _process_flight(
                         db, group, origin, destination, dep_date, ret_date,
-                        flight, insights
+                        flight, insights, source
                     )
                     if result is not None:
                         snapshot, signals = result
@@ -163,7 +163,7 @@ def _poll_group(db, group: RouteGroup):
             logger.error(f"Consolidated email failed for group {group.name}: {e}")
 
 
-def _process_flight(db, group, origin, destination, dep_date, ret_date, flight, insights):
+def _process_flight(db, group, origin, destination, dep_date, ret_date, flight, insights, source=None):
     """Processa um voo: classifica preco, persiste snapshot e detecta sinais.
 
     Retorna tupla (snapshot, list[DetectedSignal]) ou None se duplicata.
@@ -219,6 +219,7 @@ def _process_flight(db, group, origin, destination, dep_date, ret_date, flight, 
         "currency": "BRL",
         "airline": airline,
         "price_classification": classification,
+        "source": source,
         "booking_classes": [],
         **price_metrics,
     }

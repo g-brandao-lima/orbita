@@ -70,6 +70,7 @@ class FlightSnapshot(Base):
     price_third_quartile: Mapped[float | None] = mapped_column(Float, nullable=True)
     price_max: Mapped[float | None] = mapped_column(Float, nullable=True)
     price_classification: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    source: Mapped[str | None] = mapped_column(String(30), nullable=True)
     collected_at: Mapped[datetime.datetime] = mapped_column(
         DateTime, server_default=func.now()
     )

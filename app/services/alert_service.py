@@ -16,6 +16,18 @@ _URGENCY_COLORS = {
     "MEDIA": "#ca8a04",
 }
 
+_SOURCE_LABELS = {
+    "serpapi": "Google Flights",
+    "fast_flights": "Google Flights (scraping)",
+    "kiwi": "Kiwi.com",
+}
+
+
+def _format_source(source: str | None) -> str:
+    if not source:
+        return ""
+    return _SOURCE_LABELS.get(source, source)
+
 
 def compose_alert_email(
     signal: DetectedSignal, group: RouteGroup, recipient_email: str | None = None
@@ -277,10 +289,15 @@ def _render_consolidated_html(
             f' &middot; total {pax} passageiros: {format_price_brl(cheapest.price * pax)}'
         )
     header_sub += '</p>'
+    source_label = _format_source(cheapest.source)
+    source_html = (
+        f'<p style="margin:4px 0 0;font-size:11px;opacity:0.75;letter-spacing:0.3px;text-transform:uppercase;">Fonte: {source_label}</p>'
+        if source_label else ''
+    )
     parts.append(
         '<div style="background:#059669;color:white;padding:16px 20px;border-radius:8px 8px 0 0;">'
         f'<h2 style="margin:0;">Melhor preco: {format_price_brl(cheapest.price)}</h2>'
-        + header_sub +
+        + header_sub + source_html +
         '</div>'
     )
 
@@ -379,6 +396,8 @@ def _render_consolidated_plain(
     lines.append(
         f"Datas: {_fmt_date(cheapest.departure_date)} a {_fmt_date(cheapest.return_date)}"
     )
+    if cheapest.source:
+        lines.append(f"Fonte: {_format_source(cheapest.source)}")
     lines.append("")
 
     lines.append(f"MELHORES DATAS (precos por pessoa, ida e volta{', total para ' + str(pax) + ' pax entre parenteses' if pax > 1 else ''}):")
