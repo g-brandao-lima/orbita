@@ -2,7 +2,9 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import RedirectResponse
 from fastapi import Request
 
-PUBLIC_PATHS = frozenset({"/", "/auth/login", "/auth/callback", "/auth/logout"})
+from app.observability import bind_user_context
+
+PUBLIC_PATHS = frozenset({"/", "/auth/login", "/auth/callback", "/auth/logout", "/sentry-debug"})
 PUBLIC_PREFIXES = ("/auth/", "/static/", "/api/airports/")
 
 
@@ -23,4 +25,5 @@ class AuthMiddleware(BaseHTTPMiddleware):
         if not user_id:
             return RedirectResponse(url="/?msg=login_required", status_code=303)
 
+        bind_user_context(user_id)
         return await call_next(request)

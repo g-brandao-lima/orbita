@@ -6,6 +6,10 @@ import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+from app.observability import init_sentry
+
+init_sentry()
+
 from fastapi import FastAPI, Request
 from fastapi.exceptions import HTTPException, RequestValidationError
 from fastapi.responses import HTMLResponse
@@ -63,6 +67,16 @@ app.include_router(dashboard_router)
 async def health_check():
     """Endpoint HEAD para UptimeRobot keep-alive."""
     return HTMLResponse(content="", status_code=200)
+
+
+@app.get("/sentry-debug")
+async def sentry_debug():
+    """Endpoint temporario para validar que o Sentry captura erros.
+
+    Remover apos confirmar que eventos chegam ao dashboard Sentry.
+    """
+    _ = 1 / 0
+    return HTMLResponse(content="unreachable")
 
 
 FIELD_LABELS = {
