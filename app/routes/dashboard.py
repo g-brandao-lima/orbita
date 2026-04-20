@@ -3,7 +3,7 @@ import datetime
 from pathlib import Path
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Form, HTTPException, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from app.templates_config import get_templates
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -30,6 +30,8 @@ from app.services.dashboard_service import (
 )
 from app.services.airport_service import is_valid_code, get_all_airports, search_airports
 from app.services.popular_routes import POPULAR_ROUTES, get_by_slug, default_dates
+from app.services.share_card_service import build_price_card
+from app.services.snapshot_service import get_historical_price_context
 
 router = APIRouter(tags=["dashboard"])
 _TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates"
@@ -206,6 +208,60 @@ def set_price_mode(mode: str = Form(...)):
         samesite="lax",
     )
     return response
+
+
+@router.get("/groups/{group_id}/share-card.png")
+def group_share_card(
+    group_id: int,
+    db: Session = Depends(get_db),
+    user: User | None = Depends(get_current_user),
+):
+    """Gera card PNG compartilhavel com preco atual (Phase 30).
+
+    Visivel apenas para o dono do grupo. Valida ownership via filtro.
+    """
+    if user is None:
+        return RedirectResponse(url="/?msg=login_required", status_code=303)
+
+    group = (
+        db.query(RouteGroup)
+        .filter(RouteGroup.id == group_id, RouteGroup.user_id == user.id)
+        .first()
+    )
+    if group is None:
+        raise HTTPException(status_code=404, detail="Grupo nao encontrado")
+
+    from app.models import FlightSnapshot
+    cheapest = (
+        db.query(FlightSnapshot)
+        .filter(
+            FlightSnapshot.route_group_id == group_id,
+            FlightSnapshot.origin.in_(group.origins),
+            FlightSnapshot.destination.in_(group.destinations),
+        )
+        .order_by(FlightSnapshot.collected_at.desc(), FlightSnapshot.price.asc())
+        .first()
+    )
+    if cheapest is None:
+        raise HTTPException(status_code=404, detail="Sem dados de preco para compartilhar")
+
+    historical_ctx = get_historical_price_context(
+        db, cheapest.origin, cheapest.destination
+    )
+    png_bytes = build_price_card(
+        group=group,
+        snapshot=cheapest,
+        historical_ctx=historical_ctx,
+        passengers=group.passengers or 1,
+    )
+    return Response(
+        content=png_bytes,
+        media_type="image/png",
+        headers={
+            "Cache-Control": "public, max-age=900",
+            "Content-Disposition": f'inline; filename="preco-justo-{group_id}.png"',
+        },
+    )
 
 
 @router.get("/alerts", response_class=HTMLResponse)
