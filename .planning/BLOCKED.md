@@ -9,12 +9,10 @@ Estas fases foram identificadas na pesquisa de mercado v2.1 (2026-04-20) como ne
 **Escopo**: Criar KiwiClient em app/services/, integrar no polling_service com circuit breaker (se Kiwi 429, pausa 1h e segue com SerpAPI), remover fast-flights (scraping frágil).
 **Quando desbloquear**: Após você cadastrar e me passar TEQUILA_API_KEY.
 
-## 2. Observability with Sentry
+## 2. ~~Observability with Sentry~~ DESBLOQUEADA 2026-04-20
 
-**Dependência humana**: Conta Sentry (free tier 5k events/mês) + DSN.
-**Motivação**: Pesquisa mostrou que sem observabilidade é impossível escalar para 200 usuários às cegas.
-**Escopo**: sentry-sdk[fastapi] no requirements, init em main.py, logs estruturados JSON via python-json-logger, teste de erro forçado.
-**Quando desbloquear**: Após você criar conta em sentry.io e me passar SENTRY_DSN.
+Implementada como Phase 21.5. DSN configurado em .env e render.yaml.
+Ver `.planning/phases/21.5-sentry-observability/21.5-CONTEXT.md`.
 
 ## 3. WhatsApp Alerts (gap de mercado identificado)
 
