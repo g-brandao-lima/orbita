@@ -325,8 +325,8 @@
                 <div class="card-price {% if cls == 'LOW' %}price-low{% elif cls == 'MEDIUM' %}price-medium{% elif cls == 'HIGH' %}price-high{% else %}price-none{% endif %}">
                     {{ format_price_brl(snap.price) }}
                 </div>
+                <div class="card-price-sub">por pessoa, ida e volta</div>
                 {% if pax > 1 %}
-                <div class="card-price-sub">/ pessoa</div>
                 <div class="card-price-sub">Total {{ pax }} passageiros: {{ format_price_brl(snap.price * pax) }}</div>
                 {% endif %}
                 {% if item.sparkline and item.sparkline|length > 1 %}

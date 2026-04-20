@@ -143,14 +143,25 @@ def should_alert(group: RouteGroup) -> bool:
 # ---------------------------------------------------------------------------
 
 
+def _price_with_total(price: float, passengers: int) -> tuple[str, str]:
+    """Retorna (linha_principal, linha_total_ou_vazio) formatados."""
+    pax = max(1, int(passengers or 1))
+    main = f"R$ {price:,.2f} por pessoa, ida e volta"
+    total = f"Total {pax} passageiros: R$ {price * pax:,.2f}" if pax > 1 else ""
+    return main, total
+
+
 def _render_plain(signal: DetectedSignal, group: RouteGroup, silence_url: str) -> str:
+    main, total = _price_with_total(signal.price_at_detection, group.passengers)
+    total_line = f"{total}\n" if total else ""
     return (
         f"Sinal detectado: {signal.signal_type}\n"
         f"Urgencia: {signal.urgency}\n"
         f"Grupo: {group.name}\n"
         f"Rota: {signal.origin} -> {signal.destination}\n"
         f"Datas: {signal.departure_date} a {signal.return_date}\n"
-        f"Preco: R$ {signal.price_at_detection:,.2f}\n"
+        f"Preco: {main}\n"
+        f"{total_line}"
         f"Detalhes: {signal.details}\n\n"
         f"Silenciar alertas deste grupo por 24h:\n{silence_url}\n"
     )
@@ -158,6 +169,12 @@ def _render_plain(signal: DetectedSignal, group: RouteGroup, silence_url: str) -
 
 def _render_html(signal: DetectedSignal, group: RouteGroup, silence_url: str) -> str:
     color = _URGENCY_COLORS.get(signal.urgency, "#6b7280")
+    main, total = _price_with_total(signal.price_at_detection, group.passengers)
+    total_html = (
+        f"<p style=\"color:#6b7280;font-size:13px;margin:-4px 0 0;\">{total}</p>"
+        if total
+        else ""
+    )
     return (
         "<html><body style=\"font-family:Arial,sans-serif;max-width:600px;margin:0 auto;\">"
         f"<div style=\"background:{color};color:white;padding:12px 20px;border-radius:8px 8px 0 0;\">"
@@ -168,7 +185,8 @@ def _render_html(signal: DetectedSignal, group: RouteGroup, silence_url: str) ->
         f"<p><strong>Grupo:</strong> {group.name}</p>"
         f"<p><strong>Rota:</strong> {signal.origin} &rarr; {signal.destination}</p>"
         f"<p><strong>Datas:</strong> {signal.departure_date} a {signal.return_date}</p>"
-        f"<p><strong>Preco atual:</strong> R$ {signal.price_at_detection:,.2f}</p>"
+        f"<p><strong>Preco atual:</strong> {main}</p>"
+        f"{total_html}"
         f"<p><strong>Detalhes:</strong> {signal.details}</p>"
         "<hr style=\"border:none;border-top:1px solid #e5e7eb;\">"
         "<p style=\"text-align:center;\">"
@@ -244,14 +262,26 @@ def _render_consolidated_html(
         '<html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">'
     )
 
+    pax = max(1, int(group.passengers or 1))
+
     # Header com rota mais barata em destaque
-    parts.append(
-        '<div style="background:#059669;color:white;padding:16px 20px;border-radius:8px 8px 0 0;">'
-        f'<h2 style="margin:0;">Melhor preco: {format_price_brl(cheapest.price)}</h2>'
+    header_sub = (
         f'<p style="margin:4px 0 0;">'
         f'{cheapest.origin} &rarr; {cheapest.destination} | {cheapest.airline} | '
         f'{_fmt_date(cheapest.departure_date)} a {_fmt_date(cheapest.return_date)}'
-        '</p></div>'
+        '</p>'
+        '<p style="margin:4px 0 0;font-size:13px;opacity:0.85;">por pessoa, ida e volta'
+    )
+    if pax > 1:
+        header_sub += (
+            f' &middot; total {pax} passageiros: {format_price_brl(cheapest.price * pax)}'
+        )
+    header_sub += '</p>'
+    parts.append(
+        '<div style="background:#059669;color:white;padding:16px 20px;border-radius:8px 8px 0 0;">'
+        f'<h2 style="margin:0;">Melhor preco: {format_price_brl(cheapest.price)}</h2>'
+        + header_sub +
+        '</div>'
     )
 
     parts.append('<div style="border:1px solid #e5e7eb;padding:20px;border-radius:0 0 8px 8px;">')
@@ -259,21 +289,34 @@ def _render_consolidated_html(
     # Tabela top 3 melhores datas/precos
     parts.append('<h3>Melhores datas</h3>')
     parts.append(
+        '<p style="color:#6b7280;font-size:13px;margin:-8px 0 8px;">Precos por pessoa, ida e volta'
+        + (f' &middot; multiplique por {pax} para o total' if pax > 1 else '')
+        + '</p>'
+    )
+    price_header = 'Preco (total)' if pax > 1 else 'Preco'
+    parts.append(
         '<table style="width:100%;border-collapse:collapse;font-size:14px;">'
         '<tr style="background:#f3f4f6;">'
         '<th style="padding:8px;text-align:left;">Rota</th>'
         '<th style="padding:8px;text-align:left;">Ida</th>'
         '<th style="padding:8px;text-align:left;">Volta</th>'
         '<th style="padding:8px;text-align:left;">Cia</th>'
-        '<th style="padding:8px;text-align:right;">Preco</th></tr>'
+        f'<th style="padding:8px;text-align:right;">{price_header}</th></tr>'
     )
     for snap in top3:
+        price_cell = format_price_brl(snap.price)
+        if pax > 1:
+            price_cell = (
+                f'{price_cell}<br>'
+                f'<span style="color:#6b7280;font-size:12px;">'
+                f'{format_price_brl(snap.price * pax)}</span>'
+            )
         parts.append(
             f'<tr><td style="padding:8px;">{snap.origin} &rarr; {snap.destination}</td>'
             f'<td style="padding:8px;">{_fmt_date(snap.departure_date)}</td>'
             f'<td style="padding:8px;">{_fmt_date(snap.return_date)}</td>'
             f'<td style="padding:8px;">{snap.airline}</td>'
-            f'<td style="padding:8px;text-align:right;">{format_price_brl(snap.price)}</td></tr>'
+            f'<td style="padding:8px;text-align:right;">{price_cell}</td></tr>'
         )
     parts.append('</table>')
 
@@ -282,9 +325,12 @@ def _render_consolidated_html(
         parts.append('<h3>Outras rotas monitoradas</h3>')
         parts.append('<ul style="font-size:14px;">')
         for snap in other_routes:
+            total_str = (
+                f' (total {format_price_brl(snap.price * pax)})' if pax > 1 else ''
+            )
             parts.append(
                 f'<li>{snap.origin} &rarr; {snap.destination}: '
-                f'{format_price_brl(snap.price)}</li>'
+                f'{format_price_brl(snap.price)} por pessoa{total_str}</li>'
             )
         parts.append('</ul>')
 
@@ -322,9 +368,11 @@ def _render_consolidated_plain(
     group: RouteGroup,
 ) -> str:
     """Monta corpo text/plain do email consolidado."""
+    pax = max(1, int(group.passengers or 1))
+    pax_suffix = f" (total {pax} pax: {format_price_brl(cheapest.price * pax)})" if pax > 1 else ""
     lines = []
 
-    lines.append(f"MELHOR PRECO: {format_price_brl(cheapest.price)}")
+    lines.append(f"MELHOR PRECO: {format_price_brl(cheapest.price)} por pessoa, ida e volta{pax_suffix}")
     lines.append(
         f"Rota: {cheapest.origin} -> {cheapest.destination} | {cheapest.airline}"
     )
@@ -333,20 +381,22 @@ def _render_consolidated_plain(
     )
     lines.append("")
 
-    lines.append("MELHORES DATAS:")
+    lines.append(f"MELHORES DATAS (precos por pessoa, ida e volta{', total para ' + str(pax) + ' pax entre parenteses' if pax > 1 else ''}):")
     for snap in top3:
+        total_str = f" ({format_price_brl(snap.price * pax)} total)" if pax > 1 else ""
         lines.append(
             f"  {snap.origin} -> {snap.destination} | "
             f"{_fmt_date(snap.departure_date)} a {_fmt_date(snap.return_date)} | "
-            f"{snap.airline} | {format_price_brl(snap.price)}"
+            f"{snap.airline} | {format_price_brl(snap.price)}{total_str}"
         )
     lines.append("")
 
     if other_routes:
         lines.append("OUTRAS ROTAS:")
         for snap in other_routes:
+            total_str = f" (total {format_price_brl(snap.price * pax)})" if pax > 1 else ""
             lines.append(
-                f"  {snap.origin} -> {snap.destination}: {format_price_brl(snap.price)}"
+                f"  {snap.origin} -> {snap.destination}: {format_price_brl(snap.price)} por pessoa{total_str}"
             )
         lines.append("")
 

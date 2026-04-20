@@ -23,12 +23,14 @@
 {% if chart_data.prices %}
 <div style="background: #1a1e2e; border: 1px solid #2d3748; border-radius: 12px; padding: 1.5rem;">
     <h2 style="margin-bottom: 0.5rem; font-size: 14px; font-weight: 700; color: #f1f5f9;">Histórico de Preços</h2>
-    <p style="color: #64748b; margin-bottom: 1rem; font-size: 13px;">Rota: {{ chart_data.route }}</p>
+    <p style="color: #64748b; margin-bottom: 0.25rem; font-size: 13px;">Rota: {{ chart_data.route }}</p>
+    <p style="color: #64748b; margin-bottom: 1rem; font-size: 12px;">Valores por pessoa, ida e volta{% if group.passengers and group.passengers > 1 %} (total para {{ group.passengers }} passageiros aparece no tooltip){% endif %}</p>
     <canvas id="priceChart"></canvas>
 </div>
 
 <script>
     const chartData = {{ chart_data | tojson }};
+    const paxCount = {{ group.passengers if group.passengers else 1 }};
     const ctx = document.getElementById('priceChart').getContext('2d');
     new Chart(ctx, {
         type: 'line',
@@ -51,7 +53,21 @@
         options: {
             responsive: true,
             plugins: {
-                legend: { labels: { color: '#94a3b8' } }
+                legend: { labels: { color: '#94a3b8' } },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const price = context.parsed.y;
+                            const brl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(price);
+                            let label = brl + ' por pessoa';
+                            if (paxCount > 1) {
+                                const totalBrl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(price * paxCount);
+                                label += ' | total ' + paxCount + ' pax: ' + totalBrl;
+                            }
+                            return label;
+                        }
+                    }
+                }
             },
             scales: {
                 y: {
