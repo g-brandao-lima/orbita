@@ -29,6 +29,7 @@ from app.services.dashboard_service import (
     booking_urls,
 )
 from app.services.airport_service import is_valid_code, get_all_airports, search_airports
+from app.services.popular_routes import POPULAR_ROUTES, get_by_slug, default_dates
 
 router = APIRouter(tags=["dashboard"])
 _TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates"
@@ -142,8 +143,50 @@ def dashboard_index(
             "flash_message": flash_message,
             "user": user,
             "price_mode": price_mode,
+            "popular_routes": POPULAR_ROUTES,
         },
     )
+
+
+@router.post("/groups/create-from-template")
+@limiter.limit(LIMIT_WRITE)
+def create_group_from_template(
+    request: Request,
+    template: str = Form(...),
+    db: Session = Depends(get_db),
+    user: User | None = Depends(get_current_user),
+):
+    """Cria grupo a partir de template popular (Phase 28).
+
+    Usado pelo estado vazio do dashboard. Datas default sao calculadas
+    dinamicamente (partida daqui 60d, janela 60d).
+    """
+    if user is None:
+        return RedirectResponse(url="/?msg=login_required", status_code=303)
+    route = get_by_slug(template)
+    if route is None:
+        return RedirectResponse(url="/groups/create", status_code=303)
+
+    from app.models import RouteGroup
+    from app.services.route_group_service import check_active_group_limit
+
+    check_active_group_limit(db, user_id=user.id)
+    start, end = default_dates(route.duration_days)
+    group = RouteGroup(
+        user_id=user.id,
+        name=route.name,
+        origins=[route.origin],
+        destinations=[route.destination],
+        duration_days=route.duration_days,
+        travel_start=start,
+        travel_end=end,
+        passengers=1,
+        is_active=True,
+    )
+    db.add(group)
+    db.commit()
+    db.refresh(group)
+    return RedirectResponse(url=f"/groups/{group.id}/edit?msg=grupo_criado", status_code=303)
 
 
 PRICE_MODE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365  # 1 ano
