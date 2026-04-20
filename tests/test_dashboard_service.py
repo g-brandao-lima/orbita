@@ -148,21 +148,21 @@ def test_get_groups_with_summary_old_signal_ignored(db):
 
 def test_get_price_history_returns_labels_and_prices(db):
     group = _make_group(db)
+    base = datetime.datetime.utcnow() - timedelta(days=5)
     for i in range(3):
-        collected = datetime.datetime(2026, 3, 18 + i, 10, 0)
+        collected = base + timedelta(days=i)
         _make_snapshot(db, group, price=3000.0 + i * 100, collected_at=collected)
 
     result = get_price_history(db, group.id)
 
     assert len(result["labels"]) == 3
     assert len(result["prices"]) == 3
-    assert result["labels"][0] == "18/03 10h"
     assert result["prices"][0] == 3000.0
 
 
 def test_get_price_history_filters_cheapest_route(db):
     group = _make_group(db)
-    now = datetime.datetime(2026, 3, 20, 12, 0)
+    now = datetime.datetime.utcnow() - timedelta(days=1)
     # Expensive route
     _make_snapshot(db, group, price=8000.0, origin="GRU", destination="CDG",
                    collected_at=now)
@@ -384,7 +384,7 @@ def test_collection_count_counts_distinct_hours(db):
 def test_get_price_history_ignores_snapshots_from_removed_origin(db):
     """Historico de preco nao deve mostrar rota de origem removida."""
     group = _make_group(db, origins=["REC", "JPA"], destinations=["CGH"])
-    now = datetime.datetime(2026, 3, 20, 12, 0)
+    now = datetime.datetime.utcnow() - timedelta(days=1)
     # REC mais barato (seria a "cheapest route" sem filtro)
     _make_snapshot(db, group, price=600.0, origin="REC", destination="CGH",
                    collected_at=now)

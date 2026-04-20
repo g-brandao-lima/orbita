@@ -148,8 +148,9 @@ def test_detail_returns_html(client, db, test_user):
 
 def test_detail_shows_chart_data(client, db, test_user):
     group = _make_group(db, user_id=test_user.id)
+    base = datetime.datetime.utcnow() - timedelta(days=5)
     for i in range(3):
-        collected = datetime.datetime(2026, 3, 18 + i, 10, 0)
+        collected = base + timedelta(days=i)
         _make_snapshot(db, group, price=3000.0 + i * 100, collected_at=collected)
 
     response = client.get(f"/groups/{group.id}")

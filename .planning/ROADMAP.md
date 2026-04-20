@@ -294,6 +294,16 @@ Plans:
   3. PR com teste falhando mostra status check vermelho no GitHub
 **Plans**: TBD
 
+### Phase 15.1: Security Emergency Fix (INSERTED)
+
+**Goal:** [Urgent work - to be planned]
+**Requirements**: TBD
+**Depends on:** Phase 15
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 15.1 to break down)
+
 ### Phase 16: Passengers Fix
 **Goal**: Sistema envia o numero correto de passageiros para a API de busca de voos
 **Depends on**: Phase 15
@@ -313,6 +323,16 @@ Plans:
   3. Quando grupo tem mais de 1 passageiro, total calculado (preco x passageiros) aparece ao lado do preco unitario em todos os contextos (dashboard, email, alertas)
 **Plans**: TBD
 **UI hint**: yes
+
+### Phase 17.1: Price Source Indicator (INSERTED)
+
+**Goal:** [Urgent work - to be planned]
+**Requirements**: TBD
+**Depends on:** Phase 17
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 17.1 to break down)
 
 ### Phase 18: JWT Sessions
 **Goal**: Sessoes de autenticacao sao stateless via JWT, permitindo escalabilidade horizontal sem perder o fluxo OAuth
@@ -382,3 +402,23 @@ Plans:
 | 19. Rate Limiting | v2.1 | 0/? | Not started | - |
 | 20. SerpAPI Cache | v2.1 | 0/? | Not started | - |
 | 21. Legacy Removal | v2.1 | 0/? | Not started | - |
+
+### Phase 22: Historical Context in Alerts
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 21
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 22 to break down)
+
+### Phase 23: Inventory Signal Empirical Validation
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 22
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 23 to break down)
