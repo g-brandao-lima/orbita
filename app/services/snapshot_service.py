@@ -4,6 +4,40 @@ from sqlalchemy.orm import Session
 from app.models import FlightSnapshot
 
 
+def get_historical_price_context(
+    db: Session,
+    origin: str,
+    destination: str,
+    days: int = 90,
+    min_samples: int = 10,
+) -> dict | None:
+    """Estatisticas historicas de preco da rota nos ultimos `days` dias.
+
+    Retorna dict com `avg`, `min`, `max`, `count` ou None se samples < min_samples.
+    Usado para enriquecer alertas com contexto ("X% abaixo da media dos ultimos 90 dias").
+    """
+    cutoff = datetime.datetime.utcnow() - datetime.timedelta(days=days)
+    rows = (
+        db.query(FlightSnapshot.price)
+        .filter(
+            FlightSnapshot.origin == origin,
+            FlightSnapshot.destination == destination,
+            FlightSnapshot.collected_at >= cutoff,
+        )
+        .all()
+    )
+    prices = [r[0] for r in rows if r[0] is not None]
+    if len(prices) < min_samples:
+        return None
+    return {
+        "avg": sum(prices) / len(prices),
+        "min": min(prices),
+        "max": max(prices),
+        "count": len(prices),
+        "days": days,
+    }
+
+
 def get_historical_price_range(
     db: Session,
     origin: str,

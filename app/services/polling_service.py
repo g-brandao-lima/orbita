@@ -160,7 +160,8 @@ def _poll_group(db, group: RouteGroup):
                 logger.info("Skipping alert email for group %s: recipient %s not in allowed list", group.name, recipient)
                 return
             msg = compose_consolidated_email(
-                accumulated_signals, accumulated_snapshots, group, recipient_email=recipient
+                accumulated_signals, accumulated_snapshots, group,
+                recipient_email=recipient, db=db,
             )
             send_email(msg)
             logger.info(

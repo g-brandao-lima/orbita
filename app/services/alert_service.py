@@ -224,11 +224,13 @@ def compose_consolidated_email(
     snapshots: list[FlightSnapshot],
     group: RouteGroup,
     recipient_email: str | None = None,
+    db=None,
 ) -> MIMEMultipart:
     """Compoe email consolidado com rota mais barata, top 3 datas e resumo.
 
     Retorna MIMEMultipart com partes text/plain e text/html.
     recipient_email: email do dono do grupo. Fallback para settings.gmail_recipient.
+    db: Session opcional para enriquecer com contexto historico (Phase 22).
     """
     sorted_snaps = sorted(snapshots, key=lambda s: s.price)
     cheapest = sorted_snaps[0]
@@ -236,6 +238,14 @@ def compose_consolidated_email(
 
     # Rotas que nao sao a mais barata (para resumo)
     other_routes = sorted_snaps[1:]
+
+    # Contexto historico (Phase 22): "X% abaixo da media dos ultimos 90 dias"
+    historical_ctx = None
+    if db is not None:
+        from app.services.snapshot_service import get_historical_price_context
+        historical_ctx = get_historical_price_context(
+            db, cheapest.origin, cheapest.destination
+        )
 
     token = generate_silence_token(group.id)
     silence_url = (
@@ -247,8 +257,8 @@ def compose_consolidated_email(
         f"- {format_price_brl(cheapest.price)} (melhor preco)"
     )
 
-    html = _render_consolidated_html(cheapest, top3, other_routes, signals, silence_url, group)
-    plain = _render_consolidated_plain(cheapest, top3, other_routes, signals, silence_url, group)
+    html = _render_consolidated_html(cheapest, top3, other_routes, signals, silence_url, group, historical_ctx)
+    plain = _render_consolidated_plain(cheapest, top3, other_routes, signals, silence_url, group, historical_ctx)
 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
@@ -260,6 +270,23 @@ def compose_consolidated_email(
     return msg
 
 
+def _format_historical_context(ctx: dict | None, current_price: float) -> str:
+    """Retorna frase humana tipo '23% abaixo da media dos ultimos 90 dias (N amostras)'."""
+    if not ctx:
+        return ""
+    avg = ctx["avg"]
+    if avg <= 0:
+        return ""
+    pct = (current_price - avg) / avg * 100
+    days = ctx["days"]
+    count = ctx["count"]
+    if pct <= -5:
+        return f"{abs(pct):.0f}% abaixo da media dos ultimos {days} dias ({count} amostras)"
+    if pct >= 5:
+        return f"{pct:.0f}% acima da media dos ultimos {days} dias ({count} amostras)"
+    return f"Em linha com a media dos ultimos {days} dias ({count} amostras)"
+
+
 def _render_consolidated_html(
     cheapest: FlightSnapshot,
     top3: list[FlightSnapshot],
@@ -267,6 +294,7 @@ def _render_consolidated_html(
     signals: list[DetectedSignal],
     silence_url: str,
     group: RouteGroup,
+    historical_ctx: dict | None = None,
 ) -> str:
     """Monta corpo HTML do email consolidado."""
     parts = []
@@ -294,10 +322,15 @@ def _render_consolidated_html(
         f'<p style="margin:4px 0 0;font-size:11px;opacity:0.75;letter-spacing:0.3px;text-transform:uppercase;">Fonte: {source_label}</p>'
         if source_label else ''
     )
+    context_phrase = _format_historical_context(historical_ctx, cheapest.price)
+    context_html = (
+        f'<p style="margin:8px 0 0;padding:6px 10px;background:rgba(255,255,255,0.15);border-radius:6px;font-size:13px;font-weight:600;">{context_phrase}</p>'
+        if context_phrase else ''
+    )
     parts.append(
         '<div style="background:#059669;color:white;padding:16px 20px;border-radius:8px 8px 0 0;">'
         f'<h2 style="margin:0;">Melhor preco: {format_price_brl(cheapest.price)}</h2>'
-        + header_sub + source_html +
+        + header_sub + source_html + context_html +
         '</div>'
     )
 
@@ -383,6 +416,7 @@ def _render_consolidated_plain(
     signals: list[DetectedSignal],
     silence_url: str,
     group: RouteGroup,
+    historical_ctx: dict | None = None,
 ) -> str:
     """Monta corpo text/plain do email consolidado."""
     pax = max(1, int(group.passengers or 1))
@@ -398,6 +432,9 @@ def _render_consolidated_plain(
     )
     if cheapest.source:
         lines.append(f"Fonte: {_format_source(cheapest.source)}")
+    context_phrase = _format_historical_context(historical_ctx, cheapest.price)
+    if context_phrase:
+        lines.append(f"Contexto: {context_phrase}")
     lines.append("")
 
     lines.append(f"MELHORES DATAS (precos por pessoa, ida e volta{', total para ' + str(pax) + ' pax entre parenteses' if pax > 1 else ''}):")
