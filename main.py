@@ -19,6 +19,7 @@ from fastapi.responses import HTMLResponse
 from app.templates_config import get_templates
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
+from starlette.middleware.gzip import GZipMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.auth.middleware import AuthMiddleware
@@ -40,11 +41,13 @@ async def lifespan(app: FastAPI):
     shutdown_scheduler()
 
 
-app = FastAPI(title="Flight Monitor", lifespan=lifespan)
+app = FastAPI(title="Orbita", lifespan=lifespan)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# Middlewares (Starlette LIFO: SessionMiddleware adicionado primeiro, executa primeiro)
+# Middlewares (Starlette LIFO: adicionado por ultimo = executa primeiro).
+# Ordem de execucao desejada: GZip (outermost, comprime saida) -> Session ->
+# Auth -> app. GZip so ativa se Accept-Encoding do client aceitar.
 is_production = not settings.database_url.startswith("sqlite")
 app.add_middleware(AuthMiddleware)
 app.add_middleware(
@@ -54,6 +57,7 @@ app.add_middleware(
     https_only=is_production,
     same_site="lax",
 )
+app.add_middleware(GZipMiddleware, minimum_size=500, compresslevel=6)
 
 from app.auth.routes import router as auth_router
 from app.routes.route_groups import router as route_groups_router
