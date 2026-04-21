@@ -509,6 +509,7 @@
             {% set urls = booking_urls(snap.origin, snap.destination, snap.departure_date, snap.return_date, pax) %}
             <div class="card-actions">
                 <a href="{{ urls.google_flights }}" target="_blank" rel="noopener" aria-label="Comprar no Google Flights">Google Flights</a>
+                <a href="{{ urls.decolar }}" target="_blank" rel="noopener" aria-label="Comprar na Decolar">Decolar</a>
                 <a href="{{ urls.skyscanner }}" target="_blank" rel="noopener" aria-label="Comprar no Skyscanner">Skyscanner</a>
             </div>
             {% endif %}

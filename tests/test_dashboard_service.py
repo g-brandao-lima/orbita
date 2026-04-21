@@ -6,7 +6,33 @@ from app.services.dashboard_service import (
     get_groups_with_summary,
     get_price_history,
     format_price_brl,
+    booking_urls,
 )
+
+
+def test_booking_urls_decolar_uses_multipleoneway_format():
+    urls = booking_urls(
+        origin="REC",
+        destination="RAO",
+        departure_date=datetime.date(2026, 9, 15),
+        return_date=datetime.date(2026, 9, 22),
+        passengers=2,
+    )
+    assert urls["decolar"] == (
+        "https://www.decolar.com/shop/flights/results/multipleoneway/"
+        "REC/RAO/2026-09-15/2026-09-22/2/0/0"
+        "?from=SB&di=1&isRedirectFromRoundtrip=true"
+    )
+
+
+def test_booking_urls_decolar_defaults_to_single_passenger():
+    urls = booking_urls(
+        origin="GRU",
+        destination="LIS",
+        departure_date=datetime.date(2026, 6, 1),
+        return_date=datetime.date(2026, 6, 10),
+    )
+    assert "/1/0/0?from=SB&di=1" in urls["decolar"]
 
 
 def _make_group(db, name="Test Group", group_id=None, **kwargs):
