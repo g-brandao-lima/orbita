@@ -7,20 +7,19 @@
 - ✅ **v1.2 Visual Polish** - Phase 9 (shipped 2026-03-28)
 - ✅ **v2.0 Multi-usuario** - Phases 10-14 (shipped 2026-03-30)
 - ✅ **v2.1 Clareza de Preco e Robustez** - Phases 15-23 (shipped 2026-04-20, 11 phases, Phase 18 deferred)
-- 🚧 **v2.2 UX Polish e Quick Wins** - Phases 24-31 (in progress)
+- ✅ **v2.2 UX Polish e Quick Wins** - Phases 24-31 (shipped 2026-04-20)
+- 🚧 **v2.3 Growth Features e Cache Centralizado** - Phases 31.9, 32-36 (in progress, started 2026-04-21)
 
-### v2.2 UX Polish e Quick Wins (In Progress)
+### v2.3 Growth Features e Cache Centralizado (In Progress)
 
-**Milestone Goal:** Melhorar UX imediata do produto (painel admin, toggle preco, email com contexto) e entregar quick wins de engajamento baseados na pesquisa de mercado (sparkline, estado vazio util, digest semanal, card compartilhavel, simulador de economia).
+**Milestone Goal:** Eliminar gargalo SerpAPI via cache centralizado Travelpayouts, abrir canal de aquisicao organica (paginas publicas indexaveis), transformar historico em recomendacao acionavel e suportar roteiros multi-trecho.
 
-- [ ] **Phase 24: Admin Stats Panel** - /admin/stats com quota SerpAPI, data de reset, distribuicao de fontes, cache hit rate, ultimos erros. Visivel apenas para o dono.
-- [ ] **Phase 25: Toggle de modo de preco** - Alternar entre "Por pessoa, ida e volta" (default) e "Total da viagem". Persistido em cookie.
-- [ ] **Phase 26: Email com subject factual** - Subject line com dados concretos: "GRU-LIS caiu 23% hoje (R$ 3.120, media 90d: R$ 4.050)".
-- [ ] **Phase 27: Sparkline inline nos cards** - Grafico de tendencia 30 ou 90 dias por grupo, SVG puro sem JS.
-- [ ] **Phase 28: Estado vazio com rotas populares** - Primeiro login mostra 6 rotas populares com CTA de monitorar, nao tela vazia.
-- [ ] **Phase 29: Weekly digest terca a noite** - Email resumo personalizado por usuario com mudancas nos grupos.
-- [ ] **Phase 30: Card Preco Justo compartilhavel** - PNG via Pillow com Open Graph para WhatsApp/IG.
-- [ ] **Phase 31: Simulador economizou/perdeu** - Mostra no dashboard quanto usuario teria economizado se comprasse no dia de criar o grupo.
+- [ ] **Phase 31.9: Price Fidelity Hygiene** - Rotulo "preco de referencia", disclaimer de divergencia, remocao do fast-flights
+- [ ] **Phase 32: Cache Layer Travelpayouts** - Polling 6h das top 500 rotas BR × 45 datas em tabela route_cache, SerpAPI como fallback
+- [ ] **Phase 33: Public Route Index (SEO)** - Paginas publicas /rotas/{ORIG}-{DEST} com historico, sitemap, Open Graph, affiliate link
+- [ ] **Phase 34: Price Prediction Engine** - Recomendacao deterministica "Compre agora / Aguarde / Monitorar" com backtest retrospectivo
+- [ ] **Phase 35: Onboarding Wizard** - Wizard condicional 2 passos para primeiro login cria grupo automatico e revisa copy
+- [ ] **Phase 36: Multi-Leg Trip Builder** - Grupo-pai com N trechos encadeados, preco total e sinal sobre o total
 
 ## Phases
 
@@ -284,7 +283,7 @@ Plans:
 
 </details>
 
-### v2.1 Clareza de Preco e Robustez (In Progress)
+### v2.1 Clareza de Preco e Robustez (SHIPPED 2026-04-20)
 
 **Milestone Goal:** Tornar o preco das passagens imediatamente compreensivel para o usuario e fortalecer a infraestrutura do projeto (CI, rate limiting, otimizacao de cota, limpeza de legado).
 
@@ -389,9 +388,108 @@ Plans:
   3. Todos os testes continuam passando apos a remocao
 **Plans**: TBD
 
+### Phase 22: Historical Context in Alerts
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 21
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 22 to break down)
+
+### Phase 23: Inventory Signal Empirical Validation
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 22
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 23 to break down)
+
+## v2.3 Growth Features e Cache Centralizado (In Progress)
+
+**Milestone Goal:** Eliminar gargalo SerpAPI via cache centralizado Travelpayouts, abrir canal de aquisicao organica (paginas publicas indexaveis), transformar historico em recomendacao acionavel e suportar roteiros multi-trecho.
+
+**Execution Order:** 31.9 → 32 → 33 → 34 → (avaliar) → 35 → 36
+
+### Phase 31.9: Price Fidelity Hygiene
+**Goal**: Usuario entende que o preco exibido e referencia Google Flights, nao valor final de checkout, e o sistema nao usa mais scraping fragil como fonte
+**Depends on**: Nothing (foundation hygiene quick win, independent of Phase 32)
+**Requirements**: HYG-01, HYG-02, HYG-03
+**Success Criteria** (what must be TRUE):
+  1. Dashboard cards, pagina de detalhe do grupo e email consolidado exibem rotulo "preco de referencia Google Flights" em vez de apenas "preco"
+  2. Proximo a cada preco (tooltip, nota de rodape ou infobox) aparece disclaimer: "pode divergir ate 5% do valor final; bagagem e taxas nao incluidas"
+  3. fast-flights removido do codigo (imports, chamadas, dependencia); apenas SerpAPI e cache local restam como fontes de preco
+  4. Todos os testes continuam passando apos remocao do fast-flights
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 32: Cache Layer Travelpayouts
+**Goal**: 95% das leituras do dashboard sao servidas do banco local sem consumir cota SerpAPI; gargalo da API externa desaparece
+**Depends on**: Phase 31.9
+**Requirements**: CACHE-03, CACHE-04, CACHE-05, CACHE-06, CACHE-07
+**Success Criteria** (what must be TRUE):
+  1. Nova tabela `route_cache` existe em producao com colunas origin, destination, departure_date, return_date, min_price, currency, cached_at, source; populada via migration Alembic
+  2. Cron APScheduler a cada 6h executa polling Travelpayouts `prices_for_dates` nas top 500 rotas BR × 45 datas e grava em `route_cache`
+  3. `flight_search.search_flights_ex()` consulta `route_cache` primeiro e so chama SerpAPI em cache miss ou refresh sob demanda de grupo ativo
+  4. Painel `/admin/stats` exibe cache hit rate percentual dos ultimos 7 dias e quota Travelpayouts restante
+  5. Quota SerpAPI mensal observada em producao cai para menos de 500 chamadas/mes mantendo o mesmo numero de usuarios ativos
+**Plans**: TBD
+
+### Phase 33: Public Route Index (SEO)
+**Goal**: Visitante do Google buscando "passagem GRU Lisboa" cai em pagina publica do Flight Monitor indexada, com CTA de monitoramento e link de compra monetizado
+**Depends on**: Phase 32
+**Requirements**: SEO-01, SEO-02, SEO-03, SEO-04, SEO-05
+**Success Criteria** (what must be TRUE):
+  1. Visitante nao logado acessa `/rotas/{ORIG}-{DEST}` e ve pagina publica com preco mediano atual, historico 180d, melhores meses historicos e CTA "monitore essa rota" (dados servidos 100% do `route_cache`, zero chamada externa por pageview)
+  2. `sitemap.xml` dinamico lista todas as rotas com 30 ou mais snapshots acumulados e e servido em `/sitemap.xml`
+  3. Cada pagina de rota inclui meta tags Open Graph + Twitter Card com imagem preview dinamica mostrando preco atual
+  4. `robots.txt` permite indexacao de `/rotas/*` e cada rota tem tag `rel="canonical"` apontando pra si mesma
+  5. Botao "comprar" na pagina publica usa affiliate link Travelpayouts (monetizacao passiva por clique)
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 34: Price Prediction Engine
+**Goal**: Dashboard e email transformam historico em recomendacao acionavel ("Compre agora" / "Aguarde ate DD/MM" / "Monitorar") com hit rate comprovado retrospectivamente
+**Depends on**: Phase 32
+**Requirements**: PRED-01, PRED-02, PRED-03, PRED-04
+**Success Criteria** (what must be TRUE):
+  1. Dashboard exibe recomendacao por grupo em uma de tres classes: "Compre agora", "Aguarde ate DD/MM" ou "Monitorar"
+  2. Cada recomendacao vem acompanhada de justificativa de 1 frase combinando janela otima, delta vs media 90d e volatilidade da rota
+  3. Script `scripts/backtest_predictions.py` roda contra `route_cache` historico e reporta hit rate por classe; meta interna >=60% antes de promover copy
+  4. Email consolidado exibe a recomendacao no topo do corpo (acima do preco atual)
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 35: Onboarding Wizard
+**Goal**: Usuario novo sai da landing com grupo ativo em menos de 30 segundos, sem jargao tecnico na copy
+**Depends on**: Phase 32
+**Requirements**: ONB-01, ONB-02, ONB-03
+**Success Criteria** (what must be TRUE):
+  1. Usuario novo apos OAuth (sem grupos) ve wizard de 2 passos perguntando destino e periodo aproximado, nao o dashboard vazio
+  2. Ao final do wizard, sistema cria grupo automaticamente e redireciona para o dashboard ja populado com preco vindo do `route_cache`
+  3. Copy do dashboard e do email consolidado foi revisada: sem jargao tecnico (ex: "balde fechando" substituido por "vagas acabando rapido")
+**Condicional**: so executar se Phase 33 trouxer >=3 usuarios novos organicos
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 36: Multi-Leg Trip Builder
+**Goal**: Usuario monitora roteiro encadeado (ex: BR → Italia → Espanha → BR) em um unico grupo-pai, com sinal de compra aplicado sobre o preco total do encadeamento
+**Depends on**: Phase 32 and Phase 34
+**Requirements**: MULTI-01, MULTI-02, MULTI-03, MULTI-04
+**Success Criteria** (what must be TRUE):
+  1. Usuario cria grupo-pai com N trechos sequenciais via UI, cada trecho com origin, destination, janela de datas e min/max stay em dias
+  2. Sistema valida encadeamento temporal: data de saida do trecho N+1 deve ser >= data de chegada do trecho N + min_stay (rejeita combinacoes invalidas)
+  3. Sistema busca precos de cada trecho via cache/SerpAPI e calcula preco total do roteiro exibido no dashboard
+  4. Sinal de compra e recomendacao de prediction sao aplicados sobre o preco total do encadeamento, nao trecho a trecho
+**Plans**: TBD
+**UI hint**: yes
+
 ## Progress
 
-**Execution Order:** Phase 15 -> 16 -> 17 -> 18 -> 19 -> 20 -> 21
+**Execution Order:** Phase 15 -> 16 -> 17 -> 18 -> 19 -> 20 -> 21 -> 22 -> 23 -> 24 -> 25 -> 26 -> 27 -> 28 -> 29 -> 30 -> 31 -> 31.9 -> 32 -> 33 -> 34 -> 35 -> 36
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -416,23 +514,9 @@ Plans:
 | 19. Rate Limiting | v2.1 | 0/? | Not started | - |
 | 20. SerpAPI Cache | v2.1 | 0/? | Not started | - |
 | 21. Legacy Removal | v2.1 | 0/? | Not started | - |
-
-### Phase 22: Historical Context in Alerts
-
-**Goal:** [To be planned]
-**Requirements**: TBD
-**Depends on:** Phase 21
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (run /gsd:plan-phase 22 to break down)
-
-### Phase 23: Inventory Signal Empirical Validation
-
-**Goal:** [To be planned]
-**Requirements**: TBD
-**Depends on:** Phase 22
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (run /gsd:plan-phase 23 to break down)
+| 31.9. Price Fidelity Hygiene | v2.3 | 0/? | Not started | - |
+| 32. Cache Layer Travelpayouts | v2.3 | 0/? | Not started | - |
+| 33. Public Route Index (SEO) | v2.3 | 0/? | Not started | - |
+| 34. Price Prediction Engine | v2.3 | 0/? | Not started | - |
+| 35. Onboarding Wizard | v2.3 | 0/? | Not started | - |
+| 36. Multi-Leg Trip Builder | v2.3 | 0/? | Not started | - |
