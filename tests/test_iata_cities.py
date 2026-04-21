@@ -3,7 +3,7 @@ from app.services.iata_cities import IATA_CITIES, iata_to_city
 
 
 def test_iata_to_city_known_br():
-    assert iata_to_city("GRU") == "Sao Paulo"
+    assert iata_to_city("GRU") == "São Paulo"
     assert iata_to_city("GIG") == "Rio de Janeiro"
 
 
@@ -16,7 +16,7 @@ def test_iata_to_city_unknown_returns_code():
 
 
 def test_iata_to_city_accepts_lowercase():
-    assert iata_to_city("gru") == "Sao Paulo"
+    assert iata_to_city("gru") == "São Paulo"
 
 
 def test_iata_cities_covers_top_br_routes():

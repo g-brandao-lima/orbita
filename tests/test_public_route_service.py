@@ -59,7 +59,7 @@ def test_get_route_stats_returns_data_with_cache_only(db):
 
     assert result is not None
     assert result["current_price"] == 2500.0
-    assert result["origin_city"] == "Sao Paulo"
+    assert result["origin_city"] == "São Paulo"
     assert result["destination_city"] == "Lisboa"
 
 

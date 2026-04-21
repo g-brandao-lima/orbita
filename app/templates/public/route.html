@@ -3,11 +3,11 @@
 {% block title %}Passagens {{ s.origin_city }} para {{ s.destination_city }} - Orbita{% endblock %}
 {% block head %}
 <link rel="canonical" href="{{ canonical }}">
-<meta name="description" content="Passagens {{ s.origin_city }} ({{ s.origin }}) para {{ s.destination_city }} ({{ s.destination }}): preco atual {{ format_price_brl(s.current_price) if s.current_price else 'consulte' }}{% if s.median_180d %}, mediana 180d {{ format_price_brl(s.median_180d) }}{% endif %}. Monitore e receba alertas quando o preco cair.">
+<meta name="description" content="Passagens {{ s.origin_city }} ({{ s.origin }}) para {{ s.destination_city }} ({{ s.destination }}): preço atual {{ format_price_brl(s.current_price) if s.current_price else 'consulte' }}{% if s.median_180d %}, mediana 180d {{ format_price_brl(s.median_180d) }}{% endif %}. Monitore e receba alertas quando o preço cair.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="{{ canonical }}">
 <meta property="og:title" content="Passagens {{ s.origin_city }} para {{ s.destination_city }}">
-<meta property="og:description" content="Preco de referencia {{ format_price_brl(s.current_price) if s.current_price else 'consulte' }}. Monitore e receba alertas.">
+<meta property="og:description" content="Preço de referência {{ format_price_brl(s.current_price) if s.current_price else 'consulte' }}. Monitore e receba alertas.">
 <meta property="og:image" content="{{ og_image }}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Passagens {{ s.origin_city }} para {{ s.destination_city }}">
@@ -187,17 +187,17 @@
     {% if s.current_price %}
     <div class="pub-price">{{ format_price_brl(s.current_price) }}</div>
     <div class="pub-price-sub">
-        preco de referencia
+        preço de referência
         {% if s.median_180d %} <span class="divider">|</span> mediana 180d {{ format_price_brl(s.median_180d) }}{% endif %}
         {% if s.cached_at %} <span class="divider">|</span> atualizado {{ format_date_br(s.cached_at.date()) }}{% endif %}
     </div>
-    <div class="pub-disclaimer">Pode divergir ate 5% do valor final; bagagem e taxas nao incluidas.</div>
+    <div class="pub-disclaimer">Pode divergir até 5% do valor final; bagagem e taxas não incluídas.</div>
     {% endif %}
 </section>
 
 {% if s.best_months %}
 <div class="pub-card">
-    <h2>Melhores meses historicos</h2>
+    <h2>Melhores meses históricos</h2>
     <p class="pub-card-desc">Baseado nos 180 dias anteriores. Comece sua busca por aqui.</p>
     <div class="pub-months">
         {% for m in s.best_months %}
@@ -212,8 +212,8 @@
 
 {% if s.monthly_series %}
 <div class="pub-card">
-    <h2>Historico 180 dias</h2>
-    <p class="pub-card-desc">Preco medio por mes da rota.</p>
+    <h2>Histórico 180 dias</h2>
+    <p class="pub-card-desc">Preço médio por mês da rota.</p>
     <div class="pub-months">
         {% for m in s.monthly_series %}
         <div class="pub-month">
@@ -230,7 +230,7 @@
         Monitore essa rota
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
     </a>
-    <p class="pub-cta-note">Gratis. Avisamos por email quando o preco cair.</p>
+    <p class="pub-cta-note">Grátis. Avisamos por email quando o preço cair.</p>
 </section>
 
 {% if affiliate_url %}
@@ -239,7 +239,7 @@
         Comprar agora
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
     </a>
-    <p class="pub-cta-note">Redireciona para Aviasales (parceiro). Podemos receber comissao sem custo extra para voce.</p>
+    <p class="pub-cta-note">Redireciona para Aviasales (parceiro). Podemos receber comissão sem custo extra para você.</p>
 </section>
 {% endif %}
 {% endblock %}

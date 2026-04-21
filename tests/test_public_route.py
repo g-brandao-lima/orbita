@@ -51,7 +51,7 @@ def test_public_route_html_contains_cities_and_price(unauthenticated_client, db,
 
     assert "GRU" in r.text
     assert "LIS" in r.text
-    assert "Sao Paulo" in r.text
+    assert "São Paulo" in r.text
     assert "Lisboa" in r.text
     assert "R$" in r.text
     assert "Monitore essa rota" in r.text
