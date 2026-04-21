@@ -132,19 +132,26 @@ Sistemas consumer (Google Flights, Kayak) são reativos: alertam quando o preço
 | Google OAuth exclusivo (v2.0) | Sem gerenciar senhas, setup mais simples, usuarios ja tem Google | — Pending |
 | PostgreSQL via Neon.tech (v2.0) | Persistencia entre deploys, multi-usuario, free tier generoso | — Pending |
 
-## Current Milestone: v2.1 Clareza de Preco e Robustez
+## Current Milestone: v2.3 Growth Features e Cache Centralizado
 
-**Goal:** Tornar o preco das passagens imediatamente compreensivel para o usuario e fortalecer a infraestrutura do projeto (CI, rate limiting, otimizacao de cota, limpeza de legado).
+**Goal:** Eliminar gargalo de SerpAPI via cache centralizado Travelpayouts, abrir canal de aquisicao organica (paginas publicas indexaveis), transformar historico em recomendacao acionavel e suportar roteiros multi-trecho.
 
 **Target features:**
-- Rotulo fixo "por pessoa, ida e volta" em todos os pontos de exibicao de preco (dashboard, email, grafico, alertas)
-- Calculo total para multiplos passageiros visivel em todos os contextos
-- Correcao do bug de passengers hardcoded no fast-flights
-- CI com testes no GitHub Actions (rede de seguranca antes do autodeploy)
-- Rate limiting nos endpoints (slowapi)
-- Otimizacao do uso de cota SerpAPI (fast-flights primario, cache, polling adaptativo)
-- Remocao do BookingClassSnapshot (legado Amadeus)
-- JWT stateless para sessoes (escalabilidade horizontal)
+- Higiene de preco: rotulo "preco de referencia", disclaimer de divergencia, remocao do fast-flights
+- Cache Layer Travelpayouts: polling 6h/6h das top 500 rotas BR × 45 datas, servido do banco local
+- Indice publico por rota (/rotas/GRU-LIS): pagina SEO com historico e CTA, monetizacao via affiliate
+- Engine de previsao de preco: recomendacao "Compre ate DD/MM" com backtest retrospectivo
+- Onboarding wizard condicional: primeiro login cria grupo automaticamente em 2 passos
+- Multi-trecho ("grupo dentro do grupo"): roteiro encadeado BR → Italia → Espanha → BR com sinal sobre total
+
+## Past Milestones
+
+- v2.2 UX Polish (shipped 2026-04-20): Phases 24-31, admin panel, toggle preco, sparkline, weekly digest
+- v2.1 Clareza de Preco (shipped 2026-04-20): Phases 15-23, CI, rate limit, cache in-memory, security fix
+- v2.0 Multi-usuario (shipped 2026-03-30): Phases 10-14, Postgres, Google OAuth, data isolation
+- v1.2 Visual Polish (shipped 2026-03-28): Phase 9
+- v1.1 Polish & UX (shipped 2026-03-26): Phases 6-8
+- v1.0 MVP (shipped 2026-03-25): Phases 1-5
 
 ## Evolution
 
@@ -164,4 +171,4 @@ Este documento evolui a cada transição de fase e milestone.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-03 after milestone v2.1 start*
+*Last updated: 2026-04-21 after milestone v2.3 start*

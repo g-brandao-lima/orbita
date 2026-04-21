@@ -278,7 +278,94 @@
 - v1.2 requirements: 6 total, 6 mapped, 0 unmapped
 - v2.0 requirements: 16 total, 16 mapped, 0 unmapped
 - v2.1 requirements: 14 total, 14 mapped, 0 unmapped
+- v2.3 requirements: 22 total, mapped via v2.3 Traceability table below
 
 ---
-*Requirements defined: 2026-03-24*
-*Last updated: 2026-04-03 after v2.1 roadmap created*
+
+## v2.3 Requirements — Growth Features e Cache Centralizado
+
+**Defined:** 2026-04-21
+**Milestone goal:** Eliminar gargalo SerpAPI via cache Travelpayouts, abrir canal de aquisicao organica SEO, transformar historico em recomendacao acionavel, suportar roteiros multi-trecho.
+
+### Higiene de Preco
+
+- [ ] **HYG-01**: Usuario ve rotulo "preco de referencia Google Flights" (nao apenas "preco") em cards, email consolidado e pagina de detalhe do grupo
+- [ ] **HYG-02**: Usuario ve disclaimer "pode divergir ate 5% do valor final; bagagem e taxas nao incluidas" proximo ao preco (tooltip, nota de rodape ou infobox)
+- [ ] **HYG-03**: Sistema nao usa mais fast-flights (scraping Google Flights) como fonte; apenas SerpAPI e cache local como fontes de preco
+
+### Cache Layer (Travelpayouts)
+
+- [ ] **CACHE-03**: Sistema armazena precos de rotas BR em tabela `route_cache` com colunas origin, destination, departure_date, return_date, min_price, currency, cached_at, source
+- [ ] **CACHE-04**: Sistema faz polling automatico a cada 6h das top 500 rotas BR × 45 datas via Travelpayouts Data API (`prices_for_dates`)
+- [ ] **CACHE-05**: `flight_search.search_flights_ex()` consulta `route_cache` primeiro; SerpAPI so e chamado em cache miss ou refresh sob demanda de grupo ativo
+- [ ] **CACHE-06**: Admin panel (`/admin/stats`) mostra cache hit rate percentual dos ultimos 7 dias e quota Travelpayouts restante
+- [ ] **CACHE-07**: Quota SerpAPI mensal cai para menos de 500 chamadas/mes (de >2000 atuais) mantendo o mesmo numero de usuarios ativos
+
+### Indice Publico SEO
+
+- [ ] **SEO-01**: Visitante nao logado acessa `/rotas/{ORIG}-{DEST}` e ve pagina publica com preco mediano atual, historico 180d, melhores meses historicos, CTA "monitore essa rota"
+- [ ] **SEO-02**: Sistema gera `sitemap.xml` dinamico listando todas as rotas com >=30 snapshots acumulados
+- [ ] **SEO-03**: Cada pagina de rota inclui meta tags Open Graph + Twitter Card com imagem preview dinamica mostrando preco atual
+- [ ] **SEO-04**: `robots.txt` permite indexacao de `/rotas/*`; cada rota tem rel="canonical" apontando pra si mesma
+- [ ] **SEO-05**: Botao "comprar" na pagina publica usa affiliate link Travelpayouts (monetizacao passiva por clique)
+
+### Price Prediction
+
+- [ ] **PRED-01**: Dashboard exibe recomendacao por grupo em uma de tres classes: "Compre agora", "Aguarde ate DD/MM" ou "Monitorar"
+- [ ] **PRED-02**: Cada recomendacao acompanha justificativa de 1 frase combinando janela otima, delta vs media 90d e volatilidade da rota
+- [ ] **PRED-03**: Sistema inclui script `scripts/backtest_predictions.py` que mede hit rate retrospectivo por classe contra historico do `route_cache`
+- [ ] **PRED-04**: Email consolidado exibe recomendacao no topo do corpo (acima do preco atual)
+
+### Onboarding (condicional)
+
+- [ ] **ONB-01**: Usuario novo apos OAuth (sem grupos) ve wizard de 2 passos perguntando destino e periodo aproximado, nao dashboard vazio
+- [ ] **ONB-02**: Wizard cria grupo automaticamente ao final e redireciona para dashboard ja populado com preco (vindo do `route_cache`)
+- [ ] **ONB-03**: Copy do dashboard e email revisados: sem jargao tecnico ("balde fechando" → "vagas acabando rapido")
+
+### Multi-Trecho (regra a formalizar)
+
+- [ ] **MULTI-01**: Usuario pode criar grupo-pai com N trechos sequenciais, cada trecho com origin, destination, janela de datas e stay min/max em dias
+- [ ] **MULTI-02**: Sistema valida encadeamento temporal: data de saida do trecho N+1 >= data de chegada do trecho N + min_stay
+- [ ] **MULTI-03**: Sistema busca precos de cada trecho no cache/SerpAPI e calcula preco total do roteiro
+- [ ] **MULTI-04**: Sinal de compra e aplicado sobre o preco total do encadeamento, nao trecho a trecho
+
+## v2.3 Out of Scope
+
+- Paywall ou plano pago (so com >=10 usuarios ativos validados)
+- ML de previsao (regras deterministicas primeiro; ML apenas com 6+ meses de dados)
+- WhatsApp alerts (bloqueado aguardando decisao de provider)
+- Kiwi Tequila (fechou pra novos devs em maio 2024)
+- Shared Groups entre usuarios (dois Google logins resolvem)
+- Multi-trecho open-jaw e stopover gratis em hub (v2.4 ou spec futura)
+
+## v2.3 Traceability
+
+| REQ-ID | Phase | Status |
+|---|---|---|
+| HYG-01 | Phase 31.9 | Pending |
+| HYG-02 | Phase 31.9 | Pending |
+| HYG-03 | Phase 31.9 | Pending |
+| CACHE-03 | Phase 32 | Pending |
+| CACHE-04 | Phase 32 | Pending |
+| CACHE-05 | Phase 32 | Pending |
+| CACHE-06 | Phase 32 | Pending |
+| CACHE-07 | Phase 32 | Pending |
+| SEO-01 | Phase 33 | Pending |
+| SEO-02 | Phase 33 | Pending |
+| SEO-03 | Phase 33 | Pending |
+| SEO-04 | Phase 33 | Pending |
+| SEO-05 | Phase 33 | Pending |
+| PRED-01 | Phase 34 | Pending |
+| PRED-02 | Phase 34 | Pending |
+| PRED-03 | Phase 34 | Pending |
+| PRED-04 | Phase 34 | Pending |
+| ONB-01 | Phase 35 | Pending |
+| ONB-02 | Phase 35 | Pending |
+| ONB-03 | Phase 35 | Pending |
+| MULTI-01 | Phase 36 | Pending |
+| MULTI-02 | Phase 36 | Pending |
+| MULTI-03 | Phase 36 | Pending |
+| MULTI-04 | Phase 36 | Pending |
+
+---
+*v2.3 requirements defined: 2026-04-21*
