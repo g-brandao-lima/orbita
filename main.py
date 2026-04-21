@@ -60,12 +60,14 @@ from app.routes.route_groups import router as route_groups_router
 from app.routes.alerts import router as alerts_router
 from app.routes.dashboard import router as dashboard_router
 from app.routes.admin import router as admin_router
+from app.routes.public import router as public_router
 
 app.include_router(auth_router)
 app.include_router(route_groups_router, prefix="/api/v1")
 app.include_router(alerts_router, prefix="/api/v1")
 app.include_router(dashboard_router)
 app.include_router(admin_router)
+app.include_router(public_router)
 
 
 @app.head("/")

@@ -30,6 +30,10 @@ from app.services.dashboard_service import (
 )
 from app.services.airport_service import is_valid_code, get_all_airports, search_airports
 from app.services.popular_routes import POPULAR_ROUTES, get_by_slug, default_dates
+from app.services.public_route_service import (
+    get_top_public_routes,
+    has_enough_data,
+)
 from app.services.share_card_service import build_price_card
 from app.services.snapshot_service import get_historical_price_context
 
@@ -118,10 +122,15 @@ def dashboard_index(
 ):
     if user is None:
         flash_message = FLASH_MESSAGES.get(msg) if msg else None
+        popular_public_routes = get_top_public_routes(db, limit=5)
         return templates.TemplateResponse(
             request=request,
             name="landing.html",
-            context={"user": None, "flash_message": flash_message},
+            context={
+                "user": None,
+                "flash_message": flash_message,
+                "popular_public_routes": popular_public_routes,
+            },
         )
 
     user_id = user.id
@@ -132,6 +141,14 @@ def dashboard_index(
     price_mode = request.cookies.get("price_mode", "per_person")
     if price_mode not in ("per_person", "total"):
         price_mode = "per_person"
+
+    for item in groups:
+        snap = item.get("cheapest_snapshot") if isinstance(item, dict) else None
+        if snap and has_enough_data(db, snap.origin, snap.destination):
+            item["public_route_slug"] = f"{snap.origin}-{snap.destination}"
+        else:
+            item["public_route_slug"] = None
+
     return templates.TemplateResponse(
         request=request,
         name="dashboard/index.html",

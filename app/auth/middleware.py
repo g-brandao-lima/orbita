@@ -4,8 +4,8 @@ from fastapi import Request
 
 from app.observability import bind_user_context
 
-PUBLIC_PATHS = frozenset({"/", "/auth/login", "/auth/callback", "/auth/logout"})
-PUBLIC_PREFIXES = ("/auth/", "/static/", "/api/airports/")
+PUBLIC_PATHS = frozenset({"/", "/auth/login", "/auth/callback", "/auth/logout", "/robots.txt", "/sitemap.xml"})
+PUBLIC_PREFIXES = ("/auth/", "/static/", "/api/airports/", "/rotas/")
 
 
 class AuthMiddleware(BaseHTTPMiddleware):

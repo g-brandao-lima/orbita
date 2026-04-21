@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% set s = stats %}
+{% block title %}Passagens {{ s.origin_city }} para {{ s.destination_city }} - Flight Monitor{% endblock %}
+{% block head %}
+<link rel="canonical" href="{{ canonical }}">
+<meta name="description" content="Passagens {{ s.origin_city }} ({{ s.origin }}) para {{ s.destination_city }} ({{ s.destination }}): preco atual {{ format_price_brl(s.current_price) if s.current_price else 'consulte' }}{% if s.median_180d %}, mediana 180d {{ format_price_brl(s.median_180d) }}{% endif %}. Monitore e receba alertas quando o preco cair.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{ canonical }}">
+<meta property="og:title" content="Passagens {{ s.origin_city }} para {{ s.destination_city }}">
+<meta property="og:description" content="Preco de referencia {{ format_price_brl(s.current_price) if s.current_price else 'consulte' }}. Monitore e receba alertas.">
+<meta property="og:image" content="{{ og_image }}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Passagens {{ s.origin_city }} para {{ s.destination_city }}">
+<meta name="twitter:image" content="{{ og_image }}">
+<style>
+    .public-hero { text-align:center; padding: 48px 0 32px; }
+    .public-hero h1 { font-size: 32px; font-weight: 700; color: #e2e8f0; margin-bottom: 8px; }
+    .public-hero .sub { color:#94a3b8; font-size: 15px; }
+    .public-price { font-size: 56px; font-weight: 700; color: #22c55e; font-family: ui-monospace, monospace; margin: 24px 0 8px; }
+    .public-price-sub { color: #94a3b8; font-size: 13px; }
+    .public-card { background:#111827; border:1px solid #1e293b; border-radius:12px; padding:24px; margin-bottom:16px; }
+    .public-card h2 { font-size: 18px; color:#e2e8f0; margin-bottom: 12px; font-weight: 600; }
+    .public-months { display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:12px; }
+    .public-month { background:#0b0e14; border:1px solid #1e293b; border-radius:8px; padding:12px; text-align:center; }
+    .public-month .label { color:#94a3b8; font-size:12px; }
+    .public-month .price { color:#e2e8f0; font-size:18px; font-weight:700; font-family: ui-monospace, monospace; }
+    .public-cta { text-align:center; padding: 32px 0; }
+    .public-cta .btn-cta { display:inline-block; background: linear-gradient(135deg,#0ea5e9,#3b82f6); color:#fff; font-weight:700; padding: 14px 28px; border-radius:10px; text-decoration:none; transition: transform .15s; }
+    .public-cta .btn-cta:hover { transform: translateY(-1px); }
+    .public-buy { text-align:center; margin-top:12px; }
+    .public-buy a { color:#60a5fa; font-size:13px; text-decoration:underline; }
+    .public-disclaimer { color:#64748b; font-size:11px; font-style:italic; margin-top: 12px; text-align:center; }
+</style>
+{% endblock %}
+{% block content %}
+<section class="public-hero">
+    <h1>Passagens {{ s.origin_city }} para {{ s.destination_city }}</h1>
+    <div class="sub">{{ s.origin }} &rarr; {{ s.destination }}</div>
+    {% if s.current_price %}
+    <div class="public-price">{{ format_price_brl(s.current_price) }}</div>
+    <div class="public-price-sub">
+        preco de referencia
+        {% if s.median_180d %} &middot; mediana 180d {{ format_price_brl(s.median_180d) }}{% endif %}
+        {% if s.cached_at %} &middot; atualizado {{ format_date_br(s.cached_at.date()) }}{% endif %}
+    </div>
+    <div class="public-disclaimer">Pode divergir ate 5% do valor final; bagagem e taxas nao incluidas.</div>
+    {% endif %}
+</section>
+
+{% if s.best_months %}
+<div class="public-card">
+    <h2>Melhores meses historicos</h2>
+    <div class="public-months">
+        {% for m in s.best_months %}
+        <div class="public-month">
+            <div class="label">{{ m.month_label }}</div>
+            <div class="price">{{ format_price_brl(m.avg_price) }}</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if s.monthly_series %}
+<div class="public-card">
+    <h2>Historico 180 dias</h2>
+    <div class="public-months">
+        {% for m in s.monthly_series %}
+        <div class="public-month">
+            <div class="label">{{ m.month_label }}</div>
+            <div class="price">{{ format_price_brl(m.avg_price) }}</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<section class="public-cta">
+    <a href="/auth/login" class="btn-cta">Monitore essa rota</a>
+    <p style="color:#64748b; font-size:13px; margin-top:12px;">Gratis. Avisamos por email quando o preco cair.</p>
+</section>
+
+{% if affiliate_url %}
+<section class="public-cta" style="padding-top: 0;">
+    <a href="{{ affiliate_url }}" target="_blank" rel="nofollow sponsored noopener" class="btn-cta" style="background: linear-gradient(135deg,#16a34a,#22c55e);">
+        Comprar agora
+    </a>
+    <p style="color:#64748b; font-size:12px; margin-top:12px;">Redireciona para Aviasales (parceiro). Podemos receber comissao sem custo extra para voce.</p>
+</section>
+{% endif %}
+{% endblock %}

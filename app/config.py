@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     sentry_traces_sample_rate: float = 0.1
     admin_email: str = ""
     travelpayouts_token: str = ""
+    travelpayouts_marker: str = "714304"
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 

@@ -256,6 +256,20 @@
     </div>
 </section>
 
+{% if popular_public_routes %}
+<section class="landing-section">
+    <h2 class="landing-section-heading">Rotas populares</h2>
+    <div class="landing-grid">
+        {% for r in popular_public_routes[:3] %}
+        <a href="/rotas/{{ r.origin }}-{{ r.destination }}" class="landing-card" style="text-decoration:none; display:block;">
+            <div class="step-title">{{ r.origin_city }} &rarr; {{ r.destination_city }}</div>
+            <div class="step-desc">{{ r.origin }} &rarr; {{ r.destination }} &middot; ver historico e melhores meses</div>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
 <!-- CTA final -->
 <section class="landing-final-cta">
     <h2>Pronto para encontrar a passagem ideal?</h2>
