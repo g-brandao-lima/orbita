@@ -14,9 +14,11 @@ from app.config import settings
 from app.database import get_db
 from app.models import User
 from app.services.admin_stats_service import (
+    get_cache_hit_rate_7d,
     get_cache_info,
     get_quota_stats,
     get_source_distribution,
+    get_travelpayouts_quota_info,
 )
 from app.templates_config import get_templates
 
@@ -34,6 +36,8 @@ def admin_stats(
     quota = get_quota_stats(db)
     sources = get_source_distribution(db, days=7)
     cache = get_cache_info()
+    cache_hit_rate_7d = get_cache_hit_rate_7d(db)
+    travelpayouts_quota = get_travelpayouts_quota_info(db)
     sentry_url = (
         "https://sentry.io/organizations/gbl-analise-e-desenvolvimento/issues/"
         "?project=4511252692271104&environment=production"
@@ -46,6 +50,8 @@ def admin_stats(
             "quota": quota,
             "sources": sources,
             "cache": cache,
+            "cache_hit_rate_7d": cache_hit_rate_7d,
+            "travelpayouts_quota": travelpayouts_quota,
             "sentry_url": sentry_url,
             "sentry_enabled": bool(settings.sentry_dsn),
         },

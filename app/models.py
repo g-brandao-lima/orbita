@@ -120,3 +120,41 @@ class ApiUsage(Base):
     updated_at: Mapped[datetime.datetime] = mapped_column(
         DateTime, server_default=func.now(), onupdate=func.now()
     )
+
+
+class RouteCache(Base):
+    __tablename__ = "route_cache"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    origin: Mapped[str] = mapped_column(String(3), index=True)
+    destination: Mapped[str] = mapped_column(String(3), index=True)
+    departure_date: Mapped[datetime.date] = mapped_column(Date, index=True)
+    return_date: Mapped[datetime.date | None] = mapped_column(Date, nullable=True, index=True)
+    min_price: Mapped[float] = mapped_column(Float)
+    currency: Mapped[str] = mapped_column(String(3), default="BRL")
+    cached_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime, server_default=func.now()
+    )
+    source: Mapped[str] = mapped_column(String(30), default="travelpayouts")
+
+
+Index(
+    "ix_route_cache_lookup",
+    RouteCache.origin,
+    RouteCache.destination,
+    RouteCache.departure_date,
+    RouteCache.return_date,
+)
+
+
+class CacheLookupLog(Base):
+    __tablename__ = "cache_lookup_log"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    origin: Mapped[str] = mapped_column(String(3), index=True)
+    destination: Mapped[str] = mapped_column(String(3), index=True)
+    hit: Mapped[bool] = mapped_column(Boolean, index=True)
+    source: Mapped[str] = mapped_column(String(30))
+    looked_up_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime, server_default=func.now(), index=True
+    )

@@ -1,10 +1,27 @@
 import logging
 import re
 
-from app.services import flight_cache
+from app.database import SessionLocal
+from app.services import flight_cache, route_cache_service
 from app.services.serpapi_client import SerpApiClient
 
 logger = logging.getLogger(__name__)
+
+
+def _log_lookup(origin: str, destination: str, hit: bool, source: str) -> None:
+    """Best-effort log de hit/miss; nunca propaga erro."""
+    try:
+        from app.models import CacheLookupLog
+        db = SessionLocal()
+        try:
+            db.add(CacheLookupLog(
+                origin=origin, destination=destination, hit=hit, source=source,
+            ))
+            db.commit()
+        finally:
+            db.close()
+    except Exception as e:
+        logger.warning("cache_lookup_log insert failed: %s", e)
 
 
 def search_flights(
@@ -57,7 +74,35 @@ def search_flights_ex(
                 "flight_cache HIT %s->%s %s (orig=%s)",
                 origin, destination, departure_date, orig_source,
             )
+            _log_lookup(origin, destination, hit=True, source=orig_source)
             return flights_cached[:max_results], insights_cached, orig_source, True
+
+    cached = None
+    if use_cache:
+        db = SessionLocal()
+        try:
+            cached = route_cache_service.get_cached_price(
+                db, origin, destination, departure_date, return_date,
+            )
+        except Exception as e:
+            logger.warning("route_cache lookup failed (skipping): %s", e)
+            cached = None
+        finally:
+            db.close()
+    if use_cache and cached is not None:
+            synthetic = [{
+                "price": cached["min_price"],
+                "airline": "??",
+                "flights": [],
+                "type": "Round trip",
+            }]
+            flight_cache.put(cache_key, (synthetic, None, "travelpayouts_cached"))
+            logger.info(
+                "route_cache HIT %s->%s %s (travelpayouts_cached)",
+                origin, destination, departure_date,
+            )
+            _log_lookup(origin, destination, hit=True, source="travelpayouts_cached")
+            return synthetic[:max_results], None, "travelpayouts_cached", True
 
     client = SerpApiClient()
     flights, insights = client.search_flights_with_insights(
@@ -71,6 +116,7 @@ def search_flights_ex(
     )
     if use_cache:
         flight_cache.put(cache_key, (flights, insights, "serpapi"))
+    _log_lookup(origin, destination, hit=False, source="serpapi")
     return flights, insights, "serpapi", False
 
 

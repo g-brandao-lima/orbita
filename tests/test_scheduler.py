@@ -17,11 +17,12 @@ class TestSchedulerSetup:
 
         init_scheduler()
 
-        assert mock_sched_instance.add_job.call_count == 3
+        assert mock_sched_instance.add_job.call_count == 4
 
         job_ids = [c.kwargs.get("id") for c in mock_sched_instance.add_job.call_args_list]
         assert "polling_morning" in job_ids
         assert "polling_afternoon" in job_ids
+        assert "travelpayouts_refresh" in job_ids
         assert "weekly_digest" in job_ids
 
         from apscheduler.triggers.cron import CronTrigger

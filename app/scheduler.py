@@ -3,12 +3,31 @@ import logging
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
+from app.database import SessionLocal
+from app.services import route_cache_service
 from app.services.polling_service import run_polling_cycle
+from app.services.travelpayouts_client import TravelpayoutsClient
 from app.services.weekly_digest_service import run_weekly_digest
 
 logger = logging.getLogger(__name__)
 
 scheduler = BackgroundScheduler()
+
+
+def run_travelpayouts_refresh():
+    """Chamado 4x/dia: puxa precos dos proximos 6 meses para TOP_BR_ROUTES."""
+    db = SessionLocal()
+    try:
+        client = TravelpayoutsClient()
+        months = route_cache_service._next_n_months(6)
+        route_cache_service.refresh_top_routes(
+            db,
+            client,
+            routes=route_cache_service.TOP_BR_ROUTES,
+            months=months,
+        )
+    finally:
+        db.close()
 
 
 def init_scheduler():
@@ -38,8 +57,15 @@ def init_scheduler():
         name="Weekly digest (terca 18:00 BRT)",
         replace_existing=True,
     )
+    scheduler.add_job(
+        run_travelpayouts_refresh,
+        trigger=CronTrigger(hour="0,6,12,18", minute=30),  # 4x/dia, offset 30min do polling
+        id="travelpayouts_refresh",
+        name="Travelpayouts cache refresh (6h)",
+        replace_existing=True,
+    )
     scheduler.start()
-    logger.info("Scheduler started: polling 2x/dia + weekly digest terca 18:00 BRT")
+    logger.info("Scheduler started: polling 2x/dia + weekly digest + travelpayouts 4x/dia")
 
 
 def shutdown_scheduler():

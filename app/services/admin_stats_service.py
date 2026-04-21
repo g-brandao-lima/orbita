@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy.orm import Session
 
-from app.models import FlightSnapshot
+from app.models import ApiUsage, CacheLookupLog, FlightSnapshot
 from app.services import flight_cache
 from app.services.quota_service import (
     MONTHLY_QUOTA,
@@ -87,6 +87,42 @@ def get_cache_info() -> dict:
         "entries": flight_cache.size(),
         "ttl_minutes": 30,
     }
+
+
+def get_cache_hit_rate_7d(db: Session) -> dict:
+    """Hit rate agregado dos ultimos 7 dias a partir de cache_lookup_log."""
+    cutoff = datetime.datetime.utcnow() - datetime.timedelta(days=7)
+    rows = (
+        db.query(CacheLookupLog.hit)
+        .filter(CacheLookupLog.looked_up_at >= cutoff)
+        .all()
+    )
+    total = len(rows)
+    hits = sum(1 for (h,) in rows if h)
+    misses = total - hits
+    hit_rate = round((hits / total * 100), 1) if total else 0.0
+    return {"total": total, "hits": hits, "misses": misses, "hit_rate_pct": hit_rate}
+
+
+def get_travelpayouts_quota_info(db: Session) -> dict:
+    """Quota Travelpayouts rastreada internamente (sem API oficial de quota)."""
+    now = datetime.datetime.utcnow()
+    key = f"{now:%Y-%m}:travelpayouts"
+    row = db.query(ApiUsage).filter(ApiUsage.year_month == key).first()
+    used = row.search_count if row else 0
+    return {"used": used, "month": f"{now:%Y-%m}"}
+
+
+def increment_travelpayouts_usage(db: Session) -> None:
+    """Incrementa contador de chamadas Travelpayouts do mes corrente."""
+    now = datetime.datetime.utcnow()
+    key = f"{now:%Y-%m}:travelpayouts"
+    row = db.query(ApiUsage).filter(ApiUsage.year_month == key).first()
+    if row:
+        row.search_count += 1
+    else:
+        db.add(ApiUsage(year_month=key, search_count=1))
+    db.commit()
 
 
 def _source_label(source: str) -> str:
