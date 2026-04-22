@@ -7,27 +7,36 @@
     /* ==========================================================================
        HERO SPLIT
        ========================================================================== */
-    .landing-hero {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: var(--sp-16) var(--sp-2) var(--sp-12);
+    /* Wrapper full-width pra o gradient sangrar até as bordas da tela */
+    .landing-hero-bg {
         position: relative;
-        display: grid;
-        grid-template-columns: minmax(0, 1.2fr) minmax(360px, 0.95fr);
-        gap: var(--sp-10);
-        align-items: center;
+        width: 100vw;
+        margin-left: calc(50% - 50vw);
+        margin-right: calc(50% - 50vw);
+        padding: 0;
     }
-    .landing-hero::before {
+    .landing-hero-bg::before {
         content: "";
         position: absolute;
         top: 0;
         left: 0;
         right: 0;
-        height: 520px;
-        background: radial-gradient(ellipse at top left, rgba(99,102,241,0.22), transparent 55%),
-                    radial-gradient(ellipse at top right, rgba(34,211,238,0.14), transparent 55%);
+        height: 640px;
+        background: radial-gradient(ellipse 70% 60% at 25% 0%, rgba(99,102,241,0.20), transparent 70%),
+                    radial-gradient(ellipse 65% 55% at 78% 5%, rgba(34,211,238,0.14), transparent 72%);
         pointer-events: none;
-        z-index: -1;
+        z-index: 0;
+    }
+    .landing-hero {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: var(--sp-16) var(--sp-4) var(--sp-12);
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) minmax(360px, 0.95fr);
+        gap: var(--sp-10);
+        align-items: center;
+        z-index: 1;
     }
     .landing-hero-left { text-align: left; }
     .landing-eyebrow {
@@ -587,6 +596,7 @@
 
 {% block content %}
 <!-- Hero -->
+<div class="landing-hero-bg">
 <section class="landing-hero">
     <div class="landing-hero-left">
         <span class="landing-eyebrow">
@@ -687,6 +697,7 @@
     </aside>
     {% endif %}
 </section>
+</div>
 
 <!-- Como funciona -->
 <section class="landing-section" id="como-funciona">
