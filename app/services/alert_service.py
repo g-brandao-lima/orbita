@@ -391,24 +391,29 @@ def _render_consolidated_html(
 
     parts.append('<div style="border:1px solid #e5e7eb;padding:20px;border-radius:0 0 8px 8px;">')
 
-    # CTA "Comprar agora" via nosso redirect tracked /comprar/ (registra
-    # clique antes de redirecionar pro Aviasales com marker).
-    buy_url = (
-        f"{settings.app_base_url.rstrip('/')}/comprar/"
-        f"{cheapest.origin}-{cheapest.destination}"
-        f"?dep={cheapest.departure_date.isoformat()}"
-        f"&ret={cheapest.return_date.isoformat()}"
-        f"&pax={pax}&source=email"
+    # Cluster "Comparar precos em" (sem afiliado) — mesmos 4 providers do
+    # dashboard. Usuario decide onde comprar.
+    from app.services.dashboard_service import booking_urls
+    cmp_urls = booking_urls(
+        cheapest.origin,
+        cheapest.destination,
+        cheapest.departure_date,
+        cheapest.return_date,
+        pax,
+    )
+    btn_style = (
+        'display:inline-block;margin:4px 6px 4px 0;padding:10px 18px;'
+        'background:#f3f4f6;border:1px solid #d1d5db;border-radius:8px;'
+        'color:#111827;font-weight:600;font-size:13px;text-decoration:none;'
     )
     parts.append(
-        '<div style="text-align:center;margin-bottom:20px;">'
-        f'<a href="{buy_url}" style="display:inline-block;background:linear-gradient(135deg,#6366F1,#22D3EE);'
-        'color:#fff;font-weight:700;padding:14px 32px;border-radius:10px;text-decoration:none;font-size:15px;">'
-        f'Comprar por {format_price_brl(cheapest.price)} &rarr;'
-        '</a>'
-        '<p style="color:#6b7280;font-size:11px;margin:8px 0 0;font-style:italic;">'
-        'Redireciona para Aviasales com datas já preenchidas. Recebemos comissão sem custo extra.'
-        '</p>'
+        '<div style="margin-bottom:20px;">'
+        '<div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;'
+        'color:#6b7280;margin-bottom:8px;">Comparar preços em</div>'
+        f'<a href="{cmp_urls["google_flights"]}" style="{btn_style}">Google Flights &#8599;</a>'
+        f'<a href="{cmp_urls["decolar"]}" style="{btn_style}">Decolar &#8599;</a>'
+        f'<a href="{cmp_urls["skyscanner"]}" style="{btn_style}">Skyscanner &#8599;</a>'
+        f'<a href="{cmp_urls["kayak"]}" style="{btn_style}">Kayak &#8599;</a>'
         '</div>'
     )
 
@@ -517,16 +522,21 @@ def _render_consolidated_plain(
     if context_phrase:
         lines.append(f"Contexto: {context_phrase}")
 
-    # CTA Comprar agora via /comprar/ tracked redirect
-    buy_url = (
-        f"{settings.app_base_url.rstrip('/')}/comprar/"
-        f"{cheapest.origin}-{cheapest.destination}"
-        f"?dep={cheapest.departure_date.isoformat()}"
-        f"&ret={cheapest.return_date.isoformat()}"
-        f"&pax={pax}&source=email"
+    # Cluster "Comparar precos em" (sem afiliado)
+    from app.services.dashboard_service import booking_urls
+    cmp_urls = booking_urls(
+        cheapest.origin,
+        cheapest.destination,
+        cheapest.departure_date,
+        cheapest.return_date,
+        pax,
     )
     lines.append("")
-    lines.append(f"Comprar agora: {buy_url}")
+    lines.append("COMPARAR PRECOS EM:")
+    lines.append(f"  Google Flights: {cmp_urls['google_flights']}")
+    lines.append(f"  Decolar: {cmp_urls['decolar']}")
+    lines.append(f"  Skyscanner: {cmp_urls['skyscanner']}")
+    lines.append(f"  Kayak: {cmp_urls['kayak']}")
     lines.append("")
 
     lines.append(f"MELHORES DATAS (precos por pessoa, ida e volta{', total para ' + str(pax) + ' pax entre parenteses' if pax > 1 else ''}):")
