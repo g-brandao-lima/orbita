@@ -46,7 +46,13 @@ def public_route_page(
     base = settings.app_base_url.rstrip("/")
     canonical = f"{base}/rotas/{origin}-{destination}"
     og_image = f"{base}/rotas/{origin}-{destination}/og-image.png"
-    dep, ret = default_trip_dates()
+
+    # Usar as datas reais do preco mostrado pra alinhar com o checkout Aviasales.
+    # Fallback pra default_trip_dates quando nao houver data (rota sem cache/snapshot).
+    dep = stats.get("current_departure_date")
+    ret = stats.get("current_return_date")
+    if dep is None:
+        dep, ret = default_trip_dates()
     affiliate_url = build_aviasales_url(
         origin, destination, dep, ret, settings.travelpayouts_marker
     )

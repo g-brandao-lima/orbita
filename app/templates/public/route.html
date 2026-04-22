@@ -186,6 +186,13 @@
     <h1>Passagens {{ s.origin_city }} para {{ s.destination_city }}</h1>
     {% if s.current_price %}
     <div class="pub-price">{{ format_price_brl(s.current_price) }}</div>
+    {% if s.current_departure_date and s.current_return_date %}
+    <div class="pub-price-sub" style="font-weight:600;color:var(--text-1);">
+        ida {{ format_date_br(s.current_departure_date) }}
+        <span class="divider">·</span>
+        volta {{ format_date_br(s.current_return_date) }}
+    </div>
+    {% endif %}
     <div class="pub-price-sub">
         preço de referência
         {% if s.median_180d %} <span class="divider">|</span> mediana 180d {{ format_price_brl(s.median_180d) }}{% endif %}

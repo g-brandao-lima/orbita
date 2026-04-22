@@ -93,14 +93,20 @@ def get_route_stats(db: Session, origin: str, destination: str) -> dict | None:
     current_price = None
     currency = "BRL"
     cached_at = None
+    current_departure_date = None
+    current_return_date = None
     if cache_row is not None:
         current_price = cache_row.min_price
         currency = cache_row.currency
         cached_at = cache_row.cached_at
+        current_departure_date = cache_row.departure_date
+        current_return_date = cache_row.return_date
     elif snaps:
         latest = max(snaps, key=lambda s: s.collected_at)
         current_price = latest.price
         currency = latest.currency
+        current_departure_date = latest.departure_date
+        current_return_date = latest.return_date
 
     by_month: dict[str, list[float]] = defaultdict(list)
     for s in snaps:
@@ -127,6 +133,8 @@ def get_route_stats(db: Session, origin: str, destination: str) -> dict | None:
         "current_price": current_price,
         "currency": currency,
         "cached_at": cached_at,
+        "current_departure_date": current_departure_date,
+        "current_return_date": current_return_date,
         "median_180d": median_180d,
         "snapshot_count": len(snaps),
         "monthly_series": monthly_series,

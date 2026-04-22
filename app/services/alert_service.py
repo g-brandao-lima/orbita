@@ -365,6 +365,28 @@ def _render_consolidated_html(
 
     parts.append('<div style="border:1px solid #e5e7eb;padding:20px;border-radius:0 0 8px 8px;">')
 
+    # CTA "Comprar agora" usando as datas reais do snapshot mais barato (Aviasales affiliate)
+    from app.services.affiliate_links import build_aviasales_url
+    buy_url = build_aviasales_url(
+        cheapest.origin,
+        cheapest.destination,
+        cheapest.departure_date,
+        cheapest.return_date,
+        settings.travelpayouts_marker,
+        passengers=pax,
+    )
+    parts.append(
+        '<div style="text-align:center;margin-bottom:20px;">'
+        f'<a href="{buy_url}" style="display:inline-block;background:linear-gradient(135deg,#6366F1,#22D3EE);'
+        'color:#fff;font-weight:700;padding:14px 32px;border-radius:10px;text-decoration:none;font-size:15px;">'
+        f'Comprar por {format_price_brl(cheapest.price)} &rarr;'
+        '</a>'
+        '<p style="color:#6b7280;font-size:11px;margin:8px 0 0;font-style:italic;">'
+        'Redireciona para Aviasales com datas já preenchidas. Receitamos comissão sem custo extra.'
+        '</p>'
+        '</div>'
+    )
+
     # Tabela top 3 melhores datas/precos
     parts.append('<h3>Melhores datas</h3>')
     parts.append(
@@ -466,6 +488,19 @@ def _render_consolidated_plain(
     context_phrase = _format_historical_context(historical_ctx, cheapest.price)
     if context_phrase:
         lines.append(f"Contexto: {context_phrase}")
+
+    # CTA Comprar agora com affiliate + datas reais
+    from app.services.affiliate_links import build_aviasales_url
+    buy_url = build_aviasales_url(
+        cheapest.origin,
+        cheapest.destination,
+        cheapest.departure_date,
+        cheapest.return_date,
+        settings.travelpayouts_marker,
+        passengers=pax,
+    )
+    lines.append("")
+    lines.append(f"Comprar agora: {buy_url}")
     lines.append("")
 
     lines.append(f"MELHORES DATAS (precos por pessoa, ida e volta{', total para ' + str(pax) + ' pax entre parenteses' if pax > 1 else ''}):")
