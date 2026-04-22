@@ -118,6 +118,45 @@
     }
     .price-badge-good { background: rgba(16,185,129,0.14); color: var(--success-400); border: 1px solid rgba(16,185,129,0.28); }
     .price-badge-bad { background: rgba(239,68,68,0.14); color: var(--danger-400); border: 1px solid rgba(239,68,68,0.28); }
+    .recommendation {
+        margin-top: var(--sp-3);
+        padding: var(--sp-3) var(--sp-4);
+        border-radius: var(--r-md);
+        border: 1px solid;
+    }
+    .recommendation-compre {
+        background: var(--success-bg);
+        border-color: rgba(16,185,129,0.3);
+        color: var(--success-400);
+    }
+    .recommendation-aguarde {
+        background: var(--warning-bg);
+        border-color: rgba(245,158,11,0.3);
+        color: var(--warning-400);
+    }
+    .recommendation-monitorar {
+        background: var(--bg-2);
+        border-color: var(--border-2);
+        color: var(--text-2);
+    }
+    .rec-action {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+    .rec-reason {
+        font-size: 13px;
+        color: var(--text-1);
+        line-height: 1.4;
+    }
+    .rec-deadline {
+        font-size: 11px;
+        font-family: var(--font-mono);
+        margin-top: 4px;
+        opacity: 0.8;
+    }
     .price-mode-btn {
         background: var(--bg-2);
         color: var(--text-2);
@@ -445,6 +484,15 @@
                     <span class="price-badge {% if item.price_badge.tone == 'good' %}price-badge-good{% else %}price-badge-bad{% endif %}">
                         {{ item.price_badge.label }}
                     </span>
+                </div>
+                {% endif %}
+                {% if item.recommendation %}
+                <div class="recommendation recommendation-{{ item.recommendation.action|lower }}">
+                    <div class="rec-action">{{ item.recommendation.action }}</div>
+                    <div class="rec-reason">{{ item.recommendation.reason }}</div>
+                    {% if item.recommendation.deadline %}
+                    <div class="rec-deadline">Ate {{ format_date_br(item.recommendation.deadline) }}</div>
+                    {% endif %}
                 </div>
                 {% endif %}
                 {% if item.savings %}

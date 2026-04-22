@@ -352,3 +352,85 @@ def test_detail_page_exibe_disclaimer_divergencia(client, db, test_user):
     response = client.get(f"/groups/{group.id}")
 
     assert "Pode divergir até 5% do valor final" in response.text
+
+
+# --- Phase 34: recomendacao COMPRE/AGUARDE/MONITORAR ---
+
+def _seed_history(db, group, base_price: float, count: int, departure: datetime.date):
+    now = datetime.datetime.utcnow()
+    for i in range(count):
+        _make_snapshot(
+            db,
+            group,
+            price=base_price + (i % 5) * 20,
+            collected_at=now - timedelta(days=i + 2),
+            departure_date=departure,
+        )
+
+
+def test_dashboard_mostra_recommendation_compre(client, db, test_user):
+    departure = datetime.date.today() + timedelta(days=60)
+    group = _make_group(
+        db,
+        user_id=test_user.id,
+        travel_start=departure,
+        travel_end=departure + timedelta(days=10),
+    )
+    _seed_history(db, group, base_price=3500.0, count=20, departure=departure)
+    _make_snapshot(
+        db,
+        group,
+        price=2800.0,
+        collected_at=datetime.datetime.utcnow() - timedelta(hours=1),
+        departure_date=departure,
+    )
+
+    response = client.get("/")
+
+    assert "recommendation-compre" in response.text
+    assert "COMPRE" in response.text
+
+
+def test_dashboard_mostra_recommendation_aguarde(client, db, test_user):
+    departure = datetime.date.today() + timedelta(days=140)
+    group = _make_group(
+        db,
+        user_id=test_user.id,
+        travel_start=departure,
+        travel_end=departure + timedelta(days=10),
+    )
+    _seed_history(db, group, base_price=3500.0, count=20, departure=departure)
+    _make_snapshot(
+        db,
+        group,
+        price=3500.0,
+        collected_at=datetime.datetime.utcnow() - timedelta(hours=1),
+        departure_date=departure,
+    )
+
+    response = client.get("/")
+
+    assert "recommendation-aguarde" in response.text
+    assert "AGUARDE" in response.text
+
+
+def test_dashboard_mostra_recommendation_monitorar(client, db, test_user):
+    departure = datetime.date.today() + timedelta(days=60)
+    group = _make_group(
+        db,
+        user_id=test_user.id,
+        travel_start=departure,
+        travel_end=departure + timedelta(days=10),
+    )
+    _make_snapshot(
+        db,
+        group,
+        price=3500.0,
+        collected_at=datetime.datetime.utcnow() - timedelta(hours=1),
+        departure_date=departure,
+    )
+
+    response = client.get("/")
+
+    assert "recommendation-monitorar" in response.text
+    assert "MONITORAR" in response.text

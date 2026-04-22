@@ -6,6 +6,7 @@ from sqlalchemy import case, func
 from sqlalchemy.orm import Session
 
 from app.models import RouteGroup, FlightSnapshot, DetectedSignal
+from app.services.price_prediction_service import build_recommendation_for_group
 from app.services.quota_service import get_monthly_usage, get_remaining_quota, MONTHLY_QUOTA
 
 
@@ -203,6 +204,7 @@ def get_groups_with_summary(db: Session, user_id: int | None = None) -> list[dic
                     price_badge = {"label": f"{pct}% acima da média 30d", "tone": "bad"}
 
         savings = _compute_savings_since_creation(db, group, cheapest_snapshot)
+        recommendation = build_recommendation_for_group(db, group, cheapest_snapshot)
 
         result.append({
             "group": group,
@@ -216,6 +218,7 @@ def get_groups_with_summary(db: Session, user_id: int | None = None) -> list[dic
             "sparkline": sparkline,
             "price_badge": price_badge,
             "savings": savings,
+            "recommendation": recommendation,
         })
 
     # Sort by cheapest price (groups with data first, then by price ascending)
