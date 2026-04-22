@@ -31,6 +31,53 @@
         pointer-events: none;
         z-index: 0;
     }
+
+    /* Orbit SVG animada no fundo — metafora da marca */
+    .landing-hero-orbit {
+        position: absolute;
+        top: 40px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 1200px;
+        height: 600px;
+        pointer-events: none;
+        opacity: 0.5;
+        z-index: 0;
+    }
+    .landing-hero-orbit svg {
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+    }
+    .orbit-ring { stroke: rgba(99, 102, 241, 0.18); }
+    .orbit-ring-2 { stroke: rgba(34, 211, 238, 0.10); }
+    .orbit-dot {
+        fill: var(--accent-500);
+        filter: drop-shadow(0 0 12px rgba(34, 211, 238, 0.7));
+        animation: orbitTravel 28s linear infinite;
+        transform-origin: 600px 300px;
+    }
+    .orbit-dot-2 {
+        fill: var(--brand-500);
+        filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.6));
+        animation: orbitTravel 42s linear infinite reverse;
+        animation-delay: -14s;
+        transform-origin: 600px 300px;
+    }
+    @keyframes orbitTravel {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+    }
+
+    /* Pulse no preview quando o preco "atualiza" */
+    @keyframes pricePulse {
+        0%   { background: rgba(16,185,129,0); }
+        30%  { background: rgba(16,185,129,0.08); }
+        100% { background: rgba(16,185,129,0); }
+    }
+    .preview-price-block.pulsing {
+        animation: pricePulse 1.2s ease-out;
+    }
     .landing-hero {
         max-width: 1200px;
         margin: 0 auto;
@@ -606,6 +653,22 @@
 {% block content %}
 <!-- Hero -->
 <div class="landing-hero-bg">
+    <div class="landing-hero-orbit" aria-hidden="true">
+        <svg viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid meet">
+            <ellipse class="orbit-ring" cx="600" cy="300" rx="560" ry="180"
+                     fill="none" stroke-width="1"
+                     transform="rotate(-12 600 300)"/>
+            <ellipse class="orbit-ring-2" cx="600" cy="300" rx="460" ry="140"
+                     fill="none" stroke-width="1"
+                     transform="rotate(8 600 300)"/>
+            <g transform="rotate(-12 600 300)">
+                <circle class="orbit-dot" cx="1160" cy="300" r="4"/>
+            </g>
+            <g transform="rotate(8 600 300)">
+                <circle class="orbit-dot-2" cx="140" cy="300" r="3"/>
+            </g>
+        </svg>
+    </div>
 <section class="landing-hero">
     <div class="landing-hero-left">
         <span class="landing-eyebrow">
@@ -627,19 +690,19 @@
             {% endif %}
         </div>
         <div class="landing-hero-minis">
-            <div class="hero-mini">
+            <div class="hero-mini" data-spotlight>
                 <div class="hero-mini-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M18 9l-5 5-4-4-3 3"/></svg>
                 </div>
                 <div class="hero-mini-text">Preço comparado com a faixa histórica da rota.</div>
             </div>
-            <div class="hero-mini">
+            <div class="hero-mini" data-spotlight>
                 <div class="hero-mini-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 </div>
                 <div class="hero-mini-text">Leitura diária pra você não perder janela boa.</div>
             </div>
-            <div class="hero-mini">
+            <div class="hero-mini" data-spotlight>
                 <div class="hero-mini-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                 </div>
@@ -658,7 +721,7 @@
         <div class="preview-price-block">
             <div class="preview-price-label">Preço agora</div>
             <div class="preview-price-row">
-                <div class="preview-price-value">{{ format_price_brl(featured_route.current_price) }}</div>
+                <div class="preview-price-value" data-countup data-target="{{ featured_route.current_price }}">{{ format_price_brl(featured_route.current_price) }}</div>
                 {% if featured_route.pct_vs_median is not none %}
                 {% set pct = featured_route.pct_vs_median %}
                 <div class="preview-price-delta {% if pct <= -5 %}down{% elif pct >= 5 %}up{% else %}flat{% endif %}">
@@ -713,17 +776,17 @@
     <div class="landing-section-eyebrow">Como funciona</div>
     <h2 class="landing-section-heading">Você escolhe a rota.<br>A Órbita cuida do timing.</h2>
     <div class="landing-grid">
-        <div class="landing-card">
+        <div class="landing-card" data-spotlight>
             <div class="step-num">01</div>
             <div class="step-title">Cadastra a rota</div>
             <div class="step-desc">Escolha origem, destino e janela de viagem. Sem travar em uma data só.</div>
         </div>
-        <div class="landing-card">
+        <div class="landing-card" data-spotlight>
             <div class="step-num">02</div>
             <div class="step-title">Órbita monitora todo dia</div>
             <div class="step-desc">A gente acompanha o histórico da rota e detecta quando o preço foge do padrão.</div>
         </div>
-        <div class="landing-card">
+        <div class="landing-card" data-spotlight>
             <div class="step-num">03</div>
             <div class="step-title">Você recebe email quando vale a pena</div>
             <div class="step-desc">O alerta chega no momento certo, antes da tarifa boa desaparecer.</div>
@@ -736,7 +799,7 @@
     <div class="landing-section-eyebrow">O que você tem</div>
     <h2 class="landing-section-heading">Tudo que o radar entrega,<br>sem você pedir.</h2>
     <div class="checklist">
-        <div class="check-item">
+        <div class="check-item" data-spotlight>
             <div class="check-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
@@ -745,7 +808,7 @@
                 <div class="check-desc">Quatro leituras automáticas por dia. Você não precisa lembrar de checar.</div>
             </div>
         </div>
-        <div class="check-item">
+        <div class="check-item" data-spotlight>
             <div class="check-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
@@ -754,7 +817,7 @@
                 <div class="check-desc">Email só quando detectamos oportunidade real. Sem newsletter, sem spam.</div>
             </div>
         </div>
-        <div class="check-item">
+        <div class="check-item" data-spotlight>
             <div class="check-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
@@ -763,7 +826,7 @@
                 <div class="check-desc">Cadastra "junho de 2026" e a gente acha o melhor dia dentro do mês.</div>
             </div>
         </div>
-        <div class="check-item">
+        <div class="check-item" data-spotlight>
             <div class="check-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
@@ -772,7 +835,7 @@
                 <div class="check-desc">Você vê se R$ 2.400 é caro ou barato pra sua rota, baseado em dado real.</div>
             </div>
         </div>
-        <div class="check-item">
+        <div class="check-item" data-spotlight>
             <div class="check-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
@@ -789,28 +852,28 @@
     <div class="landing-section-eyebrow">Por que Órbita</div>
     <h2 class="landing-section-heading">Menos ruído.<br>Mais contexto pra comprar bem.</h2>
     <div class="landing-grid landing-grid-2">
-        <div class="landing-card">
+        <div class="landing-card" data-spotlight>
             <div class="feature-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
             </div>
             <div class="step-title">Você não pesquisa. A gente pesquisa.</div>
             <div class="step-desc">Google Flights trabalha quando você pede. A Órbita trabalha enquanto você dorme. Quatro leituras por dia, todos os dias.</div>
         </div>
-        <div class="landing-card">
+        <div class="landing-card" data-spotlight>
             <div class="feature-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M18 9l-5 5-4-4-3 3"/></svg>
             </div>
             <div class="step-title">Preço com contexto, não número solto.</div>
             <div class="step-desc">Google mostra R$ 3.120. A Órbita mostra R$ 3.120 é 23% abaixo da média dos últimos 180 dias. A diferença é saber se vale comprar.</div>
         </div>
-        <div class="landing-card">
+        <div class="landing-card" data-spotlight>
             <div class="feature-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             </div>
             <div class="step-title">Janela inteira, não data travada.</div>
             <div class="step-desc">"Junho de 2026" é suficiente. A gente acha o melhor dia dentro do mês. Você escolhe a intenção, a Órbita escolhe o dia.</div>
         </div>
-        <div class="landing-card">
+        <div class="landing-card" data-spotlight>
             <div class="feature-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.91 11.12a8.5 8.5 0 1 1-12-8.49"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
             </div>
@@ -839,7 +902,7 @@
     <p class="landing-section-sub" style="text-align:left;margin-left:0;">Atualizado todo dia. Entre em qualquer uma pra ver a média e o menor preço registrado.</p>
     <div class="landing-grid">
         {% for r in popular_public_routes[:6] %}
-        <a href="/rotas/{{ r.origin }}-{{ r.destination }}" class="landing-card">
+        <a data-spotlight href="/rotas/{{ r.origin }}-{{ r.destination }}" class="landing-card">
             <div class="step-title">{{ r.origin_city }} &rarr; {{ r.destination_city }}</div>
             <div class="step-desc mono">{{ r.origin }} &rarr; {{ r.destination }} &middot; ver histórico completo</div>
         </a>
@@ -853,31 +916,31 @@
     <div class="landing-section-eyebrow">Perguntas frequentes</div>
     <h2 class="landing-section-heading">Ainda tem dúvida?</h2>
     <div class="faq-list">
-        <details class="faq-item">
+        <details class="faq-item" data-spotlight>
             <summary>A Órbita é grátis mesmo?</summary>
             <div class="faq-answer">Sim. A gente ganha comissão da companhia aérea quando você compra pelo nosso link. O preço final pra você é o mesmo de qualquer outro canal.</div>
         </details>
-        <details class="faq-item">
+        <details class="faq-item" data-spotlight>
             <summary>Quantos emails vou receber?</summary>
             <div class="faq-answer">Zero até a Órbita detectar uma oportunidade boa. Em média, uma a duas notificações por mês por rota, depende da volatilidade do trecho.</div>
         </details>
-        <details class="faq-item">
+        <details class="faq-item" data-spotlight>
             <summary>Vocês mostram todas as companhias?</summary>
             <div class="faq-answer">A gente usa a API Travelpayouts, que agrega dezenas de companhias e OTAs. Você vê o menor preço disponível no mercado naquele momento.</div>
         </details>
-        <details class="faq-item">
+        <details class="faq-item" data-spotlight>
             <summary>Funciona pra voo doméstico também?</summary>
             <div class="faq-answer">Sim. GRU-SDU, CGH-POA, BSB-REC, todas as rotas brasileiras são monitoradas. Nacional ou internacional, mesmo sistema.</div>
         </details>
-        <details class="faq-item">
+        <details class="faq-item" data-spotlight>
             <summary>Como vocês preveem se o preço vai subir?</summary>
             <div class="faq-answer">A gente combina 180 dias de histórico da rota com sinais empíricos: sazonalidade, distância até a data de viagem e padrão semanal. Não é mágica, é dado.</div>
         </details>
-        <details class="faq-item">
+        <details class="faq-item" data-spotlight>
             <summary>Posso cadastrar várias rotas?</summary>
             <div class="faq-answer">Pode. Sem limite no plano grátis.</div>
         </details>
-        <details class="faq-item">
+        <details class="faq-item" data-spotlight>
             <summary>Meus dados ficam seguros?</summary>
             <div class="faq-answer">A gente só guarda seu email e as rotas que você cadastrou. Nada de cartão, CPF ou dado de viagem.</div>
         </details>
@@ -906,4 +969,57 @@
     <p class="landing-footer-tagline">Órbita // você dorme, a gente vigia</p>
     <p class="landing-footer-copy">&copy; 2026 Órbita. Feito no Brasil.</p>
 </footer>
+
+<script>
+/* Preco counter: anima de 0 ate o valor quando entra no viewport.
+   Pulse periodico a cada 35s simulando "atualizacao do radar". */
+(function() {
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) return;
+
+    function formatBRL(v) {
+        return 'R$ ' + v.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+
+    function animate(el, target, duration) {
+        var start = performance.now();
+        function tick(now) {
+            var t = Math.min((now - start) / duration, 1);
+            var eased = 1 - Math.pow(1 - t, 3);
+            el.textContent = formatBRL(target * eased);
+            if (t < 1) requestAnimationFrame(tick);
+            else el.textContent = formatBRL(target);
+        }
+        requestAnimationFrame(tick);
+    }
+
+    var nodes = document.querySelectorAll('[data-countup]');
+    if (!nodes.length || !window.IntersectionObserver) return;
+
+    var io = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (!entry.isIntersecting) return;
+            var el = entry.target;
+            if (el.dataset.animated === '1') return;
+            el.dataset.animated = '1';
+            var target = parseFloat(el.dataset.target);
+            if (isNaN(target)) return;
+            el.textContent = formatBRL(0);
+            animate(el, target, 1200);
+            io.unobserve(el);
+
+            // Pulse periodico depois da animacao inicial
+            var block = el.closest('.preview-price-block');
+            if (block) {
+                setInterval(function() {
+                    block.classList.remove('pulsing');
+                    void block.offsetWidth;
+                    block.classList.add('pulsing');
+                }, 35000);
+            }
+        });
+    }, { threshold: 0.3 });
+    nodes.forEach(function(n) { io.observe(n); });
+})();
+</script>
 {% endblock %}

@@ -313,6 +313,33 @@
         }
 
         /* ==========================================================================
+           INTERATIVIDADE — CURSOR SPOTLIGHT
+           Card com [data-spotlight] ganha um glow radial que segue o mouse.
+           Controlado por --mouse-x / --mouse-y setados via JS.
+           ========================================================================== */
+        [data-spotlight] {
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+        }
+        [data-spotlight]::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 300ms ease;
+            background: radial-gradient(
+                520px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+                rgba(99, 102, 241, 0.12),
+                transparent 45%
+            );
+            z-index: 0;
+        }
+        [data-spotlight]:hover::after { opacity: 1; }
+        [data-spotlight] > * { position: relative; z-index: 1; }
+
+        /* ==========================================================================
            A11Y — REDUCED MOTION
            ========================================================================== */
         @media (prefers-reduced-motion: reduce) {
@@ -320,6 +347,7 @@
                 animation-duration: 0.01ms !important;
                 transition-duration: 0.01ms !important;
             }
+            [data-spotlight]::after { display: none; }
         }
 
         /* ==========================================================================
@@ -393,6 +421,21 @@
         <div class="loading-bar-wrap"><div class="loading-bar" id="loading-bar"></div></div>
         <div class="loading-sub" id="loading-sub">Consultando Google Flights</div>
     </div>
+
+    <script>
+    /* Cursor spotlight: atualiza --mouse-x / --mouse-y em qualquer elemento [data-spotlight].
+       Passivo, sem allocations em loop, desativa automaticamente em prefers-reduced-motion. */
+    (function() {
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        document.addEventListener('pointermove', function(e) {
+            var targets = e.target.closest ? e.target.closest('[data-spotlight]') : null;
+            if (!targets) return;
+            var r = targets.getBoundingClientRect();
+            targets.style.setProperty('--mouse-x', (e.clientX - r.left) + 'px');
+            targets.style.setProperty('--mouse-y', (e.clientY - r.top) + 'px');
+        }, { passive: true });
+    })();
+    </script>
 
     <script>
     (function() {
