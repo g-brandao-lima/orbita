@@ -456,10 +456,14 @@ def test_consolidated_email_dates_brazilian_format():
     # Act
     msg = compose_consolidated_email(signals, snapshots, group)
 
-    # Assert — nenhuma data no formato YYYY-MM-DD, todas em dd/mm/aaaa
+    # Assert — no texto visivel, datas devem estar em dd/mm/aaaa.
+    # URLs (affiliate redirect /comprar/...) podem ter ISO YYYY-MM-DD,
+    # filtramos query strings antes de checar.
+    import re
     body = _decode_msg_body(msg)
-    assert "2026-07-15" not in body
-    assert "2026-07-25" not in body
+    body_no_urls = re.sub(r'https?://\S+', '', body)
+    assert "2026-07-15" not in body_no_urls
+    assert "2026-07-25" not in body_no_urls
     assert "15/07/2026" in body
     assert "25/07/2026" in body
 

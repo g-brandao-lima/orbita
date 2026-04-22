@@ -20,6 +20,7 @@ from app.services.admin_stats_service import (
     get_source_distribution,
     get_travelpayouts_quota_info,
 )
+from app.services.affiliate_tracking import get_click_stats
 from app.templates_config import get_templates
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -38,6 +39,7 @@ def admin_stats(
     cache = get_cache_info()
     cache_hit_rate_7d = get_cache_hit_rate_7d(db)
     travelpayouts_quota = get_travelpayouts_quota_info(db)
+    affiliate_clicks = get_click_stats(db, days=7)
     sentry_url = (
         "https://sentry.io/organizations/gbl-analise-e-desenvolvimento/issues/"
         "?project=4511252692271104&environment=production"
@@ -52,6 +54,7 @@ def admin_stats(
             "cache": cache,
             "cache_hit_rate_7d": cache_hit_rate_7d,
             "travelpayouts_quota": travelpayouts_quota,
+            "affiliate_clicks": affiliate_clicks,
             "sentry_url": sentry_url,
             "sentry_enabled": bool(settings.sentry_dsn),
         },

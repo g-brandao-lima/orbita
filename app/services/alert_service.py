@@ -365,15 +365,14 @@ def _render_consolidated_html(
 
     parts.append('<div style="border:1px solid #e5e7eb;padding:20px;border-radius:0 0 8px 8px;">')
 
-    # CTA "Comprar agora" usando as datas reais do snapshot mais barato (Aviasales affiliate)
-    from app.services.affiliate_links import build_aviasales_url
-    buy_url = build_aviasales_url(
-        cheapest.origin,
-        cheapest.destination,
-        cheapest.departure_date,
-        cheapest.return_date,
-        settings.travelpayouts_marker,
-        passengers=pax,
+    # CTA "Comprar agora" via nosso redirect tracked /comprar/ (registra
+    # clique antes de redirecionar pro Aviasales com marker).
+    buy_url = (
+        f"{settings.app_base_url.rstrip('/')}/comprar/"
+        f"{cheapest.origin}-{cheapest.destination}"
+        f"?dep={cheapest.departure_date.isoformat()}"
+        f"&ret={cheapest.return_date.isoformat()}"
+        f"&pax={pax}&source=email"
     )
     parts.append(
         '<div style="text-align:center;margin-bottom:20px;">'
@@ -382,7 +381,7 @@ def _render_consolidated_html(
         f'Comprar por {format_price_brl(cheapest.price)} &rarr;'
         '</a>'
         '<p style="color:#6b7280;font-size:11px;margin:8px 0 0;font-style:italic;">'
-        'Redireciona para Aviasales com datas já preenchidas. Receitamos comissão sem custo extra.'
+        'Redireciona para Aviasales com datas já preenchidas. Recebemos comissão sem custo extra.'
         '</p>'
         '</div>'
     )
@@ -489,15 +488,13 @@ def _render_consolidated_plain(
     if context_phrase:
         lines.append(f"Contexto: {context_phrase}")
 
-    # CTA Comprar agora com affiliate + datas reais
-    from app.services.affiliate_links import build_aviasales_url
-    buy_url = build_aviasales_url(
-        cheapest.origin,
-        cheapest.destination,
-        cheapest.departure_date,
-        cheapest.return_date,
-        settings.travelpayouts_marker,
-        passengers=pax,
+    # CTA Comprar agora via /comprar/ tracked redirect
+    buy_url = (
+        f"{settings.app_base_url.rstrip('/')}/comprar/"
+        f"{cheapest.origin}-{cheapest.destination}"
+        f"?dep={cheapest.departure_date.isoformat()}"
+        f"&ret={cheapest.return_date.isoformat()}"
+        f"&pax={pax}&source=email"
     )
     lines.append("")
     lines.append(f"Comprar agora: {buy_url}")

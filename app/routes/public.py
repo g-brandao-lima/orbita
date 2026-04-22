@@ -3,11 +3,12 @@
 Sem autenticacao. Serve 100% do banco local (RouteCache + FlightSnapshot)
 sem chamadas externas (SerpAPI, Travelpayouts).
 """
+import datetime
 import re
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import HTMLResponse, PlainTextResponse, Response
+from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse, Response
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -15,6 +16,7 @@ from app.config import settings
 from app.database import get_db
 from app.models import FlightSnapshot
 from app.services.affiliate_links import build_aviasales_url, default_trip_dates
+from app.services.affiliate_tracking import log_click
 from app.services.dashboard_service import format_date_br, format_price_brl
 from app.services.public_route_service import MIN_SNAPSHOTS_FOR_INDEX, get_route_stats
 from app.services.public_share_card_service import build_public_og_card
@@ -47,15 +49,17 @@ def public_route_page(
     canonical = f"{base}/rotas/{origin}-{destination}"
     og_image = f"{base}/rotas/{origin}-{destination}/og-image.png"
 
-    # Usar as datas reais do preco mostrado pra alinhar com o checkout Aviasales.
-    # Fallback pra default_trip_dates quando nao houver data (rota sem cache/snapshot).
+    # Link de compra vai pelo nosso redirect tracked (/comprar/...) antes
+    # do Aviasales — assim rastreamos cliques no banco. Datas do cache/snapshot.
     dep = stats.get("current_departure_date")
     ret = stats.get("current_return_date")
-    if dep is None:
-        dep, ret = default_trip_dates()
-    affiliate_url = build_aviasales_url(
-        origin, destination, dep, ret, settings.travelpayouts_marker
-    )
+    if dep is not None and ret is not None:
+        affiliate_url = (
+            f"/comprar/{origin}-{destination}"
+            f"?dep={dep.isoformat()}&ret={ret.isoformat()}"
+        )
+    else:
+        affiliate_url = f"/comprar/{origin}-{destination}"
     response = templates.TemplateResponse(
         request=request,
         name="public/route.html",
@@ -136,6 +140,58 @@ def sitemap_xml(db: Session = Depends(get_db)):
         media_type="application/xml",
         headers={"Cache-Control": "public, max-age=3600"},
     )
+
+
+@router.get("/comprar/{pair}")
+def affiliate_redirect(
+    pair: str,
+    request: Request,
+    dep: str | None = None,
+    ret: str | None = None,
+    pax: int = 1,
+    source: str = "public_route",
+    db: Session = Depends(get_db),
+):
+    """Tracked redirect para Aviasales com marker de afiliado.
+
+    Logs em affiliate_click antes de redirecionar. Aceita datas via
+    query param em formato YYYY-MM-DD. Fallback pra default_trip_dates.
+    """
+    m = IATA_PAIR.match(pair)
+    if not m:
+        raise HTTPException(status_code=404, detail="Rota invalida")
+    origin, destination = m.group(1).upper(), m.group(2).upper()
+
+    dep_date = None
+    ret_date = None
+    try:
+        if dep:
+            dep_date = datetime.date.fromisoformat(dep)
+        if ret:
+            ret_date = datetime.date.fromisoformat(ret)
+    except ValueError:
+        dep_date = ret_date = None
+
+    if dep_date is None or ret_date is None:
+        dep_date, ret_date = default_trip_dates()
+
+    user_id = request.session.get("user_id") if hasattr(request, "session") else None
+    log_click(
+        db,
+        origin=origin,
+        destination=destination,
+        departure_date=dep_date,
+        return_date=ret_date,
+        user_id=user_id,
+        referer=request.headers.get("referer"),
+        source=source,
+    )
+
+    affiliate_url = build_aviasales_url(
+        origin, destination, dep_date, ret_date,
+        settings.travelpayouts_marker, passengers=pax,
+    )
+    return RedirectResponse(url=affiliate_url, status_code=302)
 
 
 @router.get("/robots.txt", response_class=PlainTextResponse)

@@ -97,6 +97,36 @@
     </div>
 
     <div class="admin-card">
+        <h2>Cliques afiliados (últimos 7 dias)</h2>
+        <div class="metric-value">{{ affiliate_clicks.total }}</div>
+        <div class="metric-label">cliques em "Comprar agora" redirecionados ao Aviasales</div>
+        {% if affiliate_clicks.by_source %}
+        <div class="metric-label" style="margin-top:12px;">
+            <strong>Por origem:</strong>
+            {% for src, cnt in affiliate_clicks.by_source.items() %}
+            {{ src }} ({{ cnt }}){% if not loop.last %} · {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% if affiliate_clicks.by_route %}
+        <div class="metric-label" style="margin-top:12px;">
+            <strong>Top rotas:</strong>
+            <div style="margin-top:6px;">
+                {% for r in affiliate_clicks.by_route[:5] %}
+                <div class="source-row">
+                    <span style="min-width:100px;font-family:ui-monospace,monospace;">{{ r.route }}</span>
+                    <span class="source-count">{{ r.count }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        <div class="metric-label" style="margin-top:12px;font-size:11px;opacity:0.7;">
+            Bookings e comissão: ver <a href="https://www.travelpayouts.com/dashboard" target="_blank" rel="noopener" class="admin-link">dashboard Travelpayouts</a>.
+        </div>
+    </div>
+
+    <div class="admin-card">
         <h2>Observabilidade</h2>
         {% if sentry_enabled %}
         <div class="metric-label" style="margin-bottom:8px;">Sentry ativo em produção.</div>

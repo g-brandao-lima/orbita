@@ -158,3 +158,23 @@ class CacheLookupLog(Base):
     looked_up_at: Mapped[datetime.datetime] = mapped_column(
         DateTime, server_default=func.now(), index=True
     )
+
+
+class AffiliateClick(Base):
+    """Log de cliques no botao 'Comprar agora' (afiliado Aviasales)."""
+
+    __tablename__ = "affiliate_click"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    origin: Mapped[str] = mapped_column(String(3), index=True)
+    destination: Mapped[str] = mapped_column(String(3), index=True)
+    departure_date: Mapped[datetime.date | None] = mapped_column(Date, nullable=True)
+    return_date: Mapped[datetime.date | None] = mapped_column(Date, nullable=True)
+    user_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id"), nullable=True, index=True
+    )
+    referer: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    source: Mapped[str] = mapped_column(String(20), default="public_route")  # public_route, dashboard, email
+    clicked_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime, server_default=func.now(), index=True
+    )
