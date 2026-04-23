@@ -51,6 +51,36 @@ class RouteGroup(Base):
         DateTime, server_default=func.now(), onupdate=func.now()
     )
 
+    legs: Mapped[list["RouteGroupLeg"]] = relationship(
+        "RouteGroupLeg",
+        back_populates="route_group",
+        cascade="all, delete-orphan",
+        order_by="RouteGroupLeg.order",
+    )
+
+
+class RouteGroupLeg(Base):
+    __tablename__ = "route_group_legs"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    route_group_id: Mapped[int] = mapped_column(
+        ForeignKey("route_groups.id", ondelete="CASCADE"), index=True, nullable=False
+    )
+    order: Mapped[int] = mapped_column(Integer, nullable=False)
+    origin: Mapped[str] = mapped_column(String(3), nullable=False)
+    destination: Mapped[str] = mapped_column(String(3), nullable=False)
+    window_start: Mapped[datetime.date] = mapped_column(Date, nullable=False)
+    window_end: Mapped[datetime.date] = mapped_column(Date, nullable=False)
+    min_stay_days: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
+    max_stay_days: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    max_stops: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+    route_group: Mapped["RouteGroup"] = relationship("RouteGroup", back_populates="legs")
+
+    __table_args__ = (
+        Index("ix_route_group_legs_group_order", "route_group_id", "order", unique=True),
+    )
+
 
 class FlightSnapshot(Base):
     __tablename__ = "flight_snapshots"
@@ -71,6 +101,7 @@ class FlightSnapshot(Base):
     price_max: Mapped[float | None] = mapped_column(Float, nullable=True)
     price_classification: Mapped[str | None] = mapped_column(String(10), nullable=True)
     source: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    details: Mapped[dict | None] = mapped_column(JSON, nullable=True, default=None)
     collected_at: Mapped[datetime.datetime] = mapped_column(
         DateTime, server_default=func.now()
     )
