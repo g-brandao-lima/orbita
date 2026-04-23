@@ -487,7 +487,11 @@ Plans:
   2. Sistema valida encadeamento temporal: data de saida do trecho N+1 deve ser >= data de chegada do trecho N + min_stay (rejeita combinacoes invalidas)
   3. Sistema busca precos de cada trecho via cache/SerpAPI e calcula preco total do roteiro exibido no dashboard
   4. Sinal de compra e recomendacao de prediction sao aplicados sobre o preco total do encadeamento, nao trecho a trecho
-**Plans**: TBD
+**Plans**: 4 plans
+- [x] 36-01-PLAN.md — Model RouteGroupLeg + FlightSnapshot.details + schemas Pydantic + migration Alembic + Wave 0 tests RED
+- [ ] 36-02-PLAN.md — multi_leg_service (produto cartesiano + cache-first) + branch polling_service + dedup multi
+- [ ] 36-03-PLAN.md — UI toggle + construtor dinamico JS vanilla + POST handler multi + edit.html
+- [ ] 36-04-PLAN.md — Dashboard card multi + pagina detalhe breakdown + email consolidado multi (D-19/D-20)
 **UI hint**: yes
 
 ## Progress
@@ -522,4 +526,4 @@ Plans:
 | 33. Public Route Index (SEO) | v2.3 | 0/? | Not started | - |
 | 34. Price Prediction Engine | v2.3 | 0/? | Not started | - |
 | 35. Onboarding Wizard | v2.3 | 0/? | Not started | - |
-| 36. Multi-Leg Trip Builder | v2.3 | 0/? | Not started | - |
+| 36. Multi-Leg Trip Builder | v2.3 | 1/4 | In Progress|  |

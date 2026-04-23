@@ -324,10 +324,10 @@
 
 ### Multi-Trecho (regra a formalizar)
 
-- [ ] **MULTI-01**: Usuario pode criar grupo-pai com N trechos sequenciais, cada trecho com origin, destination, janela de datas e stay min/max em dias
-- [ ] **MULTI-02**: Sistema valida encadeamento temporal: data de saida do trecho N+1 >= data de chegada do trecho N + min_stay
-- [ ] **MULTI-03**: Sistema busca precos de cada trecho no cache/SerpAPI e calcula preco total do roteiro
-- [ ] **MULTI-04**: Sinal de compra e aplicado sobre o preco total do encadeamento, nao trecho a trecho
+- [x] **MULTI-01**: Usuario pode criar grupo-pai com N trechos sequenciais, cada trecho com origin, destination, janela de datas e stay min/max em dias
+- [x] **MULTI-02**: Sistema valida encadeamento temporal: data de saida do trecho N+1 >= data de chegada do trecho N + min_stay
+- [x] **MULTI-03**: Sistema busca precos de cada trecho no cache/SerpAPI e calcula preco total do roteiro
+- [x] **MULTI-04**: Sinal de compra e aplicado sobre o preco total do encadeamento, nao trecho a trecho
 
 ## v2.3 Out of Scope
 
@@ -362,10 +362,10 @@
 | ONB-01 | Phase 35 | Pending |
 | ONB-02 | Phase 35 | Pending |
 | ONB-03 | Phase 35 | Pending |
-| MULTI-01 | Phase 36 | Pending |
-| MULTI-02 | Phase 36 | Pending |
-| MULTI-03 | Phase 36 | Pending |
-| MULTI-04 | Phase 36 | Pending |
+| MULTI-01 | Phase 36 | Complete |
+| MULTI-02 | Phase 36 | Complete |
+| MULTI-03 | Phase 36 | Complete |
+| MULTI-04 | Phase 36 | Complete |
 
 ---
 *v2.3 requirements defined: 2026-04-21*
