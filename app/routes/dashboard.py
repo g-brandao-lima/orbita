@@ -35,6 +35,7 @@ from app.services.airport_service import is_valid_code, get_all_airports, search
 from app.services.popular_routes import POPULAR_ROUTES, get_by_slug, default_dates
 from app.services.public_route_service import (
     get_featured_route_for_hero,
+    get_hero_routes,
     get_top_public_routes,
     has_enough_data,
 )
@@ -126,6 +127,7 @@ def dashboard_index(
         flash_message = FLASH_MESSAGES.get(msg) if msg else None
         popular_public_routes = get_top_public_routes(db, limit=5)
         featured_route = get_featured_route_for_hero(db)
+        hero_routes = get_hero_routes(db, limit=6)
         return templates.TemplateResponse(
             request=request,
             name="landing.html",
@@ -134,6 +136,7 @@ def dashboard_index(
                 "flash_message": flash_message,
                 "popular_public_routes": popular_public_routes,
                 "featured_route": featured_route,
+                "hero_routes": hero_routes,
                 "format_price_brl": format_price_brl,
             },
         )
