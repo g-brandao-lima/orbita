@@ -684,6 +684,44 @@
         .preview-price-value { font-size: 32px; }
         .preview-route { font-size: 26px; }
     }
+
+    /* Hero carousel (quick 260423-1fg) */
+    .hero-carousel { position: relative; }
+    .hero-carousel-slide {
+        position: absolute; inset: 0;
+        opacity: 0; pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+    .hero-carousel-slide.is-active {
+        position: relative;
+        opacity: 1; pointer-events: auto;
+    }
+    .hero-carousel-prev, .hero-carousel-next {
+        position: absolute; top: 50%; transform: translateY(-50%);
+        background: var(--bg-2); border: 1px solid var(--border-2);
+        color: var(--text-1); width: 36px; height: 36px;
+        border-radius: var(--r-full); cursor: pointer; z-index: 2;
+        font-size: 18px; line-height: 1;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .hero-carousel-prev { left: -16px; }
+    .hero-carousel-next { right: -16px; }
+    .hero-carousel-prev:hover, .hero-carousel-next:hover {
+        border-color: var(--brand-500); color: var(--text-0);
+    }
+    .hero-carousel-dots {
+        display: flex; gap: var(--sp-2); justify-content: center;
+        margin-top: var(--sp-3);
+    }
+    .hero-carousel-dot {
+        width: 8px; height: 8px; padding: 0;
+        border-radius: var(--r-full);
+        background: var(--border-2); border: none; cursor: pointer;
+        transition: background 180ms ease, transform 180ms ease;
+    }
+    .hero-carousel-dot.is-active {
+        background: var(--brand-500); transform: scale(1.3);
+    }
 </style>
 {% endblock %}
 
@@ -748,7 +786,58 @@
         </div>
     </div>
 
-    {% if featured_route %}
+    {% if hero_routes %}
+    <div class="hero-carousel" data-hero-carousel role="region" aria-roledescription="carrossel" aria-label="Rotas em observacao">
+        {% for r in hero_routes %}
+        <a class="landing-preview landing-preview-link hero-carousel-slide {% if loop.first %}is-active{% endif %}"
+           href="/rotas/{{ r.origin }}-{{ r.destination }}"
+           data-slide-index="{{ loop.index0 }}"
+           aria-hidden="{% if not loop.first %}true{% else %}false{% endif %}"
+           aria-label="Ver detalhes da rota {{ r.origin_city }} para {{ r.destination_city }}">
+            <div class="preview-header">
+                <span class="preview-header-label">Rota em observação</span>
+                <span class="preview-days-badge">{{ loop.index }} / {{ hero_routes|length }}</span>
+            </div>
+            <div class="preview-route">{{ r.origin }} → {{ r.destination }}</div>
+            <div class="preview-price-block">
+                <div class="preview-price-label">Menor preço cacheado <span class="preview-price-hint">ida e volta</span></div>
+                <div class="preview-price-row">
+                    <div class="preview-price-value">{{ format_price_brl(r.min_price) }}</div>
+                </div>
+                <div class="preview-metrics">
+                    <div>
+                        <div class="preview-metric-label">Ida</div>
+                        <div class="preview-metric-value">{{ r.departure_date.strftime('%d/%m') }}</div>
+                    </div>
+                    {% if r.return_date %}
+                    <div>
+                        <div class="preview-metric-label">Volta</div>
+                        <div class="preview-metric-value">{{ r.return_date.strftime('%d/%m') }}</div>
+                    </div>
+                    {% endif %}
+                    <div>
+                        <div class="preview-metric-label">Cidades</div>
+                        <div class="preview-metric-value">{{ r.origin_city }} / {{ r.destination_city }}</div>
+                    </div>
+                </div>
+            </div>
+            <span class="preview-cta-hint">Ver rota completa →</span>
+        </a>
+        {% endfor %}
+        <button type="button" class="hero-carousel-prev" aria-label="Rota anterior">←</button>
+        <button type="button" class="hero-carousel-next" aria-label="Proxima rota">→</button>
+        <div class="hero-carousel-dots" role="tablist" aria-label="Navegação de rotas">
+            {% for r in hero_routes %}
+            <button type="button"
+                    class="hero-carousel-dot {% if loop.first %}is-active{% endif %}"
+                    data-slide-target="{{ loop.index0 }}"
+                    role="tab"
+                    aria-selected="{% if loop.first %}true{% else %}false{% endif %}"
+                    aria-label="Ir para rota {{ loop.index }}"></button>
+            {% endfor %}
+        </div>
+    </div>
+    {% elif featured_route %}
     <a class="landing-preview landing-preview-link" href="/rotas/{{ featured_route.origin }}-{{ featured_route.destination }}" aria-label="Ver detalhes e preco da rota {{ featured_route.origin }} para {{ featured_route.destination }}">
         <div class="preview-header">
             <span class="preview-header-label">Rota em observação</span>
@@ -805,6 +894,15 @@
         </div>
         <span class="preview-cta-hint">Ver rota completa →</span>
     </a>
+    {% else %}
+    <div class="hero-carousel hero-carousel-fallback landing-preview">
+        <div class="preview-header"><span class="preview-header-label">Exemplo</span></div>
+        <div class="preview-route">GRU → SDU</div>
+        <div class="preview-price-block">
+            <div class="preview-price-label">Exemplo de rota monitorada</div>
+            <div class="preview-price-value">R$ 489,00</div>
+        </div>
+    </div>
     {% endif %}
 </section>
 </div>
@@ -1051,6 +1149,50 @@
         });
     }, { threshold: 0.3 });
     nodes.forEach(function(n) { io.observe(n); });
+})();
+
+/* Hero carousel: auto-play 5s com fade, setas, dots e pause-on-hover. */
+(function() {
+    var wrapper = document.querySelector('[data-hero-carousel]');
+    if (!wrapper) return;
+    var slides = wrapper.querySelectorAll('.hero-carousel-slide');
+    var dots = wrapper.querySelectorAll('.hero-carousel-dot');
+    var prev = wrapper.querySelector('.hero-carousel-prev');
+    var next = wrapper.querySelector('.hero-carousel-next');
+    if (slides.length <= 1) return;
+
+    var idx = 0;
+    var intervalMs = 5000;
+    var timer = null;
+
+    function show(newIdx) {
+        newIdx = (newIdx + slides.length) % slides.length;
+        slides[idx].classList.remove('is-active');
+        slides[idx].setAttribute('aria-hidden', 'true');
+        dots[idx].classList.remove('is-active');
+        dots[idx].setAttribute('aria-selected', 'false');
+        idx = newIdx;
+        slides[idx].classList.add('is-active');
+        slides[idx].setAttribute('aria-hidden', 'false');
+        dots[idx].classList.add('is-active');
+        dots[idx].setAttribute('aria-selected', 'true');
+    }
+    function stop() { if (timer) { clearInterval(timer); timer = null; } }
+    function start() { stop(); timer = setInterval(function() { show(idx + 1); }, intervalMs); }
+
+    if (prev) prev.addEventListener('click', function() { show(idx - 1); start(); });
+    if (next) next.addEventListener('click', function() { show(idx + 1); start(); });
+    dots.forEach(function(dot) {
+        dot.addEventListener('click', function() {
+            show(parseInt(dot.getAttribute('data-slide-target'), 10));
+            start();
+        });
+    });
+    wrapper.addEventListener('mouseenter', stop);
+    wrapper.addEventListener('mouseleave', start);
+
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduceMotion) start();
 })();
 </script>
 {% endblock %}
