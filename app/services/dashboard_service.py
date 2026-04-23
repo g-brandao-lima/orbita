@@ -1,12 +1,17 @@
 import datetime
+import statistics
 from collections import defaultdict
-from datetime import timedelta
+from datetime import date, timedelta
 
 from sqlalchemy import case, func
 from sqlalchemy.orm import Session
 
 from app.models import RouteGroup, FlightSnapshot, DetectedSignal
-from app.services.price_prediction_service import build_recommendation_for_group
+from app.services.price_prediction_service import (
+    MIN_SNAPSHOTS,
+    build_recommendation_for_group,
+    predict_action,
+)
 from app.services.quota_service import get_monthly_usage, get_remaining_quota, MONTHLY_QUOTA
 
 
@@ -22,6 +27,12 @@ def get_groups_with_summary(db: Session, user_id: int | None = None) -> list[dic
     result = []
 
     for group in groups:
+        # Phase 36 D-16/D-18: multi_leg groups get dedicated breakdown and skip
+        # roundtrip-specific queries (that filter by origins/destinations).
+        if group.mode == "multi_leg":
+            result.append(_build_multi_leg_item(db, group))
+            continue
+
         # Find most recent collected_at for this group
         latest_collected = (
             db.query(func.max(FlightSnapshot.collected_at))
@@ -224,6 +235,127 @@ def get_groups_with_summary(db: Session, user_id: int | None = None) -> list[dic
     # Sort by cheapest price (groups with data first, then by price ascending)
     result.sort(key=lambda x: x["cheapest_snapshot"].price if x["cheapest_snapshot"] else float("inf"))
     return result
+
+
+def _build_multi_leg_item(db: Session, group: RouteGroup) -> dict:
+    """Monta dict do item do dashboard para grupos multi_leg (Phase 36 D-16/D-17/D-18).
+
+    Retorna os mesmos keys base (group, cheapest_snapshot, signal, recommendation) que o fluxo
+    roundtrip, mais campos especificos: mode, legs_chain, legs_count, total_price, legs_breakdown.
+    Quando nao ha snapshot MULTI ainda, total_price/legs_breakdown=None (Pitfall 7 guard).
+    """
+    legs = sorted(group.legs, key=lambda l: l.order)
+    chain = [legs[0].origin] + [leg.destination for leg in legs] if legs else []
+
+    # Ultimo snapshot MULTI do grupo
+    latest_snapshot = (
+        db.query(FlightSnapshot)
+        .filter(
+            FlightSnapshot.route_group_id == group.id,
+            FlightSnapshot.airline == "MULTI",
+        )
+        .order_by(FlightSnapshot.collected_at.desc())
+        .first()
+    )
+
+    # Sinal recente (reuso do mesmo padrao roundtrip, sem filtro de origin/destination)
+    cutoff = datetime.datetime.utcnow() - timedelta(hours=12)
+    urgency_order = case(
+        (DetectedSignal.urgency == "MAXIMA", 3),
+        (DetectedSignal.urgency == "ALTA", 2),
+        (DetectedSignal.urgency == "MEDIA", 1),
+        else_=0,
+    )
+    signal = (
+        db.query(DetectedSignal)
+        .filter(
+            DetectedSignal.route_group_id == group.id,
+            DetectedSignal.detected_at >= cutoff,
+        )
+        .order_by(urgency_order.desc())
+        .first()
+    )
+
+    item: dict = {
+        "group": group,
+        "mode": "multi_leg",
+        "legs_chain": chain,
+        "legs_count": len(legs),
+        "cheapest_snapshot": latest_snapshot,
+        "signal": signal,
+        "price_trend": None,
+        "best_day": None,
+        "price_comparison": None,
+        "best_ever": None,
+        "collection_count": 0,
+        "sparkline": [],
+        "price_badge": None,
+        "savings": None,
+    }
+
+    if latest_snapshot is None or not latest_snapshot.details:
+        # Pitfall 7: guard empty state
+        item["total_price"] = None
+        item["legs_breakdown"] = None
+        item["recommendation"] = None
+        return item
+
+    item["total_price"] = latest_snapshot.price
+
+    leg_details = latest_snapshot.details.get("legs", [])
+    pax = max(1, int(group.passengers or 1))
+    breakdown = []
+    for leg_detail in sorted(leg_details, key=lambda x: x.get("order", 0)):
+        dep_date = date.fromisoformat(leg_detail["date"])
+        compare_urls = booking_urls_oneway(
+            origin=leg_detail["origin"],
+            destination=leg_detail["destination"],
+            departure_date=dep_date,
+            passengers=pax,
+        )
+        breakdown.append({
+            "order": leg_detail["order"],
+            "origin": leg_detail["origin"],
+            "destination": leg_detail["destination"],
+            "date": leg_detail["date"],
+            "date_br": dep_date.strftime("%d/%m/%Y"),
+            "price": leg_detail["price"],
+            "airline": leg_detail.get("airline", ""),
+            "compare_urls": compare_urls,
+        })
+    item["legs_breakdown"] = breakdown
+
+    # Recomendacao Phase 34 sobre total (D-15: days_to_departure do PRIMEIRO leg)
+    totals_cutoff = datetime.datetime.utcnow() - timedelta(days=90)
+    totals_history = [
+        row[0]
+        for row in db.query(FlightSnapshot.price)
+        .filter(
+            FlightSnapshot.route_group_id == group.id,
+            FlightSnapshot.airline == "MULTI",
+            FlightSnapshot.collected_at >= totals_cutoff,
+            FlightSnapshot.price > 0,
+        )
+        .all()
+        if row[0] is not None
+    ]
+
+    recommendation = None
+    if latest_snapshot.departure_date is not None:
+        median = statistics.median(totals_history) if totals_history else None
+        stddev = statistics.pstdev(totals_history) if len(totals_history) >= 2 else None
+        days_to_dep = (latest_snapshot.departure_date - date.today()).days
+        recommendation = predict_action(
+            current_price=latest_snapshot.price,
+            median_90d=median,
+            stddev_90d=stddev,
+            days_to_departure=days_to_dep,
+            snapshot_count=len(totals_history),
+            departure_date=latest_snapshot.departure_date,
+        )
+    item["recommendation"] = recommendation
+
+    return item
 
 
 def _compute_savings_since_creation(
@@ -499,6 +631,50 @@ def format_price_brl(price: float) -> str:
     """Format a float price as Brazilian Real string: R$ X.XXX,XX."""
     formatted = f"R$ {price:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
     return formatted
+
+
+def booking_urls_oneway(
+    origin: str,
+    destination: str,
+    departure_date,
+    passengers: int = 1,
+) -> dict:
+    """Gera URLs de deep link ONE-WAY para sites de busca de voos (Phase 36 D-17).
+
+    Decisao documentada no 36-04-SUMMARY.md:
+    - `booking_urls` existente em `app/services/dashboard_service.py` linha 504 exige
+      `return_date` (strftime), nao aceita None. Criar helper oneway dedicado em vez
+      de monkey-patchar booking_urls.
+    - Google Flights: `#flt=O.D.YYYY-MM-DD` sem segundo segmento (oneway).
+    - Decolar: rota `/oneway/O/D/YYYY-MM-DD/1/0/0` (sem segunda data).
+    - Skyscanner: `/transport/flights/o/d/YYMMDD/` sem segunda data (trailing vazio).
+    - Kayak: `/flights/O-D/YYYY-MM-DD` sem segunda data.
+    """
+    dep_iso = departure_date.strftime("%Y-%m-%d") if hasattr(departure_date, "strftime") else str(departure_date)
+    dep_sky = departure_date.strftime("%y%m%d") if hasattr(departure_date, "strftime") else ""
+    pax = max(1, passengers)
+    kayak_pax_suffix = f"/{pax}adults" if pax > 1 else ""
+
+    return {
+        "google_flights": (
+            f"https://www.google.com/travel/flights?hl=pt-BR&curr=BRL"
+            f"#flt={origin}.{destination}.{dep_iso};c:BRL;e:1;sd:1;t:f;tt:o"
+        ),
+        "decolar": (
+            f"https://www.decolar.com/shop/flights/results/oneway/"
+            f"{origin}/{destination}/{dep_iso}/{pax}/0/0"
+            f"?from=SB&di=1"
+        ),
+        "skyscanner": (
+            f"https://www.skyscanner.com.br/transport/flights/"
+            f"{origin.lower()}/{destination.lower()}/{dep_sky}/"
+            f"?adultsv2={pax}&cabinclass=economy"
+        ),
+        "kayak": (
+            f"https://www.kayak.com.br/flights/"
+            f"{origin}-{destination}/{dep_iso}{kayak_pax_suffix}"
+        ),
+    }
 
 
 def booking_urls(
