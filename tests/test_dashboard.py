@@ -434,3 +434,76 @@ def test_dashboard_mostra_recommendation_monitorar(client, db, test_user):
 
     assert "recommendation-monitorar" in response.text
     assert "MONITORAR" in response.text
+
+
+# --- Phase 36 Plan 04: multi_leg dashboard service ---
+
+
+def test_multi_leg_service_returns_chain_and_breakdown(
+    db, test_user, multi_leg_group_factory, multi_leg_snapshot_factory
+):
+    """D-16/D-18: get_groups_with_summary exposes chain, total_price, legs_breakdown for multi_leg groups."""
+    from app.services.dashboard_service import get_groups_with_summary
+
+    group = multi_leg_group_factory(num_legs=3, name="Eurotrip 3 Legs")
+    multi_leg_snapshot_factory(group, total_price=5432.10)
+
+    items = get_groups_with_summary(db, user_id=test_user.id)
+    item = next(i for i in items if i["group"].id == group.id)
+
+    assert item["mode"] == "multi_leg"
+    assert item["legs_chain"] == ["GRU", "FCO", "MAD", "LIS"]
+    assert item["legs_count"] == 3
+    assert item["total_price"] == 5432.10
+    assert item["legs_breakdown"] is not None
+    assert len(item["legs_breakdown"]) == 3
+    # cada leg tem 4 URLs one-way
+    for leg in item["legs_breakdown"]:
+        assert set(leg["compare_urls"].keys()) == {
+            "google_flights", "decolar", "skyscanner", "kayak"
+        }
+        assert "date_br" in leg and "/" in leg["date_br"]
+
+
+def test_multi_leg_service_empty_snapshot_guard(
+    db, test_user, multi_leg_group_factory
+):
+    """Pitfall 7: grupo multi sem snapshot retorna legs_breakdown=None e total_price=None sem raise."""
+    from app.services.dashboard_service import get_groups_with_summary
+
+    group = multi_leg_group_factory(num_legs=2, name="No Snapshot Multi")
+
+    items = get_groups_with_summary(db, user_id=test_user.id)
+    item = next(i for i in items if i["group"].id == group.id)
+
+    assert item["mode"] == "multi_leg"
+    assert item["total_price"] is None
+    assert item["legs_breakdown"] is None
+    assert item["legs_chain"] == ["GRU", "FCO", "MAD"]
+
+
+def test_multi_leg_compare_urls_are_one_way(
+    db, test_user, multi_leg_group_factory, multi_leg_snapshot_factory
+):
+    """D-17: compare_urls por leg sao one-way reais, nao roundtrip do grupo inteiro."""
+    from app.services.dashboard_service import get_groups_with_summary
+
+    group = multi_leg_group_factory(num_legs=2, name="Oneway URLs")
+    multi_leg_snapshot_factory(group, total_price=3000.0)
+
+    items = get_groups_with_summary(db, user_id=test_user.id)
+    item = next(i for i in items if i["group"].id == group.id)
+
+    assert item["legs_breakdown"] is not None
+    # One-way: Google Flights com marcador oneway (nao deve ter "*" que separa outbound/inbound)
+    for leg in item["legs_breakdown"]:
+        g = leg["compare_urls"]["google_flights"]
+        # Heuristica: roundtrip usa "*DEST.ORIG.YYYY-MM-DD" separado por * no hash.
+        # one-way tem apenas um segmento de voo no #flt=.
+        assert g.count("*") == 0, f"Google Flights URL parece roundtrip: {g}"
+        k = leg["compare_urls"]["kayak"]
+        # Kayak oneway usa /flights/O-D/YYYY-MM-DD (sem segunda data)
+        # Contagem de segmentos "YYYY-MM-DD" apos hostname deve ser 1 (nao 2).
+        import re
+        dates = re.findall(r"\d{4}-\d{2}-\d{2}", k)
+        assert len(dates) == 1, f"Kayak URL parece roundtrip: {k}"
