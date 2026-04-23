@@ -5,13 +5,17 @@
 A Órbita monitora rotas que você cadastra e te avisa por email quando o preço está historicamente baixo. Publico-alvo: viajantes BR que sabem usar Google Flights mas cansam de ficar checando toda semana.
 
 **Produção:** https://orbita-flights.fly.dev
+**Repositório:** https://github.com/g-brandao-lima/orbita
 
 ## O que faz
 
 - **Monitoramento diário** de rotas via Aviasales Data API (cache bulk 4×/dia) + SerpAPI (refresh on-demand)
 - **Histórico 180 dias** por rota: média, mediana, melhor preço registrado
 - **Detecção de sinais** (preço abaixo da média, janela ótima) com alerta por email consolidado
+- **Price Prediction** determinística: recomenda "Compre até DD/MM" com base em histórico (sem ML)
+- **Multi-trecho**: roteiro encadeado (ex: BR → Itália → Espanha → BR) em um único grupo-pai, com sinal de compra aplicado sobre o preço total do encadeamento
 - **Páginas públicas SEO** `/rotas/{ORIG}-{DEST}` indexadas no Google com dados históricos
+- **Landing hero carousel**: card dinâmico que rotaciona pelas rotas mais recentes do cache, com auto-play, setas e pause no hover
 - **Affiliate monetizado** via Aviasales (marker 714304) — usuário compra, Órbita recebe comissão
 - **Tracking próprio** de cliques em "Comprar agora" no banco local
 - **Admin panel** `/admin/stats` com quota SerpAPI, cache hit rate Travelpayouts, cliques afiliados
@@ -27,7 +31,8 @@ A Órbita monitora rotas que você cadastra e te avisa por email quando o preço
 | Migrations | Alembic 1.18 |
 | ORM | SQLAlchemy 2.0 |
 | Auth | Google OAuth via Authlib |
-| Templates | Jinja2 SSR (dark mode Órbita) |
+| Templates | Jinja2 SSR (paleta Órbita indigo-cyan) |
+| JS | Vanilla puro (sem framework) — wizard multi-leg, hero carousel |
 | Gráficos | Chart.js (CDN, só no detalhe de grupo) |
 | Fontes | Space Grotesk + JetBrains Mono (Google Fonts) |
 | Scheduler | APScheduler BackgroundScheduler (cron in-process) |
@@ -54,14 +59,15 @@ A Órbita monitora rotas que você cadastra e te avisa por email quando o preço
 └────────────────────────────┘
               │
               ▼ lookup
-┌────────────────────────────┐
-│ search_flights_ex()        │──► cache miss ──► SerpAPI
-└────────────────────────────┘
-              │                                    │
-              ▼ servido do banco                  ▼
-┌────────────────────────────────────────────────────┐
-│ Dashboard logado │ /rotas/X-Y SEO │ /sitemap.xml  │
-└────────────────────────────────────────────────────┘
+┌────────────────────────────┐          ┌──────────────────────────┐
+│ search_flights_ex()        │◄─────────┤ multi_leg_service        │
+│  cache miss ─► SerpAPI     │          │ N trechos cartesianos    │
+└────────────────────────────┘          │ escolhe combo mais barato│
+              │                         └──────────────────────────┘
+              ▼ servido do banco                      │
+┌────────────────────────────────────────────────────────────────┐
+│ Dashboard logado │ /rotas/X-Y SEO │ /sitemap.xml │ Hero carousel│
+└────────────────────────────────────────────────────────────────┘
               │
               ▼ user clica "Comprar agora"
 ┌────────────────────────────┐
@@ -78,8 +84,8 @@ A Órbita monitora rotas que você cadastra e te avisa por email quando o preço
 ## Setup local
 
 ```bash
-git clone https://github.com/g-brandao-lima/flight-monitor.git
-cd flight-monitor
+git clone https://github.com/g-brandao-lima/orbita.git
+cd orbita
 python -m venv .venv
 .venv/Scripts/activate   # Windows
 # source .venv/bin/activate  # Linux/macOS
@@ -102,8 +108,10 @@ python main.py
 
 ```bash
 .venv/Scripts/python.exe -m pytest -q
-# 364 testes, ~18s
+# 419 testes, ~18s
 ```
+
+Cobertura inclui: model layer, services (search, signal, alert, prediction, multi-leg, dashboard), routes (auth, dashboard, public, admin), templates (renderização via TestClient), integração polling + signal + email.
 
 ## Deploy (Fly.io)
 
@@ -122,36 +130,57 @@ Secrets gerenciados via `fly secrets set KEY=VALUE`. Cron APScheduler **exige al
 app/
 ├── auth/            # OAuth Google, middleware, dependencies
 ├── routes/          # FastAPI routers (public, dashboard, admin, route_groups, alerts)
-├── services/        # Lógica de negócio: flight_search, polling, signal, alert,
-│                    # route_cache, travelpayouts_client, affiliate_tracking, etc
-├── templates/       # Jinja2: landing, dashboard, public/route, admin/stats
-├── models.py        # SQLAlchemy tables
+├── services/        # Lógica de negócio:
+│   ├── flight_search.py            # cache-first search (route_cache → SerpAPI)
+│   ├── multi_leg_service.py        # N trechos cartesianos + combo mais barato
+│   ├── polling_service.py          # cron de coleta de snapshots
+│   ├── signal_service.py           # detecção de sinais (abaixo média, janela ótima)
+│   ├── alert_service.py            # email consolidado (roundtrip + multi-leg)
+│   ├── prediction_service.py       # recomendação "Compre até DD/MM" determinística
+│   ├── dashboard_service.py        # montagem de cards (roundtrip + multi)
+│   ├── route_cache.py              # TTL 6h, key composta
+│   ├── travelpayouts_client.py     # Aviasales Data API
+│   ├── public_route_service.py     # SEO público + hero carousel
+│   └── affiliate_tracking.py       # logging de cliques
+├── templates/       # Jinja2: landing, dashboard/, public/route, admin/stats
+├── static/js/       # Vanilla: multi-leg builder, hero-carousel
+├── models.py        # SQLAlchemy: User, RouteGroup, RouteGroupLeg, FlightSnapshot,
+│                    # RouteCache, Alert, AffiliateClick, etc.
+├── schemas.py       # Pydantic: RouteGroupCreate, RouteGroupMultiCreate com validate_chain
 ├── database.py      # engine + SessionLocal + get_db
 ├── config.py        # pydantic-settings (.env)
 ├── scheduler.py     # APScheduler jobs
 └── observability.py # Sentry init
 alembic/versions/    # Migrations sequenciais
-tests/               # pytest, SQLite in-memory
-.planning/           # Docs internos (GSD workflow, histórico de fases)
+tests/               # pytest, SQLite in-memory, 419 testes
+.planning/           # Docs internos do workflow GSD
+    milestones/      # Arquivo histórico de milestones (v1.0, v1.1, v1.2, v2.0, v2.1, v2.2)
+    phases/          # Phases ativas do milestone corrente
+    quick/           # Tarefas quick avulsas
     archive/         # Relatórios antigos (Flight Monitor era)
 ```
 
 ## Histórico do projeto
 
 - **Fev-Mar/2026:** v1 MVP "Flight Monitor" monolito Amadeus+SQLite (single-user)
-- **Mar/2026:** v2 multi-user OAuth + PostgreSQL + landing
+- **Mar/2026:** v2.0 multi-user OAuth + PostgreSQL + landing
 - **Abr/2026:** v2.1-v2.2 clareza de preço + UX polish
-- **Abr/2026:** v2.3 cache Travelpayouts + SEO público + affiliate + rebrand **Órbita**
+- **Abr/2026:** v2.3 cache Travelpayouts + SEO público + affiliate + **rebrand Órbita**
 - **Abr/2026:** migração Render → Fly.io
+- **Abr/2026:** Price Prediction Engine (Phase 34) — recomendação "Compre até DD/MM" com backtest
+- **Abr/2026:** Multi-Leg Trip Builder (Phase 36) — roteiros encadeados, sinal sobre total
+- **Abr/2026:** Hero carousel na landing — prova de vida rotacionando rotas reais
 
-Ver `.planning/archive/` para relatórios históricos.
+Ver `.planning/milestones/` para arquivo completo de cada versão e `.planning/archive/` para relatórios históricos da era Flight Monitor.
 
 ## Roadmap
 
-- Phase 34: **Price Prediction Engine** — recomendação "Compre até DD/MM" com backtest
-- Phase 36: **Multi-trecho** — roteiros encadeados (BR→Itália→Espanha→BR)
-- Domínio próprio (`orbita.com.br` ou similar) quando tiver tração
-- Cloudflare CDN
+v2.3 encerrando. Próximo milestone em planejamento. Ideias candidatas:
+
+- Domínio próprio (`orbita.com.br` ou similar)
+- Cloudflare CDN na frente do Fly
+- Onboarding wizard (Phase 35, condicional a tração orgânica)
+- Filtro de hero carousel por rotas com sinal ativo no momento
 
 ## Licença
 
