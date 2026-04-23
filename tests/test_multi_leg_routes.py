@@ -69,3 +69,35 @@ def test_create_multi_leg_group_invalid_chain(client, db):
         resp.status_code == 422
         or "precisa sair em ou apos" in body
     ), f"esperado erro de validacao temporal, got {resp.status_code}: {body[:500]}"
+
+
+def test_create_multi_leg_group_server_validation_runs_even_if_client_passes(client):
+    """Pitfall 5: server valida mesmo se client deixou passar (IATA invalido)."""
+    base = date(2026, 7, 1)
+    form = {
+        "mode": "multi_leg",
+        "name": "Teste regressao",
+        "passengers": "1",
+        "legs[0][order]": "1",
+        "legs[0][origin]": "GRUX",  # 4 letras — client-side poderia deixar passar
+        "legs[0][destination]": "FCO",
+        "legs[0][window_start]": base.isoformat(),
+        "legs[0][window_end]": (base + timedelta(days=7)).isoformat(),
+        "legs[0][min_stay_days]": "7",
+        "legs[1][order]": "2",
+        "legs[1][origin]": "FCO",
+        "legs[1][destination]": "GRU",
+        "legs[1][window_start]": (base + timedelta(days=20)).isoformat(),
+        "legs[1][window_end]": (base + timedelta(days=27)).isoformat(),
+        "legs[1][min_stay_days]": "1",
+    }
+
+    resp = client.post("/groups", data=form, follow_redirects=False)
+    assert resp.status_code in (400, 422, 303), (
+        f"server deveria rejeitar IATA invalido, got {resp.status_code}"
+    )
+    if resp.status_code == 303:
+        follow = client.get(resp.headers["location"])
+        assert "3 letras" in follow.text
+    else:
+        assert "3 letras" in resp.text
