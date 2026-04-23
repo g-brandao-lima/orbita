@@ -139,8 +139,13 @@ def _is_domestic(origin: str, destination: str) -> bool:
 def _check_preco_abaixo_historico(
     db: Session, snapshot: FlightSnapshot
 ) -> DetectedSignal | None:
-    """Detecta preco classificado como LOW e abaixo da media historica."""
-    if snapshot.price_classification != "LOW":
+    """Detecta preco classificado como LOW e abaixo da media historica.
+
+    Para snapshots multi-leg (airline=MULTI) nao ha typical_price_range do
+    SerpAPI por trecho, entao dispensamos o gate de price_classification e
+    comparamos direto contra a media historica dos snapshots multi do grupo.
+    """
+    if snapshot.airline != "MULTI" and snapshot.price_classification != "LOW":
         return None
 
     avg_price, count = _get_avg_price_last_n(db, snapshot, n=14)

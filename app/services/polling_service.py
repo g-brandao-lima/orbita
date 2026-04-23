@@ -98,6 +98,56 @@ def _poll_group(db, group: RouteGroup):
     Tenta fast-flights primeiro; fallback para SerpAPI se falhar.
     Acumula todos os sinais e snapshots do ciclo e envia 1 email consolidado ao final.
     """
+    if group.mode == "multi_leg":
+        from app.services.multi_leg_service import search_multi_leg_prices
+
+        snapshot = search_multi_leg_prices(db, group)
+        if snapshot is None:
+            logger.warning("multi_leg: sem precos para group %s", group.id)
+            return
+        try:
+            signals = detect_signals(db, snapshot)
+        except Exception as e:
+            logger.error(
+                "Signal detection failed for multi_leg snapshot %s: %s",
+                getattr(snapshot, "id", "?"),
+                e,
+            )
+            signals = []
+        if signals and should_alert(group):
+            try:
+                recipient = (
+                    group.user.email if group.user else settings.gmail_recipient
+                )
+                allowed = {settings.gmail_sender, settings.gmail_recipient}
+                if recipient not in allowed:
+                    logger.info(
+                        "Skipping multi alert for group %s: recipient %s not allowed",
+                        group.name,
+                        recipient,
+                    )
+                    return
+                msg = compose_consolidated_email(
+                    signals,
+                    [snapshot],
+                    group,
+                    recipient_email=recipient,
+                    db=db,
+                )
+                send_email(msg)
+                logger.info(
+                    "Consolidated multi email sent for group %s: %d signals",
+                    group.name,
+                    len(signals),
+                )
+            except Exception as e:
+                logger.error(
+                    "Consolidated multi email failed for group %s: %s",
+                    group.name,
+                    e,
+                )
+        return
+
     origins = group.origins
     destinations = group.destinations
     date_pairs = _generate_date_pairs(
