@@ -5,7 +5,7 @@ milestone_name: Growth Features e Cache Centralizado
 status: executing
 stopped_at: Completed 36-04-PLAN.md
 last_updated: "2026-04-23T03:40:00.331Z"
-last_activity: 2026-04-23
+last_activity: 2026-04-23 - Completed quick task 260423-1fg: Hero card carousel na landing
 progress:
   total_phases: 14
   completed_phases: 14
@@ -70,6 +70,12 @@ Progress: [░░░░░░░░░░] 0% (0/6 fases)
 - [Phase 33]: Monetizacao via affiliate depende de aprovacao Travelpayouts
 - [Phase 35]: Condicional ao resultado da Phase 33 (minimo 3 usuarios organicos)
 - [Phase 36]: Regra de negocio multi-trecho a formalizar via /gsd:discuss-phase 36
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260423-1fg | Hero card carousel na landing com top 6 rotas do route_cache | 2026-04-23 | 3880e48 | [260423-1fg-hero-card-carousel-na-landing-com-top-6-](./quick/260423-1fg-hero-card-carousel-na-landing-com-top-6-/) |
 
 ## Session Continuity
 
