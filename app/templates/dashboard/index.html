@@ -372,6 +372,44 @@
     @media (hover: none) {
         .card:hover { border-color: var(--border-1); box-shadow: var(--elev-1); transform: none; }
     }
+
+    /* Phase 36 D-16: card multi-leg */
+    .card.card-multi { border-left: 3px solid var(--accent-500); }
+    .card.card-multi:hover { border-left-color: var(--accent-400); }
+    .badge-multi {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        font-weight: 700;
+        background: rgba(34,211,238,0.12);
+        color: var(--accent-500);
+        padding: var(--sp-1) var(--sp-2);
+        border-radius: var(--r-xs);
+        letter-spacing: 0.05em;
+    }
+    .chain-line {
+        font-family: var(--font-mono);
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-0);
+        margin-top: var(--sp-2);
+        display: inline-flex;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    .chain-line .iata { color: var(--text-0); }
+    .chain-line .arrow { color: var(--accent-500); }
+    .multi-empty-state {
+        font-size: 13px;
+        color: var(--text-2);
+        background: var(--bg-2);
+        padding: var(--sp-3);
+        border-radius: var(--r-sm);
+        max-width: 260px;
+    }
+    @media (max-width: 768px) {
+        .chain-line { flex-direction: column; align-items: flex-start; gap: var(--sp-1); }
+        .chain-line .arrow { display: none; }
+    }
 </style>
 {% endblock %}
 
@@ -463,6 +501,61 @@
     {% set cls = snap.price_classification if snap and snap.price_classification else None %}
     {% set pax = item.group.passengers if item.group.passengers else 1 %}
 
+    {% if item.group.mode == "multi_leg" %}
+    {# Phase 36 D-16: card multi-leg variante #}
+    <article class="card card-multi {% if not item.group.is_active %}inactive{% endif %}" data-group-id="{{ item.group.id }}">
+        <div class="card-top">
+            <div class="card-info">
+                <div class="card-name">
+                    <a href="/groups/{{ item.group.id }}">{{ item.group.name }}</a>
+                    <span class="badge-multi">MULTI</span>
+                    {% if not item.group.is_active %}<span class="badge badge-inactive">Inativo</span>{% endif %}
+                </div>
+                <div class="chain-line">
+                    {% for iata in item.legs_chain %}
+                        <span class="iata">{{ iata }}</span>{% if not loop.last %}<span class="arrow"> -&gt; </span>{% endif %}
+                    {% endfor %}
+                </div>
+                <div class="card-dates">{{ item.legs_count }} trechos</div>
+            </div>
+            <div class="card-price-area">
+                {% if item.total_price %}
+                <div class="card-price-sub" style="font-size:11px;color:var(--text-3);margin-bottom:4px;letter-spacing:0.2px;">
+                    Preco total do roteiro
+                </div>
+                <div class="card-price price-none">{{ format_price_brl(item.total_price) }}</div>
+                <div class="card-price-sub">{{ item.legs_count }} trechos</div>
+                {% if item.recommendation %}
+                <div class="recommendation recommendation-{{ item.recommendation.action|lower }}">
+                    <div class="rec-action">{{ item.recommendation.action }}</div>
+                    <div class="rec-reason">{{ item.recommendation.reason }}</div>
+                    {% if item.recommendation.deadline %}
+                    <div class="rec-deadline">Ate {{ format_date_br(item.recommendation.deadline) }}</div>
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% else %}
+                <div class="multi-empty-state">Primeira busca em andamento. O preco total aparece apos o proximo ciclo de polling.</div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-bottom">
+            <a href="/groups/{{ item.group.id }}/edit" class="btn btn-ghost" style="padding:4px 12px;font-size:12px;min-height:28px;">Editar</a>
+            <form method="POST" action="/groups/{{ item.group.id }}/toggle" style="margin:0;"
+                  {% if item.group.is_active %}onsubmit="return confirm('Desativar o grupo {{ item.group.name }}? O polling sera pausado.')"{% endif %}>
+                <button type="submit" class="btn btn-ghost" style="padding:4px 12px;font-size:12px;min-height:28px;">
+                    {% if item.group.is_active %}Desativar{% else %}Ativar{% endif %}
+                </button>
+            </form>
+            <form method="POST" action="/groups/{{ item.group.id }}/delete" style="margin:0;"
+                  onsubmit="return confirm('Excluir o grupo {{ item.group.name }}? Todos os dados de preco serao perdidos.')">
+                <button type="submit" class="btn btn-ghost" style="padding:4px 12px;font-size:12px;min-height:28px;color:var(--danger-500);">Excluir</button>
+            </form>
+            <div class="spacer"></div>
+            <a href="/groups/{{ item.group.id }}" class="btn btn-ghost" style="padding:4px 12px;font-size:12px;min-height:28px;">Ver detalhes</a>
+        </div>
+    </article>
+    {% else %}
     <div class="card {% if cls == 'LOW' %}border-low{% elif cls == 'MEDIUM' %}border-medium{% elif cls == 'HIGH' %}border-high{% endif %} {% if not item.group.is_active %}inactive{% endif %}">
         <div class="card-top">
             <div class="card-info">
@@ -634,6 +727,7 @@
             {% endif %}
         </div>
     </div>
+    {% endif %}
     {% endfor %}
 </div>
 {% endif %}

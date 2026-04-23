@@ -6,6 +6,81 @@
 {% if chart_data.prices %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
 {% endif %}
+<style>
+    /* Phase 36 D-18: breakdown trecho-a-trecho */
+    .multi-breakdown { margin: var(--sp-6) 0; }
+    .multi-breakdown h2 { font-size: 16px; font-weight: 600; color: var(--text-0); margin: 0 0 var(--sp-4); }
+    .multi-breakdown .chain-line {
+        font-family: var(--font-mono);
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-0);
+        margin-bottom: var(--sp-5);
+        display: inline-flex;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    .multi-breakdown .chain-line .arrow { color: var(--accent-500); }
+    .leg-row {
+        background: var(--bg-2);
+        border-radius: var(--r-sm);
+        padding: var(--sp-4);
+        margin-bottom: var(--sp-5);
+    }
+    .leg-row-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: var(--sp-2);
+    }
+    .leg-row-header h3 { font-size: 16px; font-weight: 600; color: var(--text-0); margin: 0; }
+    .leg-date { font-size: 13px; font-weight: 500; color: var(--text-2); }
+    .leg-price {
+        font-family: var(--font-mono);
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text-0);
+        margin: var(--sp-2) 0 var(--sp-1) 0;
+    }
+    .leg-airline { font-size: 13px; font-weight: 500; color: var(--text-2); margin: 0 0 var(--sp-3) 0; }
+    .compare-cluster {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--sp-2);
+        align-items: center;
+    }
+    .compare-label { font-size: 13px; font-weight: 500; color: var(--text-2); }
+    .compare-btn {
+        font-size: 13px;
+        padding: var(--sp-1) var(--sp-3);
+        border: 1px solid var(--border-2);
+        border-radius: var(--r-xs);
+        color: var(--text-1);
+        text-decoration: none;
+    }
+    .compare-btn:hover { border-color: var(--accent-500); color: var(--accent-500); }
+    .total-separator { border: 0; border-top: 1px solid var(--border-2); margin: var(--sp-4) 0; }
+    .total-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+    }
+    .total-label { font-size: 14px; font-weight: 600; color: var(--text-1); }
+    .total-value {
+        font-family: var(--font-mono);
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text-0);
+    }
+    .multi-empty {
+        padding: var(--sp-5);
+        background: var(--bg-2);
+        border-radius: var(--r-sm);
+        color: var(--text-2);
+        font-size: 14px;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -19,6 +94,43 @@
     <p style="color: #94a3b8; margin-bottom: 4px;"><strong style="color: #f1f5f9;">Duração:</strong> {{ group.duration_days }} dias</p>
     <p style="color: #94a3b8;"><strong style="color: #f1f5f9;">Período:</strong> {{ format_date_br(group.travel_start) }} a {{ format_date_br(group.travel_end) }}</p>
 </div>
+
+{% if group.mode == "multi_leg" and legs_breakdown %}
+<section class="multi-breakdown">
+    <h2>Combinacao mais barata encontrada</h2>
+    <div class="chain-line">
+        {% for iata in legs_chain %}
+            <span class="iata">{{ iata }}</span>{% if not loop.last %}<span class="arrow"> -&gt; </span>{% endif %}
+        {% endfor %}
+    </div>
+    {% for leg in legs_breakdown %}
+    <article class="leg-row">
+        <header class="leg-row-header">
+            <h3>Trecho {{ leg.order }}: {{ leg.origin }} -&gt; {{ leg.destination }}</h3>
+            <span class="leg-date">Saida em {{ leg.date_br }}</span>
+        </header>
+        <p class="leg-price">{{ format_price_brl(leg.price) }}</p>
+        <p class="leg-airline">via {{ leg.airline }}</p>
+        <div class="compare-cluster">
+            <span class="compare-label">Comparar este trecho em</span>
+            <a href="{{ leg.compare_urls.google_flights }}" target="_blank" rel="noopener" class="compare-btn">Google Flights</a>
+            <a href="{{ leg.compare_urls.decolar }}" target="_blank" rel="noopener" class="compare-btn">Decolar</a>
+            <a href="{{ leg.compare_urls.skyscanner }}" target="_blank" rel="noopener" class="compare-btn">Skyscanner</a>
+            <a href="{{ leg.compare_urls.kayak }}" target="_blank" rel="noopener" class="compare-btn">Kayak</a>
+        </div>
+    </article>
+    {% endfor %}
+    <hr class="total-separator">
+    <div class="total-row">
+        <span class="total-label">Total do roteiro</span>
+        <span class="total-value">{{ format_price_brl(total_price) }}</span>
+    </div>
+</section>
+{% elif group.mode == "multi_leg" %}
+<section class="multi-empty">
+    <p>Primeira busca em andamento. O preco total aparece apos o proximo ciclo de polling.</p>
+</section>
+{% endif %}
 
 {% if chart_data.prices %}
 <div style="background: #1a1e2e; border: 1px solid #2d3748; border-radius: 12px; padding: 1.5rem;">

@@ -543,10 +543,23 @@ def dashboard_detail(
         raise HTTPException(status_code=404, detail="Grupo nao encontrado")
 
     chart_data = get_price_history(db, group_id, user_id=user.id if user else None)
+
+    # Phase 36 D-18: breakdown trecho-a-trecho para grupos multi_leg
+    multi_context = {}
+    if group.mode == "multi_leg":
+        from app.services.dashboard_service import _build_multi_leg_item, format_price_brl as _fp
+        multi_item = _build_multi_leg_item(db, group)
+        multi_context = {
+            "legs_chain": multi_item.get("legs_chain"),
+            "legs_breakdown": multi_item.get("legs_breakdown"),
+            "total_price": multi_item.get("total_price"),
+            "format_price_brl": _fp,
+        }
+
     return templates.TemplateResponse(
         request=request,
         name="dashboard/detail.html",
-        context={"group": group, "chart_data": chart_data, "format_date_br": format_date_br, "user": user},
+        context={"group": group, "chart_data": chart_data, "format_date_br": format_date_br, "user": user, **multi_context},
     )
 
 
