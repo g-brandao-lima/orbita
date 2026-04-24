@@ -1,8 +1,10 @@
-# Flight Monitor
+# Órbita
+
+> Repositório ainda chamado `flight-monitor` por legado.
 
 ## What This Is
 
-Sistema multi-usuario de monitoramento de passagens aereas que rastreia precos via SerpAPI/fast-flights e detecta sinais de oportunidade de compra (preco abaixo do historico, janela otima de reserva). Login via Google OAuth, dashboard com cards coloridos por classificacao de preco, alertas consolidados por e-mail e deploy automatico no Render com PostgreSQL (Neon.tech).
+Sistema multi-usuario de monitoramento de passagens aereas que rastreia precos via Travelpayouts (cache bulk 4×/dia) e SerpAPI (refresh on-demand), detecta sinais de oportunidade de compra (preco abaixo do historico, janela otima) e transforma historico em recomendacao acionavel via prediction engine ("Compre / Aguarde / Monitorar"). Suporta roteiros multi-trecho encadeados. Login via Google OAuth, dashboard com cards e hero carousel publico, alertas consolidados por email, paginas SEO publicas em /rotas/{O}-{D} monetizadas via affiliate Aviasales, deploy no Fly.io com PostgreSQL (Neon.tech).
 
 ## Core Value
 
@@ -132,20 +134,13 @@ Sistemas consumer (Google Flights, Kayak) são reativos: alertam quando o preço
 | Google OAuth exclusivo (v2.0) | Sem gerenciar senhas, setup mais simples, usuarios ja tem Google | — Pending |
 | PostgreSQL via Neon.tech (v2.0) | Persistencia entre deploys, multi-usuario, free tier generoso | — Pending |
 
-## Current Milestone: v2.3 Growth Features e Cache Centralizado
+## Current Milestone
 
-**Goal:** Eliminar gargalo de SerpAPI via cache centralizado Travelpayouts, abrir canal de aquisicao organica (paginas publicas indexaveis), transformar historico em recomendacao acionavel e suportar roteiros multi-trecho.
-
-**Target features:**
-- Higiene de preco: rotulo "preco de referencia", disclaimer de divergencia, remocao do fast-flights
-- Cache Layer Travelpayouts: polling 6h/6h das top 500 rotas BR × 45 datas, servido do banco local
-- Indice publico por rota (/rotas/GRU-LIS): pagina SEO com historico e CTA, monetizacao via affiliate
-- Engine de previsao de preco: recomendacao "Compre ate DD/MM" com backtest retrospectivo
-- Onboarding wizard condicional: primeiro login cria grupo automaticamente em 2 passos
-- Multi-trecho ("grupo dentro do grupo"): roteiro encadeado BR → Italia → Espanha → BR com sinal sobre total
+A definir. Rodar `/gsd:new-milestone` para iniciar v2.4.
 
 ## Past Milestones
 
+- **v2.3 Growth Features e Cache Centralizado** (shipped 2026-04-24): Phases 31.9-36, cache Travelpayouts, paginas publicas SEO, affiliate Aviasales, rebrand **Órbita**, migracao Render → Fly.io, Price Prediction Engine, Multi-Leg Trip Builder, hero carousel
 - v2.2 UX Polish (shipped 2026-04-20): Phases 24-31, admin panel, toggle preco, sparkline, weekly digest
 - v2.1 Clareza de Preco (shipped 2026-04-20): Phases 15-23, CI, rate limit, cache in-memory, security fix
 - v2.0 Multi-usuario (shipped 2026-03-30): Phases 10-14, Postgres, Google OAuth, data isolation
@@ -171,4 +166,4 @@ Este documento evolui a cada transição de fase e milestone.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-21 after milestone v2.3 start*
+*Last updated: 2026-04-24 after v2.3 milestone shipped*
