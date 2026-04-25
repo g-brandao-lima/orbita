@@ -1,9 +1,27 @@
 ---
-status: awaiting_human_verify
+status: resolved
 trigger: "silent-manual-polling — Buscar agora não gera snapshot em prod para rotas fora do cache"
 created: 2026-04-24T23:10:00Z
-updated: 2026-04-24T23:10:00Z
+updated: 2026-04-25T00:50:00Z
+resolved: 2026-04-25T00:50:00Z
+resolution_quick: 260425-0sf
 ---
+
+## Resolution Summary (2026-04-25)
+
+Causa raiz dupla: (1) logging nao configurado em prod (corrigido em commit f4d1a9d, antes desta task) e (2) quota SerpAPI esgotada silenciosamente, com warning mentiroso citando "fast-flights" (removido em v2.3) e sem flash diferenciado pro usuario.
+
+Quick task 260425-0sf entregou:
+- Short-circuit de run_polling_cycle quando quota=0 (skipa SerpAPI mas processa cache Travelpayouts).
+- run_polling_cycle retorna stats dict (snapshots_skipped_quota explicito).
+- manual_polling redireciona com flash polling_sem_quota quando quota=0.
+- Cache Travelpayouts expandido com 6 rotas BR-internacional (GIG-SCL, BSB-SCL, GIG-EZE, GRU-LIM, GRU-BOG, GRU-MEX) -> 8 rotas BR-internacional totais.
+- Copy do warning corrigida para citar "cache Travelpayouts" ao inves de "fast-flights".
+
+Commits: 1398699 (test RED), 0275324 (fix polling), 28974df (feat cache).
+Suite: 419 -> 424 testes verdes.
+
+
 
 ## Current Focus
 
