@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.3
-milestone_name: Growth Features e Cache Centralizado
-status: executing
-stopped_at: Completed 36-04-PLAN.md
-last_updated: "2026-04-24T22:53:43.976Z"
-last_activity: 2026-04-24
+milestone: v2.4 (planning)
+milestone_name: TBD
+status: between_milestones
+stopped_at: v2.3 shipped 2026-04-24, quick fixes 260423-1fg + 260425-0sf aplicados, aguardando /gsd:new-milestone v2.4
+last_updated: "2026-04-25T03:45:00.000Z"
+last_activity: 2026-04-25
 progress:
-  total_phases: 14
-  completed_phases: 14
-  total_plans: 33
-  completed_plans: 33
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
   percent: 0
 ---
 
@@ -21,16 +21,25 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-21)
 
 **Core value:** Detectar o momento certo de comprar uma passagem antes que o preco suba, apresentando o preco de forma clara e imediata para o usuario tomar decisao rapida.
-**Current focus:** Phase 36 — multi-leg
+**Current focus:** Aguardando definicao do v2.4 via /gsd:new-milestone
 
 ## Current Position
 
-Phase: 36
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-04-24
+Milestone: v2.3 encerrado (shipped 2026-04-24, tag v2.3)
+Status: between milestones, sem fase ativa
+Quick tasks recentes: 260423-1fg (hero carousel), 260425-0sf (fix quota + cache expandido + copy)
+Seeds dormindo: SEED-001 (multi-city hub-and-spoke)
+Last activity: 2026-04-25
 
-Progress: [░░░░░░░░░░] 0% (0/6 fases)
+Pendencias antes do v2.4:
+- Deploy do quick-260425-0sf em producao (commits no GitHub, falta `fly deploy`)
+- UAT manual do fix quota (clicar Buscar agora com quota=0 e ver flash novo)
+
+Candidatos para o v2.4 (a confirmar via /gsd:new-milestone):
+- Dominio proprio (orbita.com.br ou similar)
+- Cloudflare CDN
+- Filtro do hero carousel por sinal ativo
+- Multi-city hub-and-spoke (SEED-001) — surfa automaticamente
 
 ## Performance Metrics
 
